@@ -1,0 +1,505 @@
+{
+  "teams": [
+    {
+      "id": "arrdmzk9r",
+      "name": "Der Schöne und das Biest",
+      "spiele": "16",
+      "siege": "7",
+      "unentschieden": "0",
+      "niederlagen": "9",
+      "gt": "7",
+      "td": "-2",
+      "points": "7",
+      "letzte5": [
+        "N",
+        "N",
+        "S",
+        "N",
+        "N"
+      ],
+      "player1Id": "l8z0fjukn",
+      "player2Id": "8ouu6z9z1"
+    },
+    {
+      "id": "gzadppcvy",
+      "name": "Paderborner Indervernascher",
+      "spiele": "16",
+      "siege": "9",
+      "unentschieden": "0",
+      "niederlagen": "7",
+      "gt": "9",
+      "td": "2",
+      "points": "9",
+      "letzte5": [
+        "N",
+        "N",
+        "S",
+        "S",
+        "S"
+      ],
+      "player1Id": "7oxoq18uz",
+      "player2Id": "mxrty0x6m"
+    },
+    {
+      "id": "qbrpr5ahe",
+      "name": "Bandi",
+      "spiele": "16",
+      "siege": "11",
+      "unentschieden": "0",
+      "niederlagen": "5",
+      "gt": "11",
+      "td": "6",
+      "points": "11",
+      "letzte5": [
+        "S",
+        "S",
+        "S",
+        "S",
+        "S"
+      ],
+      "player1Id": "4z4bch1dt",
+      "player2Id": "vws3r4h7i"
+    },
+    {
+      "id": "4vlubnxkp",
+      "name": "Two Girls One Cup",
+      "spiele": "16",
+      "siege": "5",
+      "unentschieden": "0",
+      "niederlagen": "11",
+      "gt": "5",
+      "td": "-6",
+      "points": "5",
+      "letzte5": [
+        "S",
+        "N",
+        "N",
+        "N",
+        "N"
+      ],
+      "player1Id": "xl3jdapud",
+      "player2Id": "93hmsiv8b"
+    },
+    {
+      "id": "q8kink268",
+      "name": "Biervernichter",
+      "spiele": "16",
+      "siege": "8",
+      "unentschieden": "0",
+      "niederlagen": "8",
+      "gt": "8",
+      "td": "0",
+      "points": "8",
+      "letzte5": [
+        "N",
+        "S",
+        "N",
+        "S",
+        "S"
+      ],
+      "player1Id": "idl0k1rw5",
+      "player2Id": "dhcmob6mz"
+    }
+  ],
+  "players": [
+    {
+      "id": "8ouu6z9z1",
+      "name": "Luca",
+      "teamId": "0"
+    },
+    {
+      "id": "idl0k1rw5",
+      "name": "Seb",
+      "teamId": "0"
+    },
+    {
+      "id": "4z4bch1dt",
+      "name": "BJ",
+      "teamId": "0"
+    },
+    {
+      "id": "7oxoq18uz",
+      "name": "Jens",
+      "teamId": "0"
+    },
+    {
+      "id": "xl3jdapud",
+      "name": "Oskar",
+      "teamId": "0"
+    },
+    {
+      "id": "9uvjuud71",
+      "name": "Leo",
+      "teamId": "0"
+    },
+    {
+      "id": "l8z0fjukn",
+      "name": "Noah",
+      "teamId": "0"
+    },
+    {
+      "id": "mxrty0x6m",
+      "name": "Julian",
+      "teamId": "0"
+    },
+    {
+      "id": "93hmsiv8b",
+      "name": "Louis",
+      "teamId": "0"
+    },
+    {
+      "id": "vws3r4h7i",
+      "name": "Andi",
+      "teamId": "0"
+    },
+    {
+      "id": "dhcmob6mz",
+      "name": "Pati",
+      "teamId": "0"
+    }
+  ],
+  "games": [
+    {
+      "id": "p22vc24m2",
+      "name": "Bierpong",
+      "description": "6 Becher"
+    },
+    {
+      "id": "goip3j584",
+      "name": "Flunkyball",
+      "description": "1 Bier pro Person"
+    },
+    {
+      "id": "k3d37w0zi",
+      "name": "Kastenrennen",
+      "description": "1 Bier pro Person"
+    },
+    {
+      "id": "2wib896t3",
+      "name": "BIG Pong",
+      "description": "Bierpong auf dem Rasen"
+    }
+  ],
+  "results": [
+    {
+      "id": "s6x3ckng6",
+      "gameId": "p22vc24m2",
+      "team1Id": "q8kink268",
+      "team2Id": "4vlubnxkp",
+      "team1Score": "1",
+      "team2Score": "0"
+    },
+    {
+      "id": "zg2a4ktsc",
+      "gameId": "goip3j584",
+      "team1Id": "gzadppcvy",
+      "team2Id": "qbrpr5ahe",
+      "team1Score": "1",
+      "team2Score": "0"
+    },
+    {
+      "id": "ucau0wo62",
+      "gameId": "p22vc24m2",
+      "team1Id": "arrdmzk9r",
+      "team2Id": "4vlubnxkp",
+      "team1Score": "1",
+      "team2Score": "0"
+    },
+    {
+      "id": "36q85e93j",
+      "gameId": "2wib896t3",
+      "team1Id": "qbrpr5ahe",
+      "team2Id": "q8kink268",
+      "team1Score": "1",
+      "team2Score": "0"
+    },
+    {
+      "id": "feg66tav2",
+      "gameId": "2wib896t3",
+      "team1Id": "q8kink268",
+      "team2Id": "arrdmzk9r",
+      "team1Score": "1",
+      "team2Score": "0"
+    },
+    {
+      "id": "zp8dke8v9",
+      "gameId": "p22vc24m2",
+      "team1Id": "gzadppcvy",
+      "team2Id": "4vlubnxkp",
+      "team1Score": "0",
+      "team2Score": "1"
+    },
+    {
+      "id": "uflgbitps",
+      "gameId": "goip3j584",
+      "team1Id": "arrdmzk9r",
+      "team2Id": "qbrpr5ahe",
+      "team1Score": "1",
+      "team2Score": "0"
+    },
+    {
+      "id": "zf1lxxw3v",
+      "gameId": "2wib896t3",
+      "team1Id": "qbrpr5ahe",
+      "team2Id": "4vlubnxkp",
+      "team1Score": "0",
+      "team2Score": "1"
+    },
+    {
+      "id": "0a6vx8j5t",
+      "gameId": "p22vc24m2",
+      "team1Id": "q8kink268",
+      "team2Id": "gzadppcvy",
+      "team1Score": "1",
+      "team2Score": "0"
+    },
+    {
+      "id": "wen6xwj68",
+      "gameId": "p22vc24m2",
+      "team1Id": "qbrpr5ahe",
+      "team2Id": "arrdmzk9r",
+      "team1Score": "1",
+      "team2Score": "0"
+    },
+    {
+      "id": "u2c9r6l4u",
+      "gameId": "2wib896t3",
+      "team1Id": "gzadppcvy",
+      "team2Id": "4vlubnxkp",
+      "team1Score": "1",
+      "team2Score": "0"
+    },
+    {
+      "id": "j37oul8q4",
+      "gameId": "k3d37w0zi",
+      "team1Id": "gzadppcvy",
+      "team2Id": "qbrpr5ahe",
+      "team1Score": "1",
+      "team2Score": "0"
+    },
+    {
+      "id": "irg3hkv2m",
+      "gameId": "p22vc24m2",
+      "team1Id": "q8kink268",
+      "team2Id": "arrdmzk9r",
+      "team1Score": "1",
+      "team2Score": "0"
+    },
+    {
+      "id": "ad63a2zte",
+      "gameId": "goip3j584",
+      "team1Id": "qbrpr5ahe",
+      "team2Id": "4vlubnxkp",
+      "team1Score": "1",
+      "team2Score": "0"
+    },
+    {
+      "id": "7ed69enq9",
+      "gameId": "goip3j584",
+      "team1Id": "4vlubnxkp",
+      "team2Id": "q8kink268",
+      "team1Score": "1",
+      "team2Score": "0"
+    },
+    {
+      "id": "z7kb2zmdw",
+      "gameId": "p22vc24m2",
+      "team1Id": "gzadppcvy",
+      "team2Id": "arrdmzk9r",
+      "team1Score": "1",
+      "team2Score": "0"
+    },
+    {
+      "id": "3fu6rilxo",
+      "gameId": "k3d37w0zi",
+      "team1Id": "gzadppcvy",
+      "team2Id": "arrdmzk9r",
+      "team1Score": "1",
+      "team2Score": "0"
+    },
+    {
+      "id": "3v1x689r2",
+      "gameId": "p22vc24m2",
+      "team1Id": "q8kink268",
+      "team2Id": "qbrpr5ahe",
+      "team1Score": "1",
+      "team2Score": "0"
+    },
+    {
+      "id": "chzhsjzas",
+      "gameId": "goip3j584",
+      "team1Id": "arrdmzk9r",
+      "team2Id": "gzadppcvy",
+      "team1Score": "1",
+      "team2Score": "0"
+    },
+    {
+      "id": "k0jktj4ou",
+      "gameId": "2wib896t3",
+      "team1Id": "arrdmzk9r",
+      "team2Id": "4vlubnxkp",
+      "team1Score": "1",
+      "team2Score": "0"
+    },
+    {
+      "id": "qa1hjzauw",
+      "gameId": "k3d37w0zi",
+      "team1Id": "4vlubnxkp",
+      "team2Id": "q8kink268",
+      "team1Score": "1",
+      "team2Score": "0"
+    },
+    {
+      "id": "uaw8m2h2f",
+      "gameId": "p22vc24m2",
+      "team1Id": "qbrpr5ahe",
+      "team2Id": "gzadppcvy",
+      "team1Score": "1",
+      "team2Score": "0"
+    },
+    {
+      "id": "qy4nl4ljz",
+      "gameId": "k3d37w0zi",
+      "team1Id": "gzadppcvy",
+      "team2Id": "q8kink268",
+      "team1Score": "1",
+      "team2Score": "0"
+    },
+    {
+      "id": "j8if9vdrd",
+      "gameId": "k3d37w0zi",
+      "team1Id": "qbrpr5ahe",
+      "team2Id": "q8kink268",
+      "team1Score": "1",
+      "team2Score": "0"
+    },
+    {
+      "id": "i2sl08x4v",
+      "gameId": "goip3j584",
+      "team1Id": "4vlubnxkp",
+      "team2Id": "gzadppcvy",
+      "team1Score": "1",
+      "team2Score": "0"
+    },
+    {
+      "id": "ns8ob2btj",
+      "gameId": "2wib896t3",
+      "team1Id": "qbrpr5ahe",
+      "team2Id": "arrdmzk9r",
+      "team1Score": "1",
+      "team2Score": "0"
+    },
+    {
+      "id": "8ryd9lzg3",
+      "gameId": "2wib896t3",
+      "team1Id": "q8kink268",
+      "team2Id": "4vlubnxkp",
+      "team1Score": "1",
+      "team2Score": "0"
+    },
+    {
+      "id": "9ivki9d4v",
+      "gameId": "k3d37w0zi",
+      "team1Id": "qbrpr5ahe",
+      "team2Id": "arrdmzk9r",
+      "team1Score": "1",
+      "team2Score": "0"
+    },
+    {
+      "id": "8342udo1g",
+      "gameId": "k3d37w0zi",
+      "team1Id": "qbrpr5ahe",
+      "team2Id": "4vlubnxkp",
+      "team1Score": "1",
+      "team2Score": "0"
+    },
+    {
+      "id": "wqxht9ly3",
+      "gameId": "goip3j584",
+      "team1Id": "arrdmzk9r",
+      "team2Id": "q8kink268",
+      "team1Score": "1",
+      "team2Score": "0"
+    },
+    {
+      "id": "ksvk3tnvr",
+      "gameId": "goip3j584",
+      "team1Id": "arrdmzk9r",
+      "team2Id": "4vlubnxkp",
+      "team1Score": "1",
+      "team2Score": "0"
+    },
+    {
+      "id": "is8dgtny8",
+      "gameId": "2wib896t3",
+      "team1Id": "qbrpr5ahe",
+      "team2Id": "gzadppcvy",
+      "team1Score": "1",
+      "team2Score": "0"
+    },
+    {
+      "id": "i14mkeu14",
+      "gameId": "2wib896t3",
+      "team1Id": "gzadppcvy",
+      "team2Id": "q8kink268",
+      "team1Score": "0",
+      "team2Score": "1"
+    },
+    {
+      "id": "zrsqeokd8",
+      "gameId": "p22vc24m2",
+      "team1Id": "qbrpr5ahe",
+      "team2Id": "4vlubnxkp",
+      "team1Score": "1",
+      "team2Score": "0"
+    },
+    {
+      "id": "6dcxju22h",
+      "gameId": "goip3j584",
+      "team1Id": "gzadppcvy",
+      "team2Id": "q8kink268",
+      "team1Score": "1",
+      "team2Score": "0"
+    },
+    {
+      "id": "g6hlsws97",
+      "gameId": "goip3j584",
+      "team1Id": "qbrpr5ahe",
+      "team2Id": "q8kink268",
+      "team1Score": "1",
+      "team2Score": "0"
+    },
+    {
+      "id": "3ewouh13s",
+      "gameId": "k3d37w0zi",
+      "team1Id": "arrdmzk9r",
+      "team2Id": "4vlubnxkp",
+      "team1Score": "1",
+      "team2Score": "0"
+    },
+    {
+      "id": "1gh8hknnv",
+      "gameId": "k3d37w0zi",
+      "team1Id": "q8kink268",
+      "team2Id": "arrdmzk9r",
+      "team1Score": "1",
+      "team2Score": "0"
+    },
+    {
+      "id": "zhszno968",
+      "gameId": "2wib896t3",
+      "team1Id": "gzadppcvy",
+      "team2Id": "arrdmzk9r",
+      "team1Score": "1",
+      "team2Score": "0"
+    },
+    {
+      "id": "00j8xps0o",
+      "gameId": "k3d37w0zi",
+      "team1Id": "gzadppcvy",
+      "team2Id": "4vlubnxkp",
+      "team1Score": "1",
+      "team2Score": "0"
+    }
+  ]
+}
