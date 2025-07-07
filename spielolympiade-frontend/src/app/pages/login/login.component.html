@@ -1,0 +1,17 @@
+<div class="login-container">
+  <h2>🎮 Spielolympiade Login</h2>
+
+  <form (ngSubmit)="onSubmit()" #loginForm="ngForm">
+    <input
+      type="text"
+      name="username"
+      [(ngModel)]="username"
+      required
+      placeholder="Benutzername"
+    />
+
+    <button type="submit" [disabled]="!loginForm.form.valid">Login</button>
+
+    <div *ngIf="error" class="error">{{ error }}</div>
+  </form>
+</div>
