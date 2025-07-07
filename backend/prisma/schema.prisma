@@ -101,7 +101,6 @@ model MatchResult {
 enum Role {
   admin
   player
-  viewer
 }
 
 enum TournamentSystem {
