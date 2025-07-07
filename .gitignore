@@ -1,3 +1,37 @@
-node_modules
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
 
-.angular*
+# Angular
+.angular/
+dist/
+tmp/
+out-tsc/
+coverage/
+
+# TypeScript
+*.tsbuildinfo
+
+# IDEs & Betriebssysteme
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Environment Files
+.env
+.env.local
+.env.*.local
+
+# Git
+.git/
+.gitignore
+
+# Logs
+*.log
+
+# JSON Server Daten (falls temporär)
+db.json
