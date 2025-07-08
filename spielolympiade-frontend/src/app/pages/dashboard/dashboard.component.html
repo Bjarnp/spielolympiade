@@ -1,1 +1,15 @@
-<p>dashboard works!</p>
+<div class="dashboard">
+  <h2>Willkommen, {{ username }} 👋</h2>
+
+  <div *ngIf="team; else loading">
+    <h3>Dein Team: {{ team.name }}</h3>
+    <p>Mitglieder: {{ team.members.join(", ") }}</p>
+    <p>Saison: {{ team.season }}</p>
+  </div>
+
+  <ng-template #loading>
+    <p>Lade Teamdaten...</p>
+  </ng-template>
+
+  <button (click)="logout()">Abmelden</button>
+</div>

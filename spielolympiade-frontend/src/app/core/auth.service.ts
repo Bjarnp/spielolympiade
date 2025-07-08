@@ -3,13 +3,16 @@ import { HttpClient } from '@angular/common/http';
 import { jwtDecode } from 'jwt-decode';
 import { Router } from '@angular/router';
 import { User } from './user.model';
+import { environment } from '../../environments/environment';
+
+const API_URL = environment.apiUrl;
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
   private tokenKey = 'token';
-  private apiUrl = 'http://localhost:3000/auth'; // ggf. .env im echten Projekt
+  private apiUrl = `${API_URL}/auth`;
 
   constructor(private http: HttpClient, private router: Router) {}
 
