@@ -15,6 +15,7 @@
   "type": "commonjs",
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^24.0.10",
@@ -28,6 +29,7 @@
   "dependencies": {
     "@prisma/client": "^6.11.1",
     "bcrypt": "^6.0.0",
+    "cors": "^2.8.5",
     "dotenv": "^17.0.1",
     "jsonwebtoken": "^9.0.2",
     "swagger-jsdoc": "^6.2.8",
