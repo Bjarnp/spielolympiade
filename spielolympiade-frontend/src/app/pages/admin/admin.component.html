@@ -1,1 +1,27 @@
-<p>admin works!</p>
+<div class="admin">
+  <h2>Neue Saison starten</h2>
+  <label>
+    Jahr:
+    <input type="number" [(ngModel)]="year" />
+  </label>
+  <label>
+    Name:
+    <input type="text" [(ngModel)]="name" />
+  </label>
+  <button (click)="startSeason()">Starten</button>
+
+  <h2>Spielergebnis eintragen</h2>
+  <label>
+    Match ID:
+    <input type="text" [(ngModel)]="matchId" />
+  </label>
+  <label>
+    Team1 Score:
+    <input type="number" [(ngModel)]="team1Score" />
+  </label>
+  <label>
+    Team2 Score:
+    <input type="number" [(ngModel)]="team2Score" />
+  </label>
+  <button (click)="saveResult()">Speichern</button>
+</div>

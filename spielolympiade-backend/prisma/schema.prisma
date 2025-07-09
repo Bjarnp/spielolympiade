@@ -52,6 +52,7 @@ model Season {
   id       String  @id @default(uuid())
   year     Int
   name     String
+  finishedAt DateTime?
 
   teams       Team[]
   tournaments Tournament[]
