@@ -10,6 +10,7 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/auth.service';
 import { environment } from '../../../environments/environment';
+import { FormsModule } from '@angular/forms';
 
 const API_URL = environment.apiUrl;
 
@@ -24,6 +25,7 @@ const API_URL = environment.apiUrl;
     MatTableModule,
     MatFormFieldModule,
     MatInputModule,
+    FormsModule,
   ],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss'],
