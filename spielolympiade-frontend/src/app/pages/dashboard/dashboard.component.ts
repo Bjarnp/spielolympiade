@@ -5,6 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatCardModule } from '@angular/material/card';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../core/auth.service';
 import { environment } from '../../../environments/environment';
@@ -22,6 +23,7 @@ const API_URL = environment.apiUrl;
     MatTableModule,
     MatFormFieldModule,
     MatInputModule,
+    MatCardModule,
     FormsModule,
   ],
   templateUrl: './dashboard.component.html',
