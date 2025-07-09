@@ -1,8 +1,10 @@
 
 import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcrypt';
 const prisma = new PrismaClient();
 
 async function main() {
+  const pw = await bcrypt.hash('test', 10);
   const season = await prisma.season.create({
     data: {
       id: 'season-2024',
@@ -20,17 +22,17 @@ async function main() {
   });
 
   await prisma.$transaction([
-    prisma.user.create({ data: { id: '8ouu6z9z1', name: 'Luca', username: 'luca', passwordHash: 'test', role: 'player' } }),
-    prisma.user.create({ data: { id: 'idl0k1rw5', name: 'Seb', username: 'seb', passwordHash: 'test', role: 'player' } }),
-    prisma.user.create({ data: { id: '4z4bch1dt', name: 'BJ', username: 'bj', passwordHash: 'test', role: 'player' } }),
-    prisma.user.create({ data: { id: '7oxoq18uz', name: 'Jens', username: 'jens', passwordHash: 'test', role: 'player' } }),
-    prisma.user.create({ data: { id: 'xl3jdapud', name: 'Oskar', username: 'oskar', passwordHash: 'test', role: 'player' } }),
-    prisma.user.create({ data: { id: '9uvjuud71', name: 'Leo', username: 'leo', passwordHash: 'test', role: 'player' } }),
-    prisma.user.create({ data: { id: 'l8z0fjukn', name: 'Noah', username: 'noah', passwordHash: 'test', role: 'player' } }),
-    prisma.user.create({ data: { id: 'mxrty0x6m', name: 'Julian', username: 'julian', passwordHash: 'test', role: 'player' } }),
-    prisma.user.create({ data: { id: '93hmsiv8b', name: 'Louis', username: 'louis', passwordHash: 'test', role: 'player' } }),
-    prisma.user.create({ data: { id: 'vws3r4h7i', name: 'Andi', username: 'andi', passwordHash: 'test', role: 'player' } }),
-    prisma.user.create({ data: { id: 'dhcmob6mz', name: 'Pati', username: 'pati', passwordHash: 'test', role: 'player' } })
+    prisma.user.create({ data: { id: '8ouu6z9z1', name: 'Luca', username: 'luca', passwordHash: pw, role: 'player' } }),
+    prisma.user.create({ data: { id: 'idl0k1rw5', name: 'Seb', username: 'seb', passwordHash: pw, role: 'player' } }),
+    prisma.user.create({ data: { id: '4z4bch1dt', name: 'BJ', username: 'bj', passwordHash: pw, role: 'admin' } }),
+    prisma.user.create({ data: { id: '7oxoq18uz', name: 'Jens', username: 'jens', passwordHash: pw, role: 'player' } }),
+    prisma.user.create({ data: { id: 'xl3jdapud', name: 'Oskar', username: 'oskar', passwordHash: pw, role: 'player' } }),
+    prisma.user.create({ data: { id: '9uvjuud71', name: 'Leo', username: 'leo', passwordHash: pw, role: 'player' } }),
+    prisma.user.create({ data: { id: 'l8z0fjukn', name: 'Noah', username: 'noah', passwordHash: pw, role: 'player' } }),
+    prisma.user.create({ data: { id: 'mxrty0x6m', name: 'Julian', username: 'julian', passwordHash: pw, role: 'player' } }),
+    prisma.user.create({ data: { id: '93hmsiv8b', name: 'Louis', username: 'louis', passwordHash: pw, role: 'player' } }),
+    prisma.user.create({ data: { id: 'vws3r4h7i', name: 'Andi', username: 'andi', passwordHash: pw, role: 'player' } }),
+    prisma.user.create({ data: { id: 'dhcmob6mz', name: 'Pati', username: 'pati', passwordHash: pw, role: 'player' } })
   ]);
 
   await prisma.$transaction([
