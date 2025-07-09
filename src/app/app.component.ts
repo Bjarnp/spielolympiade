@@ -8,10 +8,11 @@ import { NgClass } from '@angular/common';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, HomeComponent, PlayerManagementComponent, RouterLink],  // Füge die Komponente hinzu
+  imports: [RouterOutlet, HomeComponent, PlayerManagementComponent, RouterLink, NgClass],  // Füge die Komponente hinzu
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
   title = 'spielolympiadeApp';
+  isNavbarCollapsed = true;
 }
