@@ -9,7 +9,7 @@ import { AuthService } from './core/auth.service';
   standalone: true,
   imports: [RouterOutlet, RouterLink, MatToolbarModule, MatButtonModule],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.scss'
+  styleUrl: './app.component.scss',
 })
 export class AppComponent {
   title = 'spielolympiade-frontend';

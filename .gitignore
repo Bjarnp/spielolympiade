@@ -21,11 +21,6 @@ coverage/
 .DS_Store
 Thumbs.db
 
-# Environment Files
-.env
-.env.local
-.env.*.local
-
 # Git
 .git/
 .gitignore
