@@ -26,6 +26,7 @@ export class DashboardComponent {
   allResults: any[] = [];
   todayResults: any[] = [];
   upcomingGames: any[] = [];
+  tableData: any[] = [];
   activeGameDay = true; // optional: später dynamisch machen
 
   ngOnInit(): void {
@@ -35,9 +36,22 @@ export class DashboardComponent {
 
   loadMyTeam(): void {
     this.http.get<any>(`${API_URL}/users/my-team`).subscribe({
-      next: (res) => (this.team = res),
+      next: (res) => {
+        this.team = res;
+        this.loadTable();
+      },
       error: () => (this.team = null),
     });
+  }
+
+  loadTable(): void {
+    if (!this.team?.seasonId) return;
+    this.http
+      .get<any[]>(`${API_URL}/seasons/${this.team.seasonId}/table`)
+      .subscribe({
+        next: (data) => (this.tableData = data),
+        error: (err) => console.error('Fehler beim Laden der Tabelle', err),
+      });
   }
 
   loadData(): void {

@@ -55,6 +55,7 @@ router.get("/my-team", async (req: Request, res: Response): Promise<void> => {
     id: latestTeam.id,
     name: latestTeam.name,
     season: latestTeam.season.name,
+    seasonId: latestTeam.season.id,
     members: latestTeam.members.map((m) => m.user.name),
   });
 });
