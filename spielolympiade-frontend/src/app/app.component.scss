@@ -1,0 +1,11 @@
+nav.main-nav {
+  display: flex;
+  gap: 1rem;
+  background: #eee;
+  padding: 0.5rem 1rem;
+  margin-bottom: 1rem;
+  a {
+    text-decoration: none;
+    color: #333;
+  }
+}

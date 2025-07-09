@@ -1,1 +1,31 @@
-<p>history works!</p>
+<div class="history">
+  <h2>Vergangene Spielolympiaden</h2>
+  <ul>
+    <li *ngFor="let s of seasons">
+      <button (click)="selectSeason(s.id)">{{ s.name }}</button>
+    </li>
+  </ul>
+
+  <section *ngIf="selected">
+    <h3>{{ selected.name }}</h3>
+
+    <h4>Teams</h4>
+    <ul>
+      <li *ngFor="let t of selected.teams">
+        {{ t.name }} - {{ getMemberNames(t.members) }}
+      </li>
+    </ul>
+
+    <h4>Ergebnisse</h4>
+    <ul>
+      <li *ngFor="let m of selected.tournaments[0]?.matches">
+        {{ m.game.name }}:
+        {{ m.team1Id }} vs {{ m.team2Id }} -
+        <ng-container *ngIf="m.results.length">
+          {{ m.results[0].score }} : {{ m.results[1].score }}
+        </ng-container>
+        <ng-container *ngIf="!m.results.length">noch offen</ng-container>
+      </li>
+    </ul>
+  </section>
+</div>

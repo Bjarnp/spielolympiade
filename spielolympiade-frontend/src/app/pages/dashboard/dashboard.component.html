@@ -1,6 +1,36 @@
 <div class="dashboard">
-  <h1>Willkommen, {{ username }}</h1>
-  <button (click)="logout()">Logout</button>
+  <div class="top-bar">
+    <span>Willkommen, {{ username }}</span>
+    <button (click)="logout()">Logout</button>
+  </div>
+
+  <section class="table-section" *ngIf="tableData.length">
+    <h2>Spielolympiade {{ seasonYear }}</h2>
+    <div class="table-wrapper">
+      <table class="season-table">
+        <thead>
+          <tr>
+            <th>Platz</th>
+            <th>Team</th>
+            <th>Spiele</th>
+            <th>Siege</th>
+            <th>Niederl.</th>
+            <th>Punkte</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let t of tableData; index as i">
+            <td>{{ i + 1 }}</td>
+            <td>{{ t.name }}</td>
+            <td>{{ t.spiele }}</td>
+            <td>{{ t.siege }}</td>
+            <td>{{ t.niederlagen }}</td>
+            <td>{{ t.points }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
 
   <section *ngIf="team">
     <h2>Dein Team</h2>
@@ -26,29 +56,4 @@
     </ul>
   </section>
 
-  <section>
-    <h2>Aktuelle Tabelle</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>Platz</th>
-          <th>Team</th>
-          <th>Spiele</th>
-          <th>Siege</th>
-          <th>Niederl.</th>
-          <th>Punkte</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let t of allTeams; index as i">
-          <td>{{ i + 1 }}</td>
-          <td>{{ t.name }}</td>
-          <td>{{ t.spiele }}</td>
-          <td>{{ t.siege }}</td>
-          <td>{{ t.niederlagen }}</td>
-          <td>{{ t.points }}</td>
-        </tr>
-      </tbody>
-    </table>
-  </section>
 </div>
