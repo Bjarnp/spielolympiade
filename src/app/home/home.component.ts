@@ -17,7 +17,7 @@ export class HomeComponent implements OnInit {
 
   teams: Team[] = [];
   games: Game[] = [];
-  ergebnis: string[] = ['Gewinner', 'Verlierer'];
+  ergebnis: string[] = ['Gewonnen', 'Verloren'];
 
   newResult: Result = {
     id: '',
