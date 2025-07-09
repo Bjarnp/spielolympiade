@@ -1,0 +1,7 @@
+image: node:18
+install:
+  - cd spielolympiade-backend && npm install && cd ..
+  - cd spielolympiade-frontend && npm install && cd ..
+  - npm install -g @angular/cli
+test:
+  - cd spielolympiade-frontend && npm test -- --watch=false --browsers=ChromeHeadless
