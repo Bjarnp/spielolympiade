@@ -8,6 +8,7 @@ function hash(pw: string): string {
 }
 
 async function main() {
+  const pw = await bcrypt.hash('test', 10);
   const season = await prisma.season.create({
     data: {
       id: 'season-2024',
