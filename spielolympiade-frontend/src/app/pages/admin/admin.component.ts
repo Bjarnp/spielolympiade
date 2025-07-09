@@ -16,14 +16,7 @@ const API_URL = environment.apiUrl;
 export class AdminComponent {
   http = inject(HttpClient);
 
-  year = new Date().getFullYear();
-  name = 'Spielolympiade ' + this.year;
-
   users: any[] = [];
-  
-  matchId = '';
-  team1Score = 0;
-  team2Score = 0;
 
   ngOnInit(): void {
     this.loadUsers();
@@ -31,22 +24,6 @@ export class AdminComponent {
 
   loadUsers(): void {
     this.http.get<any[]>(`${API_URL}/users`).subscribe((u) => (this.users = u));
-  }
-
-  startSeason(): void {
-    this.http
-      .post(`${API_URL}/seasons/start`, { year: this.year, name: this.name })
-      .subscribe();
-  }
-
-  saveResult(): void {
-    if (!this.matchId) return;
-    this.http
-      .put(`${API_URL}/matches/${this.matchId}/result`, {
-        team1Score: this.team1Score,
-        team2Score: this.team2Score,
-      })
-      .subscribe();
   }
 
   changeRole(id: string, role: string): void {

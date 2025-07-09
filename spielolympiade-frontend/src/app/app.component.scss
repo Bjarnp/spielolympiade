@@ -1,11 +1,7 @@
-nav.main-nav {
-  display: flex;
-  gap: 1rem;
-  background: #eee;
-  padding: 0.5rem 1rem;
+mat-toolbar.main-nav {
   margin-bottom: 1rem;
   a {
     text-decoration: none;
-    color: #333;
+    color: inherit;
   }
 }

@@ -1,8 +1,36 @@
 <div class="dashboard">
-  <div class="top-bar">
+  <mat-toolbar class="top-bar" color="primary">
     <span>Willkommen, {{ username }}</span>
-    <button (click)="logout()">Logout</button>
+    <span class="spacer"></span>
+    <button mat-button (click)="logout()">Logout</button>
+  </mat-toolbar>
+
+  <div class="info" *ngIf="!seasonActive">
+    <p>
+      Die Spielolympiade beginnt bald.
+      <a routerLink="/history">Historie</a>
+    </p>
+    <button
+      mat-raised-button
+      color="accent"
+      *ngIf="auth.getUser()?.role === 'admin'"
+      (click)="toggleStart()"
+    >
+      Neue Saison starten
+    </button>
+
+    <div *ngIf="showStartForm" class="start-form">
+      <mat-form-field>
+        <input matInput type="number" [(ngModel)]="newYear" placeholder="Jahr" />
+      </mat-form-field>
+      <mat-form-field>
+        <input matInput [(ngModel)]="newName" placeholder="Name" />
+      </mat-form-field>
+      <button mat-raised-button color="primary" (click)="startSeason()">Starten</button>
+    </div>
   </div>
+
+  <ng-container *ngIf="seasonActive">
 
   <section class="table-section" *ngIf="tableData.length">
     <h2>Spielolympiade {{ seasonYear }}</h2>
@@ -55,4 +83,20 @@
       </li>
     </ul>
   </section>
+
+  <div class="result-form" *ngIf="auth.getUser()?.role === 'admin'">
+    <h3>Ergebnis eintragen</h3>
+    <mat-form-field>
+      <input matInput [(ngModel)]="matchId" placeholder="Match ID" />
+    </mat-form-field>
+    <mat-form-field>
+      <input matInput type="number" [(ngModel)]="team1Score" placeholder="Team1 Score" />
+    </mat-form-field>
+    <mat-form-field>
+      <input matInput type="number" [(ngModel)]="team2Score" placeholder="Team2 Score" />
+    </mat-form-field>
+    <button mat-raised-button color="accent" (click)="saveResult()">Speichern</button>
+  </div>
+
+  </ng-container>
 </div>
