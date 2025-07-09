@@ -4,15 +4,11 @@ import { PlayerManagementComponent } from './player-management/player-management
 import { TeamsManagmentComponent } from './teams-managment/teams-managment.component';
 import { SpieleComponent } from './spiele/spiele.component';
 import { HistoryComponent } from './history/history.component';
-import { LoginComponent } from './login/login.component';
-import { authGuard } from './auth.guard';
 
 export const routes: Routes = [
-  { path: 'login', component: LoginComponent },
-  { path: '', component: HomeComponent, canActivate: [authGuard] },
-  { path: 'players', component: PlayerManagementComponent, canActivate: [authGuard] },
-  { path: 'teams', component: TeamsManagmentComponent, canActivate: [authGuard] },
-  { path: 'spiele', component: SpieleComponent, canActivate: [authGuard] },
-  { path: 'history', component: HistoryComponent, canActivate: [authGuard] },
-  { path: '**', redirectTo: '' }
+  { path: '', component: HomeComponent },
+  { path: 'players', component: PlayerManagementComponent },  // Route für die Spielerverwaltung
+  { path: 'teams', component: TeamsManagmentComponent },  // Route für die Spielerverwaltung
+  { path: 'spiele', component: SpieleComponent },  // Route für die Spielerverwaltung
+  { path: 'history', component: HistoryComponent }
 ];

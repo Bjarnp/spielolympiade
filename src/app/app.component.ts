@@ -1,24 +1,17 @@
 import { Component } from '@angular/core';
-import { RouterLink, RouterOutlet, Router } from '@angular/router';
-import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatIconModule } from '@angular/material/icon';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatButtonModule } from '@angular/material/button';
-import { AuthService } from './auth.service';
+import { RouterLink, RouterOutlet } from '@angular/router';
+import { HomeComponent } from './home/home.component';
+import { PlayerManagementComponent } from './player-management/player-management.component';  // Importiere die Komponente
+import { FormsModule, NgModel } from '@angular/forms';
+import { NgClass } from '@angular/common';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, MatToolbarModule, MatIconModule, MatMenuModule, MatButtonModule],
+  imports: [RouterOutlet, HomeComponent, PlayerManagementComponent, RouterLink],  // Füge die Komponente hinzu
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
   title = 'spielolympiadeApp';
-  constructor(public auth: AuthService, private router: Router) {}
-
-  logout(): void {
-    this.auth.logout();
-    this.router.navigate(['/login']);
-  }
 }

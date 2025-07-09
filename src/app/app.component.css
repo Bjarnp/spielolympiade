@@ -1,3 +1,13 @@
-.spacer{
-  flex:1 1 auto;
-}
+.navbar {
+    margin-bottom: 20px;
+  }
+  
+  .navbar .btn {
+    margin-left: auto; /* Stellt sicher, dass der Button rechtsbündig ist */
+  }
+  
+  .navbar-nav svg {
+    max-height: 40px;
+    fill: currentColor; /* Nutze die Textfarbe */
+  }
+  

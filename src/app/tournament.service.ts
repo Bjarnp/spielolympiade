@@ -16,26 +16,12 @@ export class TournamentService {
   teams: Team[] = [];
   games: Game[] = [];
 
-  private seasonActiveKey = 'seasonActive';
-
   private apiUrl = 'http://localhost:3000';  // URL zu deinem JSON-Server
   private httpOptions = {
     headers: new HttpHeaders({ 'Content-Type': 'application/json' })
   };
 
   constructor(private http: HttpClient) { }
-
-  isSeasonActive(): boolean {
-    return localStorage.getItem(this.seasonActiveKey) === 'true';
-  }
-
-  startSeason(): void {
-    localStorage.setItem(this.seasonActiveKey, 'true');
-  }
-
-  endSeason(): void {
-    localStorage.removeItem(this.seasonActiveKey);
-  }
 
   // Teams
   getTeams(): Observable<Team[]> {

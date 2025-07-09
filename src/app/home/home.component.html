@@ -1,4 +1,4 @@
-<div class="container mt-4" *ngIf="seasonActive; else waiting">
+<div class="container mt-4">
   <h1 class="text-center mb-4">Tabelle</h1>
   <table class="table table-hover table-bordered table-striped text-center mt-4">
     <thead class="table-dark">
@@ -19,52 +19,56 @@
         <td>{{ team.niederlagen }}</td>
         <td class="fw-bold">{{ team.points }}</td>
         <td>
-          <span *ngFor="let status of team.letzte5" class="badge me-1"
-                [ngClass]="{ 'bg-success': status === 'S',
-                            'bg-warning text-dark': status === 'U',
-                            'bg-danger': status === 'N'}">
+          <span *ngFor="let status of team.letzte5" 
+                class="badge me-1" 
+                [ngClass]="{
+                    'bg-success': status === 'S',
+                    'bg-warning text-dark': status === 'U',
+                    'bg-danger': status === 'N'
+                }">
             {{ status }}
-          </span>
+          </span>   
         </td>
       </tr>
     </tbody>
   </table>
 
-  <div class="mt-5" *ngIf="auth.isAdmin()">
+  <!-- Formular zum Eingeben eines neuen Results -->
+  <div class="mt-5">
     <h3>Neues Ergebnis eintragen</h3>
     <form (ngSubmit)="addResult()" class="form-inline">
       <select class="form-control" [(ngModel)]="newResult.gameId" name="gameId" required>
         <option value="" disabled selected hidden>Spiel auswählen</option>
         <option *ngFor="let game of games" [value]="game.id">{{ game.name }}</option>
       </select>
+  
       <select class="form-control" [(ngModel)]="newResult.team1Id" name="team1Id" required>
         <option value="" disabled selected hidden>Team 1 auswählen</option>
         <option *ngFor="let team of teams" [value]="team.id">{{ team.name }}</option>
       </select>
+  
       <select class="form-control" [(ngModel)]="newResult.team1Score" name="team1Score" required (change)="onScoreSelect('team1')">
         <option [value]="'1'">Gewinner</option>
         <option [value]="'0'">Verlierer</option>
       </select>
+  
       <label class="my">:</label>
+  
       <select class="form-control" [(ngModel)]="newResult.team2Score" name="team2Score" required (change)="onScoreSelect('team2')">
         <option [value]="'1'">Gewinner</option>
         <option [value]="'0'">Verlierer</option>
       </select>
+  
       <select class="form-control" [(ngModel)]="newResult.team2Id" name="team2Id" required>
         <option value="" disabled selected hidden>Team 2 auswählen</option>
         <option *ngFor="let team of teams" [value]="team.id">{{ team.name }}</option>
       </select>
+  
       <button type="submit" class="btn btn-primary"
               [disabled]="!newResult.gameId || !newResult.team1Id || !newResult.team2Id || newResult.team1Score === '' || newResult.team2Score === ''">
         Hinzufügen
       </button>
     </form>
   </div>
+  
 </div>
-
-<ng-template #waiting>
-  <div class="text-center mt-5">
-    <p>Die Spielolympiade beginnt bald. Schau dir solange die <a routerLink="/history">Historie</a> an.</p>
-    <button *ngIf="auth.isAdmin()" class="btn btn-primary" (click)="startSeason()">Neue Saison starten</button>
-  </div>
-</ng-template>
