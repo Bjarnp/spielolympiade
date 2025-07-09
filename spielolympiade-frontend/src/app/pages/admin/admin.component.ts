@@ -20,7 +20,7 @@ export class AdminComponent {
   name = 'Spielolympiade ' + this.year;
 
   users: any[] = [];
-
+  
   matchId = '';
   team1Score = 0;
   team2Score = 0;

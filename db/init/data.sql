@@ -1,7 +1,7 @@
 -- Spieler
 INSERT INTO users (id, name, username, role) VALUES ('8ouu6z9z1', 'Luca', 'luca', 'player');
 INSERT INTO users (id, name, username, role) VALUES ('idl0k1rw5', 'Seb', 'seb', 'player');
-INSERT INTO users (id, name, username, role) VALUES ('4z4bch1dt', 'BJ', 'bj', 'player');
+INSERT INTO users (id, name, username, role) VALUES ('4z4bch1dt', 'BJ', 'bj', 'admin');
 INSERT INTO users (id, name, username, role) VALUES ('7oxoq18uz', 'Jens', 'jens', 'player');
 INSERT INTO users (id, name, username, role) VALUES ('xl3jdapud', 'Oskar', 'oskar', 'player');
 INSERT INTO users (id, name, username, role) VALUES ('9uvjuud71', 'Leo', 'leo', 'player');
