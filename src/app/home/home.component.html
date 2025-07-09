@@ -34,7 +34,7 @@
   </table>
 
   <!-- Formular zum Eingeben eines neuen Results -->
-  <div class="mt-5">
+    <div class="mt-3">
     <h3>Neues Ergebnis eintragen</h3>
     <form (ngSubmit)="addResult()" class="form-inline">
       <select class="form-control" [(ngModel)]="newResult.gameId" name="gameId" required>
@@ -48,15 +48,15 @@
       </select>
   
       <select class="form-control" [(ngModel)]="newResult.team1Score" name="team1Score" required (change)="onScoreSelect('team1')">
-        <option [value]="'1'">Gewinner</option>
-        <option [value]="'0'">Verlierer</option>
+        <option [value]="'1'">Gewonnen</option>
+        <option [value]="'0'">Verloren</option>
       </select>
   
       <label class="my">:</label>
   
       <select class="form-control" [(ngModel)]="newResult.team2Score" name="team2Score" required (change)="onScoreSelect('team2')">
-        <option [value]="'1'">Gewinner</option>
-        <option [value]="'0'">Verlierer</option>
+        <option [value]="'1'">Gewonnen</option>
+        <option [value]="'0'">Verloren</option>
       </select>
   
       <select class="form-control" [(ngModel)]="newResult.team2Id" name="team2Id" required>

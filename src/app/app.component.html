@@ -1,11 +1,16 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
   <div class="container-fluid">
     <a class="navbar-brand" href="#">Spielolympiade</a>
-    <div class="d-flex">
-      <a routerLink="/history" class="btn btn-secondary">Historie</a>
-      <a routerLink="/spiele" class="btn btn-primary">Spiele</a>
-      <a routerLink="/teams" class="btn btn-primary">Teamsverwaltung</a>
-      <a routerLink="/players" class="btn btn-primary">Spielerverwaltung</a> 
+    <button class="navbar-toggler" type="button" (click)="isNavbarCollapsed = !isNavbarCollapsed">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div [ngClass]="{'collapse navbar-collapse': true, 'show': !isNavbarCollapsed}">
+      <div class="navbar-nav ms-auto">
+        <a routerLink="/history" class="btn btn-secondary me-2">Historie</a>
+        <a routerLink="/spiele" class="btn btn-primary me-2">Spiele</a>
+        <a routerLink="/teams" class="btn btn-primary me-2">Teamsverwaltung</a>
+        <a routerLink="/players" class="btn btn-primary">Spielerverwaltung</a>
+      </div>
     </div>
   </div>
 </nav>
