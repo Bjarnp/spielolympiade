@@ -1,7 +1,14 @@
 mat-toolbar.main-nav {
   margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+
   a {
     text-decoration: none;
     color: inherit;
   }
+}
+
+.spacer {
+  flex: 1 1 auto;
 }

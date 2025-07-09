@@ -1,13 +1,11 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTableModule } from '@angular/material/table';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { HttpClient } from '@angular/common/http';
-import { Router } from '@angular/router';
 import { AuthService } from '../../core/auth.service';
 import { environment } from '../../../environments/environment';
 import { FormsModule } from '@angular/forms';
@@ -20,7 +18,6 @@ const API_URL = environment.apiUrl;
   imports: [
     CommonModule,
     RouterLink,
-    MatToolbarModule,
     MatButtonModule,
     MatTableModule,
     MatFormFieldModule,
@@ -33,9 +30,6 @@ const API_URL = environment.apiUrl;
 export class DashboardComponent {
   auth = inject(AuthService);
   http = inject(HttpClient);
-  router = inject(Router);
-
-  username = this.auth.getUser()?.username ?? 'Unbekannt';
   team: any;
   allTeams: any[] = [];
   allGames: any[] = [];
@@ -159,10 +153,5 @@ export class DashboardComponent {
         this.loadData();
         this.loadTable();
       });
-  }
-
-  logout(): void {
-    this.auth.logout();
-    this.router.navigate(['/login']);
   }
 }
