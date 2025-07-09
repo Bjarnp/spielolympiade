@@ -50,6 +50,48 @@ router.get("/public/dashboard-data", async (_req, res) => {
   }
 });
 
+// 🏆 GET /seasons/:id/table – Saison-Tabelle berechnen
+router.get("/:id/table", async (req: Request, res: Response): Promise<void> => {
+  const { id } = req.params;
+
+  const season = await prisma.season.findUnique({
+    where: { id },
+    include: { teams: true },
+  });
+
+  if (!season) {
+    res.status(404).json({ error: "Saison nicht gefunden" });
+    return;
+  }
+
+  const matches = await prisma.match.findMany({
+    where: { tournament: { seasonId: id }, winnerId: { not: null } },
+    select: { id: true, team1Id: true, team2Id: true, winnerId: true },
+  });
+
+  const table = season.teams.map((team) => {
+    const teamMatches = matches.filter(
+      (m) => m.team1Id === team.id || m.team2Id === team.id
+    );
+    const wins = teamMatches.filter((m) => m.winnerId === team.id).length;
+    const games = teamMatches.length;
+    const losses = games - wins;
+    const points = wins; // 1 Punkt pro Sieg
+    return {
+      id: team.id,
+      name: team.name,
+      spiele: games,
+      siege: wins,
+      niederlagen: losses,
+      points,
+    };
+  });
+
+  table.sort((a, b) => b.points - a.points);
+
+  res.json(table);
+});
+
 // ✅ POST /seasons – neue Saison anlegen (admin only)
 router.post(
   "/",
