@@ -1,1 +1,12 @@
+<mat-toolbar color="primary" *ngIf="auth.isLoggedIn()" class="main-nav">
+  <a mat-button routerLink="/dashboard">Dashboard</a>
+  <a mat-button routerLink="/history">Historie</a>
+  <a
+    mat-button
+    routerLink="/admin"
+    *ngIf="auth.getUser()?.role === 'admin'"
+    >Admin</a
+  >
+</mat-toolbar>
+
 <router-outlet />

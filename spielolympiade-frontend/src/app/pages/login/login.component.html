@@ -10,6 +10,14 @@
       placeholder="Benutzername"
     />
 
+    <input
+      type="password"
+      name="password"
+      [(ngModel)]="password"
+      required
+      placeholder="Passwort"
+    />
+
     <button type="submit" [disabled]="!loginForm.form.valid">Login</button>
 
     <div *ngIf="error" class="error">{{ error }}</div>

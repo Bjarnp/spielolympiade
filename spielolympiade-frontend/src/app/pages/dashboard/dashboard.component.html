@@ -1,6 +1,64 @@
 <div class="dashboard">
-  <h1>Willkommen, {{ username }}</h1>
-  <button (click)="logout()">Logout</button>
+  <mat-toolbar class="top-bar" color="primary">
+    <span>Willkommen, {{ username }}</span>
+    <span class="spacer"></span>
+    <button mat-button (click)="logout()">Logout</button>
+  </mat-toolbar>
+
+  <div class="info" *ngIf="!seasonActive">
+    <p>
+      Die Spielolympiade beginnt bald.
+      <a routerLink="/history">Historie</a>
+    </p>
+    <button
+      mat-raised-button
+      color="accent"
+      *ngIf="auth.getUser()?.role === 'admin'"
+      (click)="toggleStart()"
+    >
+      Neue Saison starten
+    </button>
+
+    <div *ngIf="showStartForm" class="start-form">
+      <mat-form-field>
+        <input matInput type="number" [(ngModel)]="newYear" placeholder="Jahr" />
+      </mat-form-field>
+      <mat-form-field>
+        <input matInput [(ngModel)]="newName" placeholder="Name" />
+      </mat-form-field>
+      <button mat-raised-button color="primary" (click)="startSeason()">Starten</button>
+    </div>
+  </div>
+
+  <ng-container *ngIf="seasonActive">
+
+  <section class="table-section" *ngIf="tableData.length">
+    <h2>Spielolympiade {{ seasonYear }}</h2>
+    <div class="table-wrapper">
+      <table class="season-table">
+        <thead>
+          <tr>
+            <th>Platz</th>
+            <th>Team</th>
+            <th>Spiele</th>
+            <th>Siege</th>
+            <th>Niederl.</th>
+            <th>Punkte</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let t of tableData; index as i">
+            <td>{{ i + 1 }}</td>
+            <td>{{ t.name }}</td>
+            <td>{{ t.spiele }}</td>
+            <td>{{ t.siege }}</td>
+            <td>{{ t.niederlagen }}</td>
+            <td>{{ t.points }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
 
   <section *ngIf="team">
     <h2>Dein Team</h2>
@@ -26,29 +84,19 @@
     </ul>
   </section>
 
-  <section>
-    <h2>Aktuelle Tabelle</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>Platz</th>
-          <th>Team</th>
-          <th>Spiele</th>
-          <th>Siege</th>
-          <th>Niederl.</th>
-          <th>Punkte</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let t of allTeams; index as i">
-          <td>{{ i + 1 }}</td>
-          <td>{{ t.name }}</td>
-          <td>{{ t.spiele }}</td>
-          <td>{{ t.siege }}</td>
-          <td>{{ t.niederlagen }}</td>
-          <td>{{ t.points }}</td>
-        </tr>
-      </tbody>
-    </table>
-  </section>
+  <div class="result-form" *ngIf="auth.getUser()?.role === 'admin'">
+    <h3>Ergebnis eintragen</h3>
+    <mat-form-field>
+      <input matInput [(ngModel)]="matchId" placeholder="Match ID" />
+    </mat-form-field>
+    <mat-form-field>
+      <input matInput type="number" [(ngModel)]="team1Score" placeholder="Team1 Score" />
+    </mat-form-field>
+    <mat-form-field>
+      <input matInput type="number" [(ngModel)]="team2Score" placeholder="Team2 Score" />
+    </mat-form-field>
+    <button mat-raised-button color="accent" (click)="saveResult()">Speichern</button>
+  </div>
+
+  </ng-container>
 </div>

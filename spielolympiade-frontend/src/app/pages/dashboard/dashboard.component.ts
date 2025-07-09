@@ -1,5 +1,11 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatButtonModule } from '@angular/material/button';
+import { MatTableModule } from '@angular/material/table';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/auth.service';
@@ -10,7 +16,15 @@ const API_URL = environment.apiUrl;
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [
+    CommonModule,
+    RouterLink,
+    MatToolbarModule,
+    MatButtonModule,
+    MatTableModule,
+    MatFormFieldModule,
+    MatInputModule,
+  ],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss'],
 })
@@ -26,7 +40,20 @@ export class DashboardComponent {
   allResults: any[] = [];
   todayResults: any[] = [];
   upcomingGames: any[] = [];
+  tableData: any[] = [];
+  seasonYear = '';
   activeGameDay = true; // optional: später dynamisch machen
+  seasonActive = false;
+
+  // Saison starten
+  newYear = new Date().getFullYear();
+  newName = 'Spielolympiade ' + this.newYear;
+  showStartForm = false;
+
+  // Ergebnis eintragen
+  matchId = '';
+  team1Score = 0;
+  team2Score = 0;
 
   ngOnInit(): void {
     this.loadMyTeam();
@@ -35,9 +62,33 @@ export class DashboardComponent {
 
   loadMyTeam(): void {
     this.http.get<any>(`${API_URL}/users/my-team`).subscribe({
-      next: (res) => (this.team = res),
-      error: () => (this.team = null),
+      next: (res) => {
+        this.team = res;
+        this.seasonYear = this.extractYear(res.season);
+        this.seasonActive = true;
+        this.loadTable();
+      },
+      error: () => {
+        this.team = null;
+        this.seasonActive = false;
+      },
     });
+  }
+
+  loadTable(): void {
+    if (!this.team?.seasonId) return;
+    this.http
+      .get<any[]>(`${API_URL}/seasons/${this.team.seasonId}/table`)
+      .subscribe({
+        next: (data) => (this.tableData = data),
+        error: (err) => console.error('Fehler beim Laden der Tabelle', err),
+      });
+  }
+
+  extractYear(name: string | undefined): string {
+    if (!name) return '';
+    const match = name.match(/\d{4}/);
+    return match ? match[0] : name;
   }
 
   loadData(): void {
@@ -73,6 +124,39 @@ export class DashboardComponent {
 
   getGameName(id: string): string {
     return this.allGames.find((g) => g.id === id)?.name ?? id;
+  }
+
+  toggleStart(): void {
+    this.showStartForm = !this.showStartForm;
+  }
+
+  startSeason(): void {
+    this.http
+      .post(`${API_URL}/seasons/start`, {
+        year: this.newYear,
+        name: this.newName,
+      })
+      .subscribe(() => {
+        this.showStartForm = false;
+        this.loadMyTeam();
+        this.loadData();
+      });
+  }
+
+  saveResult(): void {
+    if (!this.matchId) return;
+    this.http
+      .put(`${API_URL}/matches/${this.matchId}/result`, {
+        team1Score: this.team1Score,
+        team2Score: this.team2Score,
+      })
+      .subscribe(() => {
+        this.matchId = '';
+        this.team1Score = 0;
+        this.team2Score = 0;
+        this.loadData();
+        this.loadTable();
+      });
   }
 
   logout(): void {
