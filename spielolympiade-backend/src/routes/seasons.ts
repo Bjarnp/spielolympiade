@@ -50,6 +50,77 @@ router.get("/public/dashboard-data", async (_req, res) => {
   }
 });
 
+// 📜 GET /seasons/:id/history – Saison mit Matches & Ergebnissen
+router.get(
+  "/:id/history",
+  async (req: Request, res: Response): Promise<void> => {
+    const { id } = req.params;
+
+    const season = await prisma.season.findUnique({
+      where: { id },
+      include: {
+        teams: {
+          include: { members: { include: { user: true } } },
+        },
+        tournaments: {
+          include: {
+            matches: { include: { game: true, results: true, winner: true } },
+          },
+        },
+      },
+    });
+
+    if (!season) {
+      res.status(404).json({ error: "Saison nicht gefunden" });
+      return;
+    }
+
+    res.json(season);
+  }
+);
+
+// 🏆 GET /seasons/:id/table – Saison-Tabelle berechnen
+router.get("/:id/table", async (req: Request, res: Response): Promise<void> => {
+  const { id } = req.params;
+
+  const season = await prisma.season.findUnique({
+    where: { id },
+    include: { teams: true },
+  });
+
+  if (!season) {
+    res.status(404).json({ error: "Saison nicht gefunden" });
+    return;
+  }
+
+  const matches = await prisma.match.findMany({
+    where: { tournament: { seasonId: id }, winnerId: { not: null } },
+    select: { id: true, team1Id: true, team2Id: true, winnerId: true },
+  });
+
+  const table = season.teams.map((team) => {
+    const teamMatches = matches.filter(
+      (m) => m.team1Id === team.id || m.team2Id === team.id
+    );
+    const wins = teamMatches.filter((m) => m.winnerId === team.id).length;
+    const games = teamMatches.length;
+    const losses = games - wins;
+    const points = wins; // 1 Punkt pro Sieg
+    return {
+      id: team.id,
+      name: team.name,
+      spiele: games,
+      siege: wins,
+      niederlagen: losses,
+      points,
+    };
+  });
+
+  table.sort((a, b) => b.points - a.points);
+
+  res.json(table);
+});
+
 // ✅ POST /seasons – neue Saison anlegen (admin only)
 router.post(
   "/",
@@ -75,6 +146,55 @@ router.post(
     });
 
     res.status(201).json(season);
+  }
+);
+
+// 🌟 POST /seasons/start – vereinfachter Start einer Saison
+router.post(
+  "/start",
+  authorizeRole("admin"),
+  async (req: Request, res: Response): Promise<void> => {
+    const { year, name } = req.body;
+
+    if (!year || !name) {
+      res.status(400).json({ error: "year und name erforderlich" });
+      return;
+    }
+
+    const exists = await prisma.season.findFirst({ where: { year } });
+    if (exists) {
+      res.status(400).json({ error: "Saison existiert bereits" });
+      return;
+    }
+
+    const season = await prisma.season.create({ data: { year, name } });
+    await prisma.tournament.create({
+      data: { seasonId: season.id, system: "round_robin" },
+    });
+
+    res.status(201).json(season);
+  }
+);
+
+// ✅ Saison beenden (Passwortabfrage rudimentär)
+router.post(
+  "/:id/finish",
+  authorizeRole("admin"),
+  async (req: Request, res: Response): Promise<void> => {
+    const { id } = req.params;
+    const { password } = req.body;
+
+    if (password !== "admin") {
+      res.status(401).json({ error: "Passwort falsch" });
+      return;
+    }
+
+    const season = await prisma.season.update({
+      where: { id },
+      data: { finishedAt: new Date() },
+    });
+
+    res.json(season);
   }
 );
 

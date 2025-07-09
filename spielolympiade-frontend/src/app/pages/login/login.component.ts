@@ -13,18 +13,19 @@ import { AuthService } from '../../core/auth.service';
 })
 export class LoginComponent {
   username: string = '';
+  password: string = '';
   error: string = '';
 
   constructor(private auth: AuthService, private router: Router) {}
 
   onSubmit(): void {
     this.error = '';
-    if (!this.username.trim()) {
-      this.error = 'Bitte Benutzernamen eingeben.';
+    if (!this.username.trim() || !this.password.trim()) {
+      this.error = 'Bitte Benutzernamen und Passwort eingeben.';
       return;
     }
 
-    this.auth.login(this.username).subscribe({
+    this.auth.login(this.username, this.password).subscribe({
       next: (res) => {
         this.auth.saveToken(res.token);
         this.router.navigate(['/dashboard']);
