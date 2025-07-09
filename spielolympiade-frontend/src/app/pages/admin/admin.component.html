@@ -1,1 +1,27 @@
-<p>admin works!</p>
+<div class="admin">
+
+  <h2>Userverwaltung</h2>
+  <table class="users">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Username</th>
+        <th>Rolle</th>
+        <th>Aktion</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let u of users">
+        <td>{{ u.name }}</td>
+        <td>{{ u.username }}</td>
+        <td>
+          <select [ngModel]="u.role" (ngModelChange)="changeRole(u.id, $event)">
+            <option value="player">player</option>
+            <option value="admin">admin</option>
+          </select>
+        </td>
+        <td><button (click)="deleteUser(u.id)">Löschen</button></td>
+      </tr>
+    </tbody>
+  </table>
+</div>

@@ -1,15 +1,16 @@
 -- Spieler
-INSERT INTO users (id, name, username, role) VALUES ('8ouu6z9z1', 'Luca', 'luca', 'player');
-INSERT INTO users (id, name, username, role) VALUES ('idl0k1rw5', 'Seb', 'seb', 'player');
-INSERT INTO users (id, name, username, role) VALUES ('4z4bch1dt', 'BJ', 'bj', 'player');
-INSERT INTO users (id, name, username, role) VALUES ('7oxoq18uz', 'Jens', 'jens', 'player');
-INSERT INTO users (id, name, username, role) VALUES ('xl3jdapud', 'Oskar', 'oskar', 'player');
-INSERT INTO users (id, name, username, role) VALUES ('9uvjuud71', 'Leo', 'leo', 'player');
-INSERT INTO users (id, name, username, role) VALUES ('l8z0fjukn', 'Noah', 'noah', 'player');
-INSERT INTO users (id, name, username, role) VALUES ('mxrty0x6m', 'Julian', 'julian', 'player');
-INSERT INTO users (id, name, username, role) VALUES ('93hmsiv8b', 'Louis', 'louis', 'player');
-INSERT INTO users (id, name, username, role) VALUES ('vws3r4h7i', 'Andi', 'andi', 'player');
-INSERT INTO users (id, name, username, role) VALUES ('dhcmob6mz', 'Pati', 'pati', 'player');
+INSERT INTO users (id, name, username, "passwordHash", role) VALUES
+  ('8ouu6z9z1', 'Luca', 'luca', 'd70f47790f689414789eeff231703429c7f88a10210775906460edbf38589d90', 'player'),
+  ('idl0k1rw5', 'Seb', 'seb', '155290511d5c4bfb1369217d6846c8eef1ed6a564579516eaf36cf5598ac92de', 'player'),
+  ('4z4bch1dt', 'BJ', 'bj', '652742992acbaf9a5a3fbef60f7a51e853a93534fac251e375c662d6a5cd8d01', 'admin'),
+  ('7oxoq18uz', 'Jens', 'jens', 'ff38d2567b8123d1144a15ea77d969f1e742a8bdcd7f31c48a7cfdf4c4037663', 'player'),
+  ('xl3jdapud', 'Oskar', 'oskar', 'bd558de5f79457674f54616c88955a0d4324d6173cceeaf7e47dde59cfa8cb21', 'player'),
+  ('9uvjuud71', 'Leo', 'leo', '8535e86c8118bbbb0a18ac72d15d3a2b37b18d1bce1611fc60165f322cf57386', 'player'),
+  ('l8z0fjukn', 'Noah', 'noah', 'cf3a3bbe331c3950d16a8e9917c5bb8340e7c0ef917da25d4a96f92d074bce05', 'player'),
+  ('mxrty0x6m', 'Julian', 'julian', 'ce0fee7e61f9c74f1110f0e5940a80b4f059f189217d0c3d26bb41960d4bf597', 'player'),
+  ('93hmsiv8b', 'Louis', 'louis', '5f16795c54ab7de419edf8e9c6da6065f7dd448f122fcbc9815c67daa566ba8e', 'player'),
+  ('vws3r4h7i', 'Andi', 'andi', '180348f5b22db17be014d5c1cb8151c858267cb44819e5460a7ae2528b91680e', 'player'),
+  ('dhcmob6mz', 'Pati', 'pati', 'f30ca884f9821c550e5e8e8c10717cd30deff1127d4197ddd33125fc453d29a3', 'player');
 
 -- Teams
 INSERT INTO teams (id, name) VALUES ('arrdmzk9r', 'Der Schöne und das Biest');

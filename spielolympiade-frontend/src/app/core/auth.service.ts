@@ -16,9 +16,10 @@ export class AuthService {
 
   constructor(private http: HttpClient, private router: Router) {}
 
-  login(username: string) {
+  login(username: string, password: string) {
     return this.http.post<{ token: string }>(`${this.apiUrl}/login`, {
       username,
+      password,
     });
   }
 
@@ -48,6 +49,19 @@ export class AuthService {
   }
 
   isLoggedIn(): boolean {
-    return !!this.getToken();
+    const token = this.getToken();
+    if (!token) return false;
+
+    try {
+      const decoded: any = jwtDecode(token);
+      if (decoded.exp && Date.now() / 1000 > decoded.exp) {
+        this.logout();
+        return false;
+      }
+      return true;
+    } catch {
+      this.logout();
+      return false;
+    }
   }
 }

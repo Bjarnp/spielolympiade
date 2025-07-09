@@ -1,0 +1,19 @@
+div.admin {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: 400px;
+
+  table.users {
+    width: 100%;
+    border-collapse: collapse;
+    th,
+    td {
+      border: 1px solid #ccc;
+      padding: 0.25rem;
+    }
+    th {
+      background: #f2f2f2;
+    }
+  }
+}

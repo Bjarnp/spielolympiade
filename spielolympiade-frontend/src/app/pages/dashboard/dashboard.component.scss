@@ -1,7 +1,9 @@
+
 .dashboard {
   max-width: 800px;
   margin: auto;
   padding: 1rem;
+
 
   button {
     margin: 0.25rem;
@@ -19,4 +21,42 @@
       margin-bottom: 0.5rem;
     }
   }
+}
+
+.table-section {
+  margin-top: 2rem;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.season-table {
+  width: 100%;
+
+  th,
+  td {
+    text-align: center;
+  }
+
+  th {
+    font-weight: 600;
+  }
+}
+
+.info {
+  margin-top: 1rem;
+}
+
+.start-form {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.result-form {
+  margin-top: 1rem;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
 }

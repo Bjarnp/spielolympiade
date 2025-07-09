@@ -137,5 +137,4 @@ npx tsx prisma/seed.ts
 - [ ] Tabellen, Live-Matches & Ergebnisse filtern
 
 ---
-
 Viel Spaß beim Zocken und Verwalten! 🍻
