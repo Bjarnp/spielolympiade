@@ -1,7 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { TournamentService } from '../tournament.service';
+import { AuthService } from '../auth.service';
 import { Team } from '../models/team.model';
 import { Game } from '../models/game.model';
 import { Result } from '../models/result.model';
@@ -11,13 +13,15 @@ import { Result } from '../models/result.model';
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css'],
   standalone: true,
-  imports: [CommonModule, FormsModule]  // Importiere hier CommonModule und FormsModule
+  imports: [CommonModule, FormsModule, RouterLink]
 })
 export class HomeComponent implements OnInit {
 
   teams: Team[] = [];
   games: Game[] = [];
   ergebnis: string[] = ['Gewinner', 'Verlierer'];
+
+  seasonActive = false;
 
   newResult: Result = {
     id: '',
@@ -28,11 +32,14 @@ export class HomeComponent implements OnInit {
     team2Score: '0'
   };
 
-  constructor(private tournamentService: TournamentService) { }
+  constructor(private tournamentService: TournamentService, public auth: AuthService) { }
 
   ngOnInit(): void {
-    this.loadTeams();
-    this.loadGames();
+    this.seasonActive = this.tournamentService.isSeasonActive();
+    if (this.seasonActive) {
+      this.loadTeams();
+      this.loadGames();
+    }
   }
 
  
@@ -64,7 +71,19 @@ export class HomeComponent implements OnInit {
       this.resetForm();
       this.ngOnInit();
     });
-}
+  }
+
+  startSeason(): void {
+    this.tournamentService.startSeason();
+    this.seasonActive = true;
+    this.loadTeams();
+    this.loadGames();
+  }
+
+  endSeason(): void {
+    this.tournamentService.endSeason();
+    this.seasonActive = false;
+  }
 
   
 
