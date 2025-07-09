@@ -1,7 +1,7 @@
-<nav class="main-nav">
+<nav class="main-nav" *ngIf="auth.isLoggedIn()">
   <a routerLink="/dashboard">Dashboard</a>
   <a routerLink="/history">Historie</a>
-  <a routerLink="/admin">Admin</a>
+  <a routerLink="/admin" *ngIf="auth.getUser()?.role === 'admin'">Admin</a>
 </nav>
 
 <router-outlet />

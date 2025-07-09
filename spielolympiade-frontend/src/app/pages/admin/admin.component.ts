@@ -11,7 +11,7 @@ const API_URL = environment.apiUrl;
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './admin.component.html',
-  styleUrls: ['./admin.component.scss'],
+  styleUrls: ['./admin.component.scss']
 })
 export class AdminComponent {
   http = inject(HttpClient);
@@ -19,9 +19,19 @@ export class AdminComponent {
   year = new Date().getFullYear();
   name = 'Spielolympiade ' + this.year;
 
+  users: any[] = [];
+  
   matchId = '';
   team1Score = 0;
   team2Score = 0;
+
+  ngOnInit(): void {
+    this.loadUsers();
+  }
+
+  loadUsers(): void {
+    this.http.get<any[]>(`${API_URL}/users`).subscribe((u) => (this.users = u));
+  }
 
   startSeason(): void {
     this.http
@@ -37,5 +47,15 @@ export class AdminComponent {
         team2Score: this.team2Score,
       })
       .subscribe();
+  }
+
+  changeRole(id: string, role: string): void {
+    this.http
+      .put(`${API_URL}/users/${id}`, { role })
+      .subscribe(() => this.loadUsers());
+  }
+
+  deleteUser(id: string): void {
+    this.http.delete(`${API_URL}/users/${id}`).subscribe(() => this.loadUsers());
   }
 }
