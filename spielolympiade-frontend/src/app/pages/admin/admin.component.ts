@@ -26,7 +26,6 @@ export class AdminComponent {
     this.http.get<any[]>(`${API_URL}/users`).subscribe((u) => (this.users = u));
   }
 
-
   changeRole(id: string, role: string): void {
     this.http
       .put(`${API_URL}/users/${id}`, { role })

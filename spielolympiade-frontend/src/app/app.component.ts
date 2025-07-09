@@ -18,7 +18,7 @@ import { AuthService } from './core/auth.service';
     MatMenuModule,
   ],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.scss'
+  styleUrl: './app.component.scss',
 })
 export class AppComponent {
   constructor(public auth: AuthService) {}
