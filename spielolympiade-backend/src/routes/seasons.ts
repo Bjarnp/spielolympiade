@@ -37,6 +37,19 @@ router.get("/:id", async (req: Request, res: Response): Promise<void> => {
   res.json(season);
 });
 
+router.get("/public/dashboard-data", async (_req, res) => {
+  try {
+    const teams = await prisma.team.findMany();
+    const games = await prisma.game.findMany();
+    const results = await prisma.matchResult.findMany();
+
+    res.json({ teams, games, results });
+  } catch (err) {
+    console.error("Fehler beim Laden der Dashboard-Daten:", err);
+    res.status(500).json({ error: "Interner Serverfehler" });
+  }
+});
+
 // ✅ POST /seasons – neue Saison anlegen (admin only)
 router.post(
   "/",

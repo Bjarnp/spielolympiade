@@ -1,8 +1,8 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/auth.service';
-import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 
 const API_URL = environment.apiUrl;
@@ -21,22 +21,58 @@ export class DashboardComponent {
 
   username = this.auth.getUser()?.username ?? 'Unbekannt';
   team: any;
+  allTeams: any[] = [];
+  allGames: any[] = [];
+  allResults: any[] = [];
+  todayResults: any[] = [];
+  upcomingGames: any[] = [];
+  activeGameDay = true; // optional: später dynamisch machen
 
   ngOnInit(): void {
+    this.loadMyTeam();
+    this.loadData();
+  }
+
+  loadMyTeam(): void {
     this.http.get<any>(`${API_URL}/users/my-team`).subscribe({
-      next: (res) => {
-        if (res?.error) {
-          console.warn('Kein Team vorhanden:', res.error);
-          this.team = null;
-        } else {
-          this.team = res;
-        }
-      },
-      error: (err) => {
-        console.error('Fehler beim Laden des Teams', err);
-        this.team = null;
-      },
+      next: (res) => (this.team = res),
+      error: () => (this.team = null),
     });
+  }
+
+  loadData(): void {
+    this.http.get<any>(`${API_URL}/seasons/public/dashboard-data`).subscribe({
+      next: (data) => {
+        this.allTeams = data.teams;
+        this.allGames = data.games;
+        this.allResults = data.results;
+
+        this.buildTodayData();
+        this.buildUpcoming();
+      },
+      error: (err) => console.error('Fehler beim Laden der Daten', err),
+    });
+  }
+
+  buildTodayData(): void {
+    const today = new Date().toISOString().split('T')[0]; // yyyy-mm-dd
+    this.todayResults = this.allResults.filter((r) => r.date === today);
+  }
+
+  buildUpcoming(): void {
+    if (!this.team) return;
+
+    this.upcomingGames = this.allResults
+      .filter((r) => !r.team1Score && !r.team2Score)
+      .filter((r) => r.team1Id === this.team.id || r.team2Id === this.team.id);
+  }
+
+  getTeamName(id: string): string {
+    return this.allTeams.find((t) => t.id === id)?.name ?? id;
+  }
+
+  getGameName(id: string): string {
+    return this.allGames.find((g) => g.id === id)?.name ?? id;
   }
 
   logout(): void {

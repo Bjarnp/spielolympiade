@@ -1,0 +1,22 @@
+.dashboard {
+  max-width: 800px;
+  margin: auto;
+  padding: 1rem;
+
+  button {
+    margin: 0.25rem;
+  }
+
+  .filters {
+    margin-bottom: 1rem;
+  }
+
+  ul {
+    list-style: none;
+    padding-left: 0;
+
+    li {
+      margin-bottom: 0.5rem;
+    }
+  }
+}

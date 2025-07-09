@@ -1,15 +1,54 @@
 <div class="dashboard">
-  <h2>Willkommen, {{ username }} 👋</h2>
+  <h1>Willkommen, {{ username }}</h1>
+  <button (click)="logout()">Logout</button>
 
-  <div *ngIf="team; else loading">
-    <h3>Dein Team: {{ team.name }}</h3>
-    <p>Mitglieder: {{ team.members.join(", ") }}</p>
-    <p>Saison: {{ team.season }}</p>
-  </div>
+  <section *ngIf="team">
+    <h2>Dein Team</h2>
+    <p>{{ team.name }}</p>
+  </section>
 
-  <ng-template #loading>
-    <p>Lade Teamdaten...</p>
-  </ng-template>
+  <section *ngIf="activeGameDay">
+    <h2>Heutige Ergebnisse</h2>
+    <ul>
+      <li *ngFor="let r of todayResults">
+        {{ getGameName(r.gameId) }}: {{ getTeamName(r.team1Id) }} ({{
+          r.team1Score
+        }}) – {{ getTeamName(r.team2Id) }} ({{ r.team2Score }})
+      </li>
+    </ul>
 
-  <button (click)="logout()">Abmelden</button>
+    <h2>Kommende Spiele deines Teams</h2>
+    <ul>
+      <li *ngFor="let r of upcomingGames">
+        {{ getGameName(r.gameId) }}: {{ getTeamName(r.team1Id) }} vs
+        {{ getTeamName(r.team2Id) }}
+      </li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Aktuelle Tabelle</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Platz</th>
+          <th>Team</th>
+          <th>Spiele</th>
+          <th>Siege</th>
+          <th>Niederl.</th>
+          <th>Punkte</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let t of allTeams; index as i">
+          <td>{{ i + 1 }}</td>
+          <td>{{ t.name }}</td>
+          <td>{{ t.spiele }}</td>
+          <td>{{ t.siege }}</td>
+          <td>{{ t.niederlagen }}</td>
+          <td>{{ t.points }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
 </div>
