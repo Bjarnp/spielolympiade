@@ -12,8 +12,7 @@
     <h4>Teams</h4>
     <ul>
       <li *ngFor="let t of selected.teams">
-        {{ t.name }} -
-        {{ t.members.map(m => m.user.name).join(', ') }}
+        {{ t.name }} - {{ getMemberNames(t.members) }}
       </li>
     </ul>
 

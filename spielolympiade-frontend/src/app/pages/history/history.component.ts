@@ -10,7 +10,7 @@ const API_URL = environment.apiUrl;
   standalone: true,
   imports: [CommonModule],
   templateUrl: './history.component.html',
-  styleUrl: './history.component.scss'
+  styleUrls: ['./history.component.scss']
 })
 export class HistoryComponent {
   http = inject(HttpClient);
@@ -32,5 +32,9 @@ export class HistoryComponent {
     this.http
       .get<any>(`${API_URL}/seasons/${id}/history`)
       .subscribe((s) => (this.selected = s));
+  }
+
+  getMemberNames(members: any[]): string {
+    return members.map((m: any) => m.user.name).join(', ');
   }
 }
