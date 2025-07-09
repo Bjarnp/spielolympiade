@@ -1,0 +1,10 @@
+.login-container{
+  max-width:300px;
+  margin:40px auto;
+  display:flex;
+  flex-direction:column;
+}
+.login-container input{
+  margin-bottom:8px;
+}
+.error{color:red;margin-top:5px;}
