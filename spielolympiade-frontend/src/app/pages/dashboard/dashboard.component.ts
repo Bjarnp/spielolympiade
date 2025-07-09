@@ -2,7 +2,7 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
-import { MatTableModule } from '@angular/material/table';
+import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { HttpClient } from '@angular/common/http';
@@ -37,6 +37,8 @@ export class DashboardComponent {
   todayResults: any[] = [];
   upcomingGames: any[] = [];
   tableData: any[] = [];
+  dataSource = new MatTableDataSource<any>();
+  displayedColumns = ['place', 'name', 'spiele', 'siege', 'niederlagen', 'punkte'];
   seasonYear = '';
   activeGameDay = true; // optional: später dynamisch machen
   seasonActive = false;
@@ -76,7 +78,10 @@ export class DashboardComponent {
     this.http
       .get<any[]>(`${API_URL}/seasons/${this.team.seasonId}/table`)
       .subscribe({
-        next: (data) => (this.tableData = data),
+        next: (data) => {
+          this.tableData = data;
+          this.dataSource.data = data;
+        },
         error: (err) => console.error('Fehler beim Laden der Tabelle', err),
       });
   }

@@ -29,27 +29,40 @@
   <section class="table-section" *ngIf="tableData.length">
     <h2>Spielolympiade {{ seasonYear }}</h2>
     <div class="table-wrapper">
-      <table class="season-table">
-        <thead>
-          <tr>
-            <th>Platz</th>
-            <th>Team</th>
-            <th>Spiele</th>
-            <th>Siege</th>
-            <th>Niederl.</th>
-            <th>Punkte</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let t of tableData; index as i">
-            <td>{{ i + 1 }}</td>
-            <td>{{ t.name }}</td>
-            <td>{{ t.spiele }}</td>
-            <td>{{ t.siege }}</td>
-            <td>{{ t.niederlagen }}</td>
-            <td>{{ t.points }}</td>
-          </tr>
-        </tbody>
+      <table mat-table [dataSource]="dataSource" class="season-table mat-elevation-z8">
+        <ng-container matColumnDef="place">
+          <th mat-header-cell *matHeaderCellDef>Platz</th>
+          <td mat-cell *matCellDef="let element; index as i">{{ i + 1 }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef>Team</th>
+          <td mat-cell *matCellDef="let element">{{ element.name }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="spiele">
+          <th mat-header-cell *matHeaderCellDef>Spiele</th>
+          <td mat-cell *matCellDef="let element">{{ element.spiele }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="siege">
+          <th mat-header-cell *matHeaderCellDef>Siege</th>
+          <td mat-cell *matCellDef="let element">{{ element.siege }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="niederlagen">
+          <th mat-header-cell *matHeaderCellDef>Niederl.</th>
+          <td mat-cell *matCellDef="let element">{{ element.niederlagen }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="punkte">
+          <th mat-header-cell *matHeaderCellDef>Punkte</th>
+          <td mat-cell *matCellDef="let element">{{ element.points }}</td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+
       </table>
     </div>
   </section>
