@@ -1,6 +1,6 @@
 import express, { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
-import bcrypt from "bcrypt";
+import { createHash } from "crypto";
 import { authorizeRole } from "../middleware/auth";
 
 const router = express.Router();
@@ -121,7 +121,7 @@ router.post(
       res.status(400).json({ error: "name, username, password erforderlich" });
       return;
     }
-    const hash = await bcrypt.hash(password, 10);
+    const hash = createHash('sha256').update(password).digest('hex');
     const user = await prisma.user.create({
       data: { name, username, passwordHash: hash, role: role || "player" },
     });
@@ -140,7 +140,7 @@ router.put(
     if (name) data.name = name;
     if (username) data.username = username;
     if (role) data.role = role;
-    if (password) data.passwordHash = await bcrypt.hash(password, 10);
+    if (password) data.passwordHash = createHash('sha256').update(password).digest('hex');
 
     try {
       const user = await prisma.user.update({ where: { id }, data });

@@ -1,6 +1,6 @@
 import express from "express";
 import jwt from "jsonwebtoken";
-import bcrypt from "bcrypt";
+import { createHash } from "crypto";
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 
@@ -22,9 +22,9 @@ router.post("/login", async (req: Request, res: Response) => {
     return;
   }
 
-  const match = await bcrypt.compare(password, user.passwordHash);
+  const hash = createHash("sha256").update(password).digest("hex");
 
-  if (!match) {
+  if (hash !== user.passwordHash) {
     res.status(401).json({ error: "Ungültige Anmeldedaten" });
     return;
   }
