@@ -1,1 +1,52 @@
-<p>admin works!</p>
+<div class="admin">
+  <h2>Neue Saison starten</h2>
+  <label>
+    Jahr:
+    <input type="number" [(ngModel)]="year" />
+  </label>
+  <label>
+    Name:
+    <input type="text" [(ngModel)]="name" />
+  </label>
+  <button (click)="startSeason()">Starten</button>
+
+  <h2>Spielergebnis eintragen</h2>
+  <label>
+    Match ID:
+    <input type="text" [(ngModel)]="matchId" />
+  </label>
+  <label>
+    Team1 Score:
+    <input type="number" [(ngModel)]="team1Score" />
+  </label>
+  <label>
+    Team2 Score:
+    <input type="number" [(ngModel)]="team2Score" />
+  </label>
+  <button (click)="saveResult()">Speichern</button>
+
+  <h2>Userverwaltung</h2>
+  <table class="users">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Username</th>
+        <th>Rolle</th>
+        <th>Aktion</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let u of users">
+        <td>{{ u.name }}</td>
+        <td>{{ u.username }}</td>
+        <td>
+          <select [ngModel]="u.role" (ngModelChange)="changeRole(u.id, $event)">
+            <option value="player">player</option>
+            <option value="admin">admin</option>
+          </select>
+        </td>
+        <td><button (click)="deleteUser(u.id)">Löschen</button></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
