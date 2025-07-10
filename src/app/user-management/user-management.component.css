@@ -1,0 +1,12 @@
+.user-mgmt {
+  margin: 2rem;
+}
+table {
+  width: 100%;
+  margin-top: 1rem;
+  border-collapse: collapse;
+}
+th, td {
+  border: 1px solid #ccc;
+  padding: 4px;
+}
