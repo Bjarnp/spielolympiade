@@ -5,6 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { AuthService } from './core/auth.service';
+import { NgIf } from '@angular/common';
 
 @Component({
   selector: 'app-root',
@@ -16,6 +17,7 @@ import { AuthService } from './core/auth.service';
     MatButtonModule,
     MatIconModule,
     MatMenuModule,
+    NgIf,
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
