@@ -35,7 +35,7 @@ router.get("/my-team", async (req: Request, res: Response): Promise<void> => {
         where: {
           team: {
             season: {
-              finishedAt: null,
+              isActive: true,
             },
           },
         },
