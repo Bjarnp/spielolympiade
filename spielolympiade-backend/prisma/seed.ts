@@ -1,6 +1,5 @@
 import { PrismaClient } from "@prisma/client";
 import { createHash } from "crypto";
-import bcrypt from "bcrypt";
 const prisma = new PrismaClient();
 
 function hash(pw: string): string {
@@ -8,7 +7,17 @@ function hash(pw: string): string {
 }
 
 async function main() {
-  const pw = await bcrypt.hash("test", 10);
+  await prisma.$transaction([
+    prisma.matchResult.deleteMany(),
+    prisma.match.deleteMany(),
+    prisma.teamMember.deleteMany(),
+    prisma.team.deleteMany(),
+    prisma.tournament.deleteMany(),
+    prisma.game.deleteMany(),
+    prisma.user.deleteMany(),
+    prisma.season.deleteMany(),
+  ]);
+
   const season = await prisma.season.create({
     data: {
       id: "season-2024",
