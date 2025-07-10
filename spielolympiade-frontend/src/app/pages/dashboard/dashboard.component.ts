@@ -1,11 +1,13 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
+import { MatSortModule, MatSort } from '@angular/material/sort';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatCardModule } from '@angular/material/card';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../core/auth.service';
 import { environment } from '../../../environments/environment';
@@ -21,9 +23,11 @@ const API_URL = environment.apiUrl;
     RouterLink,
     MatButtonModule,
     MatTableModule,
+    MatSortModule,
     MatFormFieldModule,
     MatInputModule,
     MatCardModule,
+    MatCheckboxModule,
     FormsModule,
   ],
   templateUrl: './dashboard.component.html',
@@ -40,6 +44,7 @@ export class DashboardComponent {
   upcomingGames: any[] = [];
   tableData: any[] = [];
   dataSource = new MatTableDataSource<any>();
+  @ViewChild(MatSort) sort!: MatSort;
   displayedColumns = ['place', 'name', 'spiele', 'siege', 'niederlagen', 'punkte'];
   seasonYear = '';
   activeGameDay = true; // optional: später dynamisch machen
@@ -55,6 +60,11 @@ export class DashboardComponent {
   team1Score = 0;
   team2Score = 0;
 
+  // Filter
+  filterMode: 'all' | 'upcoming' = 'upcoming';
+  onlyMine = false;
+  filteredGames: any[] = [];
+
   ngOnInit(): void {
     this.loadMyTeam();
     this.loadData();
@@ -67,6 +77,7 @@ export class DashboardComponent {
         this.seasonYear = this.extractYear(res.season);
         this.seasonActive = true;
         this.loadTable();
+        this.applyFilters();
       },
       error: () => {
         this.team = null;
@@ -83,6 +94,7 @@ export class DashboardComponent {
         next: (data) => {
           this.tableData = data;
           this.dataSource.data = data;
+          this.dataSource.sort = this.sort;
         },
         error: (err) => console.error('Fehler beim Laden der Tabelle', err),
       });
@@ -114,11 +126,31 @@ export class DashboardComponent {
   }
 
   buildUpcoming(): void {
-    if (!this.team) return;
+    this.upcomingGames = this.allResults.filter(
+      (r) => !r.team1Score && !r.team2Score
+    );
+    this.applyFilters();
+  }
 
-    this.upcomingGames = this.allResults
-      .filter((r) => !r.team1Score && !r.team2Score)
-      .filter((r) => r.team1Id === this.team.id || r.team2Id === this.team.id);
+  setFilter(mode: 'all' | 'upcoming'): void {
+    this.filterMode = mode;
+    this.applyFilters();
+  }
+
+  applyFilters(): void {
+    let games = [...this.allResults];
+
+    if (this.filterMode === 'upcoming') {
+      games = games.filter((g) => !g.team1Score && !g.team2Score);
+    }
+
+    if (this.onlyMine && this.team) {
+      games = games.filter(
+        (g) => g.team1Id === this.team.id || g.team2Id === this.team.id
+      );
+    }
+
+    this.filteredGames = games;
   }
 
   getTeamName(id: string): string {

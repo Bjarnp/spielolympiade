@@ -14,6 +14,8 @@ async function main() {
       id: "season-2024",
       year: 2024,
       name: "Saison 2024",
+      isActive: false,
+      finishedAt: new Date("2024-08-01"),
     },
   });
 

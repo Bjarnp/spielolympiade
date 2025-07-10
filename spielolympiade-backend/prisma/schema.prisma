@@ -52,6 +52,7 @@ model Season {
   id       String  @id @default(uuid())
   year     Int
   name     String
+  isActive Boolean  @default(false)
   finishedAt DateTime?
 
   teams       Team[]

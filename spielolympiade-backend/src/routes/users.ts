@@ -32,6 +32,13 @@ router.get("/my-team", async (req: Request, res: Response): Promise<void> => {
     where: { username },
     include: {
       teamMemberships: {
+        where: {
+          team: {
+            season: {
+              isActive: true,
+            },
+          },
+        },
         include: {
           team: {
             include: {

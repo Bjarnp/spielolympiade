@@ -1,8 +1,8 @@
 <div class="dashboard">
   <div class="info" *ngIf="!seasonActive">
     <p>
-      Die Spielolympiade beginnt bald.
-      <a routerLink="/history">Historie</a>
+      Die Spielolympiade beginnt bald!
+      <a routerLink="/history">Werfe doch ein Blick in die Historie!</a>
     </p>
     <button
       mat-raised-button
@@ -30,34 +30,34 @@
     <mat-card class="table-card">
       <mat-card-title>Spielolympiade {{ seasonYear }}</mat-card-title>
       <div class="table-wrapper">
-        <table mat-table [dataSource]="dataSource" class="season-table mat-elevation-z8">
+        <table mat-table [dataSource]="dataSource" class="season-table mat-elevation-z8" matSort>
         <ng-container matColumnDef="place">
-          <th mat-header-cell *matHeaderCellDef>Platz</th>
+          <th mat-header-cell *matHeaderCellDef mat-sort-header="place">Platz</th>
           <td mat-cell *matCellDef="let element; index as i">{{ i + 1 }}</td>
         </ng-container>
 
         <ng-container matColumnDef="name">
-          <th mat-header-cell *matHeaderCellDef>Team</th>
+          <th mat-header-cell *matHeaderCellDef mat-sort-header="name">Team</th>
           <td mat-cell *matCellDef="let element">{{ element.name }}</td>
         </ng-container>
 
         <ng-container matColumnDef="spiele">
-          <th mat-header-cell *matHeaderCellDef>Spiele</th>
+          <th mat-header-cell *matHeaderCellDef mat-sort-header="spiele">Spiele</th>
           <td mat-cell *matCellDef="let element">{{ element.spiele }}</td>
         </ng-container>
 
         <ng-container matColumnDef="siege">
-          <th mat-header-cell *matHeaderCellDef>Siege</th>
+          <th mat-header-cell *matHeaderCellDef mat-sort-header="siege">Siege</th>
           <td mat-cell *matCellDef="let element">{{ element.siege }}</td>
         </ng-container>
 
         <ng-container matColumnDef="niederlagen">
-          <th mat-header-cell *matHeaderCellDef>Niederl.</th>
+          <th mat-header-cell *matHeaderCellDef mat-sort-header="niederlagen">Niederl.</th>
           <td mat-cell *matCellDef="let element">{{ element.niederlagen }}</td>
         </ng-container>
 
         <ng-container matColumnDef="punkte">
-          <th mat-header-cell *matHeaderCellDef>Punkte</th>
+          <th mat-header-cell *matHeaderCellDef mat-sort-header="punkte">Punkte</th>
           <td mat-cell *matCellDef="let element">{{ element.points }}</td>
         </ng-container>
 
@@ -75,20 +75,27 @@
   </section>
 
   <section *ngIf="activeGameDay">
-    <h2>Heutige Ergebnisse</h2>
+    <h2>Spiele</h2>
+    <div class="filters">
+      <button mat-raised-button (click)="setFilter('all')">Alle Spiele</button>
+      <button mat-raised-button (click)="setFilter('upcoming')">
+        Noch zu spielende Spiele
+      </button>
+      <mat-checkbox [(ngModel)]="onlyMine" (change)="applyFilters()"
+        >Nur meine Spiele</mat-checkbox
+      >
+    </div>
     <ul>
-      <li *ngFor="let r of todayResults">
-        {{ getGameName(r.gameId) }}: {{ getTeamName(r.team1Id) }} ({{
-          r.team1Score
-        }}) – {{ getTeamName(r.team2Id) }} ({{ r.team2Score }})
-      </li>
-    </ul>
-
-    <h2>Kommende Spiele deines Teams</h2>
-    <ul>
-      <li *ngFor="let r of upcomingGames">
-        {{ getGameName(r.gameId) }}: {{ getTeamName(r.team1Id) }} vs
-        {{ getTeamName(r.team2Id) }}
+      <li *ngFor="let r of filteredGames">
+        <ng-container *ngIf="r.team1Score || r.team2Score; else up">
+          {{ getGameName(r.gameId) }}:
+          {{ getTeamName(r.team1Id) }} ({{ r.team1Score }}) –
+          {{ getTeamName(r.team2Id) }} ({{ r.team2Score }})
+        </ng-container>
+        <ng-template #up>
+          {{ getGameName(r.gameId) }}:
+          {{ getTeamName(r.team1Id) }} vs {{ getTeamName(r.team2Id) }}
+        </ng-template>
       </li>
     </ul>
   </section>

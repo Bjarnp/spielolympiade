@@ -39,9 +39,17 @@ router.get("/:id", async (req: Request, res: Response): Promise<void> => {
 
 router.get("/public/dashboard-data", async (_req, res) => {
   try {
-    const teams = await prisma.team.findMany();
+    const season = await prisma.season.findFirst({ where: { isActive: true } });
+
+    if (!season) {
+      return res.json({ teams: [], games: [], results: [] });
+    }
+
+    const teams = await prisma.team.findMany({ where: { seasonId: season.id } });
     const games = await prisma.game.findMany();
-    const results = await prisma.matchResult.findMany();
+    const results = await prisma.matchResult.findMany({
+      where: { match: { tournament: { seasonId: season.id } } },
+    });
 
     res.json({ teams, games, results });
   } catch (err) {
@@ -167,7 +175,7 @@ router.post(
       return;
     }
 
-    const season = await prisma.season.create({ data: { year, name } });
+    const season = await prisma.season.create({ data: { year, name, isActive: true } });
     await prisma.tournament.create({
       data: { seasonId: season.id, system: "round_robin" },
     });
@@ -255,7 +263,7 @@ router.post(
 
     const season = await prisma.season.update({
       where: { id },
-      data: { finishedAt: new Date() },
+      data: { finishedAt: new Date(), isActive: false },
     });
 
     res.json(season);
