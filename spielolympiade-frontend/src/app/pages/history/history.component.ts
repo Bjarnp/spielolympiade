@@ -1,5 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 
@@ -8,7 +9,7 @@ const API_URL = environment.apiUrl;
 @Component({
   selector: 'app-history',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './history.component.html',
   styleUrls: ['./history.component.scss']
 })
@@ -17,6 +18,10 @@ export class HistoryComponent {
 
   seasons: any[] = [];
   selected: any = null;
+  gameFilter = 'all';
+  teamFilter = 'all';
+  gameOptions: any[] = [];
+  teamOptions: any[] = [];
 
   ngOnInit(): void {
     this.loadSeasons();
@@ -31,10 +36,33 @@ export class HistoryComponent {
   selectSeason(id: string): void {
     this.http
       .get<any>(`${API_URL}/seasons/${id}/history`)
-      .subscribe((s) => (this.selected = s));
+      .subscribe((s) => {
+        this.selected = s;
+        const matches = this.selected.tournaments[0]?.matches || [];
+        this.gameOptions = Array.from(
+          new Map(matches.map((m: any) => [m.game.id, m.game])).values()
+        );
+        this.teamOptions = this.selected.teams;
+        this.gameFilter = 'all';
+        this.teamFilter = 'all';
+      });
   }
 
   getMemberNames(members: any[]): string {
     return members.map((m: any) => m.user.name).join(', ');
+  }
+
+  get filteredMatches(): any[] {
+    if (!this.selected) return [];
+    let matches = this.selected.tournaments[0]?.matches || [];
+    if (this.gameFilter !== 'all') {
+      matches = matches.filter((m: any) => m.game.id === this.gameFilter);
+    }
+    if (this.teamFilter !== 'all') {
+      matches = matches.filter(
+        (m: any) => m.team1Id === this.teamFilter || m.team2Id === this.teamFilter
+      );
+    }
+    return matches;
   }
 }
