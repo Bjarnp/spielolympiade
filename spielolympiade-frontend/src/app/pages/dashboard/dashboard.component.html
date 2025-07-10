@@ -8,20 +8,10 @@
       mat-raised-button
       color="accent"
       *ngIf="auth.getUser()?.role === 'admin'"
-      (click)="toggleStart()"
+      routerLink="/start-season"
     >
       Neue Saison starten
     </button>
-
-    <div *ngIf="showStartForm" class="start-form">
-      <mat-form-field>
-        <input matInput type="number" [(ngModel)]="newYear" placeholder="Jahr" />
-      </mat-form-field>
-      <mat-form-field>
-        <input matInput [(ngModel)]="newName" placeholder="Name" />
-      </mat-form-field>
-      <button mat-raised-button color="primary" (click)="startSeason()">Starten</button>
-    </div>
   </div>
 
   <ng-container *ngIf="seasonActive">
@@ -77,42 +67,27 @@
   <section *ngIf="activeGameDay">
     <h2>Spiele</h2>
     <div class="filters">
-      <button mat-raised-button (click)="setFilter('all')">Alle Spiele</button>
-      <button mat-raised-button (click)="setFilter('upcoming')">
-        Noch zu spielende Spiele
-      </button>
-      <mat-checkbox [(ngModel)]="onlyMine" (change)="applyFilters()"
-        >Nur meine Spiele</mat-checkbox
-      >
+      <button mat-raised-button (click)="setFilter('all')">Alle Begegnungen</button>
+      <button mat-raised-button (click)="setFilter('open')">Offen</button>
+      <button mat-raised-button (click)="setFilter('played')">Gespielt</button>
+      <mat-checkbox [(ngModel)]="onlyMine" (change)="applyFilters()">Nur meine Spiele</mat-checkbox>
     </div>
     <ul>
       <li *ngFor="let r of filteredGames">
-        <ng-container *ngIf="r.team1Score || r.team2Score; else up">
-          {{ getGameName(r.gameId) }}:
-          {{ getTeamName(r.team1Id) }} ({{ r.team1Score }}) –
-          {{ getTeamName(r.team2Id) }} ({{ r.team2Score }})
-        </ng-container>
-        <ng-template #up>
-          {{ getGameName(r.gameId) }}:
-          {{ getTeamName(r.team1Id) }} vs {{ getTeamName(r.team2Id) }}
-        </ng-template>
+        {{ getGameName(r.gameId) }} |
+        {{ getTeamName(r.team1Id) }}
+        <input *ngIf="auth.getUser()?.role === 'admin'" type="number" [(ngModel)]="r.team1Score" style="width:40px" />
+        <span *ngIf="auth.getUser()?.role !== 'admin'">({{ r.team1Score ?? '-' }})</span>
+        –
+        {{ getTeamName(r.team2Id) }}
+        <input *ngIf="auth.getUser()?.role === 'admin'" type="number" [(ngModel)]="r.team2Score" style="width:40px" />
+        <span *ngIf="auth.getUser()?.role !== 'admin'">({{ r.team2Score ?? '-' }})</span>
+        <button *ngIf="auth.getUser()?.role === 'admin'" mat-button color="accent" (click)="saveResultFor(r)">Speichern</button>
       </li>
     </ul>
   </section>
 
-  <div class="result-form" *ngIf="auth.getUser()?.role === 'admin'">
-    <h3>Ergebnis eintragen</h3>
-    <mat-form-field>
-      <input matInput [(ngModel)]="matchId" placeholder="Match ID" />
-    </mat-form-field>
-    <mat-form-field>
-      <input matInput type="number" [(ngModel)]="team1Score" placeholder="Team1 Score" />
-    </mat-form-field>
-    <mat-form-field>
-      <input matInput type="number" [(ngModel)]="team2Score" placeholder="Team2 Score" />
-    </mat-form-field>
-    <button mat-raised-button color="accent" (click)="saveResult()">Speichern</button>
-  </div>
+
 
   </ng-container>
 </div>
