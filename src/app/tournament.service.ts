@@ -5,7 +5,8 @@ import { map, switchMap } from 'rxjs/operators';
 import { Team } from './models/team.model';
 import { Player } from './models/player.model';
 import { Game } from './models/game.model';
-import { Result} from './models/result.model'
+import { Result } from './models/result.model'
+import { Tournament } from './models/tournament.model';
 
 
 @Injectable({
@@ -15,6 +16,7 @@ export class TournamentService {
 
   teams: Team[] = [];
   games: Game[] = [];
+  currentTournament: Tournament | null = null;
 
   private apiUrl = 'http://localhost:3000';  // URL zu deinem JSON-Server
   private httpOptions = {
@@ -22,6 +24,27 @@ export class TournamentService {
   };
 
   constructor(private http: HttpClient) { }
+
+  // Tournament
+  createTournament(t: Tournament): Observable<Tournament> {
+    this.currentTournament = t;
+    localStorage.setItem('currentTournament', JSON.stringify(t));
+    return new Observable<Tournament>(obs => {
+      obs.next(t);
+      obs.complete();
+    });
+  }
+
+  getCurrentTournament(): Observable<Tournament | null> {
+    if (!this.currentTournament) {
+      const raw = localStorage.getItem('currentTournament');
+      this.currentTournament = raw ? JSON.parse(raw) as Tournament : null;
+    }
+    return new Observable<Tournament | null>(obs => {
+      obs.next(this.currentTournament);
+      obs.complete();
+    });
+  }
 
   // Teams
   getTeams(): Observable<Team[]> {

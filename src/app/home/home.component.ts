@@ -17,6 +17,10 @@ export class HomeComponent implements OnInit {
 
   teams: Team[] = [];
   games: Game[] = [];
+  results: Result[] = [];
+  filter: 'all' | 'open' | 'completed' = 'all';
+  showOwn = false;
+  currentTeamId = '';
   ergebnis: string[] = ['Gewonnen', 'Verloren'];
 
   newResult: Result = {
@@ -33,6 +37,7 @@ export class HomeComponent implements OnInit {
   ngOnInit(): void {
     this.loadTeams();
     this.loadGames();
+    this.loadResults();
   }
 
  
@@ -55,6 +60,24 @@ export class HomeComponent implements OnInit {
     this.tournamentService.getGames().subscribe(games => {
       this.games = games;
     });
+  }
+
+  loadResults(): void {
+    this.tournamentService.getResults().subscribe(r => this.results = r);
+  }
+
+  get filteredResults(): Result[] {
+    let res = this.results;
+    if (this.showOwn && this.currentTeamId) {
+      res = res.filter(r => r.team1Id === this.currentTeamId || r.team2Id === this.currentTeamId);
+    }
+    if (this.filter === 'completed') {
+      return res; // all stored results are completed
+    }
+    if (this.filter === 'open') {
+      return []; // no open matches handled
+    }
+    return res;
   }
 
   addResult(): void {

@@ -1,4 +1,5 @@
 <div class="container mt-4">
+  <a routerLink="/new-season" class="btn btn-success mb-3">Neue Saison starten</a>
   <h1 class="text-center mb-4">Tabelle</h1>
   <table class="table table-hover table-bordered table-striped text-center mt-4">
     <thead class="table-dark">
@@ -32,6 +33,25 @@
       </tr>
     </tbody>
   </table>
+
+  <div class="my-3">
+    <button class="btn btn-outline-secondary me-2" (click)="filter='all'">Alle</button>
+    <button class="btn btn-outline-secondary me-2" (click)="filter='open'">Offen</button>
+    <button class="btn btn-outline-secondary me-2" (click)="filter='completed'">Beendet</button>
+    <div class="form-check d-inline-block ms-3">
+      <input type="checkbox" id="own" class="form-check-input" [(ngModel)]="showOwn">
+      <label class="form-check-label" for="own">Nur eigene</label>
+    </div>
+  </div>
+
+  <ul class="list-group mb-4">
+    <li class="list-group-item" *ngFor="let r of filteredResults">
+      {{ games.find(g => g.id === r.gameId)?.name }} | 
+      {{ teams.find(t => t.id === r.team1Id)?.name }} 
+      {{ r.team1Score }} : {{ r.team2Score }} 
+      {{ teams.find(t => t.id === r.team2Id)?.name }}
+    </li>
+  </ul>
 
   <!-- Formular zum Eingeben eines neuen Results -->
     <div class="mt-3">
