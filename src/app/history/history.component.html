@@ -1,42 +1,26 @@
 <div class="container mt-4">
   <h1 class="text-center mb-4">Historie</h1>
 
-  <!-- Filter für Spiele und Teams -->
   <div class="row mb-4">
     <div class="col-md-6">
-      <select id="gameFilter" class="form-control" [(ngModel)]="selectedGameId">
+      <select id="gameFilter" class="form-select" [(ngModel)]="selectedGameId">
         <option value="">Alle Spiele</option>
         <option *ngFor="let game of games" [value]="game.id">{{ game.name }}</option>
       </select>
     </div>
     <div class="col-md-6">
-      <select id="teamFilter" class="form-control" [(ngModel)]="selectedTeamId">
+      <select id="teamFilter" class="form-select" [(ngModel)]="selectedTeamId">
         <option value="">Alle Teams</option>
         <option *ngFor="let team of teams" [value]="team.id">{{ team.name }}</option>
       </select>
     </div>
   </div>
 
-  <table class="table table-hover table-bordered table-striped text-center mt-4">
-    <thead class="table-dark">
-      <tr>
-        <th>Spiel</th>
-        <th>Team 1</th>
-        <th>Team 2</th>
-        <th>Gewinner</th>
-        <th>Aktionen</th> <!-- Spalte für Aktionen hinzufügen -->
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let result of filteredResults">
-        <td>{{ getGameName(result.gameId) }}</td>
-        <td>{{ getTeamName(result.team1Id) }}</td>
-        <td>{{ getTeamName(result.team2Id) }}</td>
-        <td>{{ getWinner(result) }}</td>
-        <td>
-          <button class="btn btn-danger btn-sm" (click)="deleteResult(result.id)">Löschen</button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+  <ul class="list-group">
+    <li class="list-group-item d-flex justify-content-between align-items-center" *ngFor="let result of filteredResults">
+      <span>{{ getGameName(result.gameId) }}</span>
+      <span class="fw-bold">{{ formatResult(result) }}</span>
+      <button class="btn btn-danger btn-sm" (click)="deleteResult(result.id)">Löschen</button>
+    </li>
+  </ul>
 </div>

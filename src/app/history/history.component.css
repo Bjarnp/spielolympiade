@@ -1,0 +1,8 @@
+.list-group-item span:first-child {
+  flex: 1;
+}
+
+.list-group-item span.fw-bold {
+  flex: 2;
+  text-align: center;
+}

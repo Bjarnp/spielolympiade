@@ -73,6 +73,12 @@ export class HistoryComponent implements OnInit {
       : this.getTeamName(result.team2Id);
   }
 
+  formatResult(result: Result): string {
+    const team1 = this.getTeamName(result.team1Id);
+    const team2 = this.getTeamName(result.team2Id);
+    return `${team1} ${result.team1Score}:${result.team2Score} ${team2}`;
+  }
+
   deleteResult(resultId: string): void {
     const resultToDelete = this.results.find(result => result.id === resultId);
     if (resultToDelete) {
