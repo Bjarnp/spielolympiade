@@ -13,14 +13,19 @@ const API_URL = environment.apiUrl;
 export class AuthService {
   private tokenKey = 'token';
   private apiUrl = `${API_URL}/auth`;
+  private userUrl = `${API_URL}/users`;
 
   constructor(private http: HttpClient, private router: Router) {}
 
   login(username: string, password: string) {
-    return this.http.post<{ token: string }>(`${this.apiUrl}/login`, {
+    return this.http.post<{ token: string; mustChangePassword: boolean }>(`${this.apiUrl}/login`, {
       username,
       password,
     });
+  }
+
+  changePassword(password: string) {
+    return this.http.post(`${this.userUrl}/change-password`, { password });
   }
 
   saveToken(token: string): void {

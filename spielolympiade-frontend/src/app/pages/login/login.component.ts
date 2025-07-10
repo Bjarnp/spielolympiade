@@ -28,7 +28,11 @@ export class LoginComponent {
     this.auth.login(this.username, this.password).subscribe({
       next: (res) => {
         this.auth.saveToken(res.token);
-        this.router.navigate(['/dashboard']);
+        if (res.mustChangePassword) {
+          this.router.navigate(['/change-password']);
+        } else {
+          this.router.navigate(['/dashboard']);
+        }
       },
       error: (err) => {
         console.error(err);

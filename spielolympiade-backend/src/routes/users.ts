@@ -3,6 +3,8 @@ import { PrismaClient } from "@prisma/client";
 import { createHash } from "crypto";
 import { authorizeRole } from "../middleware/auth";
 
+const DEFAULT_PASSWORD = "changeme";
+
 const router = express.Router();
 const prisma = new PrismaClient();
 
@@ -124,13 +126,20 @@ router.post(
   authorizeRole("admin"),
   async (req: Request, res: Response): Promise<void> => {
     const { name, username, password, role } = req.body;
-    if (!name || !username || !password) {
-      res.status(400).json({ error: "name, username, password erforderlich" });
+    if (!name || !username) {
+      res.status(400).json({ error: "name und username erforderlich" });
       return;
     }
-    const hash = createHash('sha256').update(password).digest('hex');
+    const pw = password || DEFAULT_PASSWORD;
+    const hash = createHash("sha256").update(pw).digest("hex");
     const user = await prisma.user.create({
-      data: { name, username, passwordHash: hash, role: role || "player" },
+      data: {
+        name,
+        username,
+        passwordHash: hash,
+        role: role || "player",
+        mustChangePassword: password ? false : true,
+      },
     });
     res.status(201).json(user);
   }
@@ -147,7 +156,10 @@ router.put(
     if (name) data.name = name;
     if (username) data.username = username;
     if (role) data.role = role;
-    if (password) data.passwordHash = createHash('sha256').update(password).digest('hex');
+    if (password) {
+      data.passwordHash = createHash("sha256").update(password).digest("hex");
+      data.mustChangePassword = false;
+    }
 
     try {
       const user = await prisma.user.update({ where: { id }, data });
@@ -166,6 +178,44 @@ router.delete(
     const { id } = req.params;
     try {
       await prisma.user.delete({ where: { id } });
+      res.sendStatus(204);
+    } catch {
+      res.status(404).json({ error: "User nicht gefunden" });
+    }
+  }
+);
+
+// Passwort des eingeloggten Nutzers ändern
+router.post(
+  "/change-password",
+  async (req: Request, res: Response): Promise<void> => {
+    const { id } = getUser(req);
+    const { password } = req.body;
+    if (!password) {
+      res.status(400).json({ error: "password erforderlich" });
+      return;
+    }
+    const hash = createHash("sha256").update(password).digest("hex");
+    await prisma.user.update({
+      where: { id },
+      data: { passwordHash: hash, mustChangePassword: false },
+    });
+    res.sendStatus(204);
+  }
+);
+
+// Passwort eines Nutzers zurücksetzen
+router.post(
+  "/:id/reset-password",
+  authorizeRole("admin"),
+  async (req: Request, res: Response): Promise<void> => {
+    const { id } = req.params;
+    const hash = createHash("sha256").update(DEFAULT_PASSWORD).digest("hex");
+    try {
+      await prisma.user.update({
+        where: { id },
+        data: { passwordHash: hash, mustChangePassword: true },
+      });
       res.sendStatus(204);
     } catch {
       res.status(404).json({ error: "User nicht gefunden" });

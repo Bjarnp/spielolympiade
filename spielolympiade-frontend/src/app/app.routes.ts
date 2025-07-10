@@ -43,6 +43,13 @@ export const routes: Routes = [
           import('./pages/admin/admin.component').then((m) => m.AdminComponent),
       },
       {
+        path: 'change-password',
+        loadComponent: () =>
+          import('./pages/change-password/change-password.component').then(
+            (m) => m.ChangePasswordComponent
+          ),
+      },
+      {
         path: 'start-season',
         loadComponent: () =>
           import('./pages/start-season/start-season.component').then(

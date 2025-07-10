@@ -35,7 +35,7 @@ router.post("/login", async (req: Request, res: Response) => {
     { expiresIn: "12h" }
   );
 
-  res.json({ token });
+  res.json({ token, mustChangePassword: user.mustChangePassword });
 });
 
 export default router;

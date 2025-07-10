@@ -17,6 +17,9 @@ export class AdminComponent {
   http = inject(HttpClient);
 
   users: any[] = [];
+  newName = '';
+  newUsername = '';
+  newRole: 'player' | 'admin' = 'player';
 
   ngOnInit(): void {
     this.loadUsers();
@@ -34,5 +37,21 @@ export class AdminComponent {
 
   deleteUser(id: string): void {
     this.http.delete(`${API_URL}/users/${id}`).subscribe(() => this.loadUsers());
+  }
+
+  createUser(): void {
+    const data = { name: this.newName, username: this.newUsername, role: this.newRole };
+    this.http.post(`${API_URL}/users`, data).subscribe(() => {
+      this.newName = '';
+      this.newUsername = '';
+      this.newRole = 'player';
+      this.loadUsers();
+    });
+  }
+
+  resetPassword(id: string): void {
+    this.http
+      .post(`${API_URL}/users/${id}/reset-password`, {})
+      .subscribe(() => this.loadUsers());
   }
 }
