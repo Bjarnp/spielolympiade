@@ -106,11 +106,11 @@ router.get("/:id/table", async (req: Request, res: Response): Promise<void> => {
     select: { id: true, team1Id: true, team2Id: true, winnerId: true },
   });
 
-  const table = season.teams.map((team) => {
+  const table = season.teams.map((team: any) => {
     const teamMatches = matches.filter(
-      (m) => m.team1Id === team.id || m.team2Id === team.id
+      (m: any) => m.team1Id === team.id || m.team2Id === team.id
     );
-    const wins = teamMatches.filter((m) => m.winnerId === team.id).length;
+    const wins = teamMatches.filter((m: any) => m.winnerId === team.id).length;
     const games = teamMatches.length;
     const losses = games - wins;
     const points = wins; // 1 Punkt pro Sieg
@@ -124,7 +124,7 @@ router.get("/:id/table", async (req: Request, res: Response): Promise<void> => {
     };
   });
 
-  table.sort((a, b) => b.points - a.points);
+  table.sort((a: any, b: any) => b.points - a.points);
 
   res.json(table);
 });
@@ -179,6 +179,70 @@ router.post(
     await prisma.tournament.create({
       data: { seasonId: season.id, system: "round_robin" },
     });
+
+    res.status(201).json(season);
+  }
+);
+
+// 🏁 POST /seasons/setup – Saison inkl. Teams & Matches anlegen
+router.post(
+  "/setup",
+  authorizeRole("admin"),
+  async (req: Request, res: Response): Promise<void> => {
+    const { year, name, teams, gameIds, system } = req.body;
+
+    if (
+      !year ||
+      !name ||
+      !Array.isArray(teams) ||
+      teams.length === 0 ||
+      !Array.isArray(gameIds) ||
+      gameIds.length === 0
+    ) {
+      res
+        .status(400)
+        .json({ error: "year, name, teams und gameIds erforderlich" });
+      return;
+    }
+
+    const exists = await prisma.season.findFirst({ where: { year } });
+    if (exists) {
+      res.status(400).json({ error: "Saison existiert bereits" });
+      return;
+    }
+
+    const season = await prisma.season.create({ data: { year, name } });
+    const tournament = await prisma.tournament.create({
+      data: { seasonId: season.id, system: system || "round_robin" },
+    });
+
+    const createdTeams = [] as any[];
+    for (const t of teams) {
+      const team = await prisma.team.create({
+        data: { name: t.name, seasonId: season.id },
+      });
+      createdTeams.push(team);
+      for (const userId of t.playerIds) {
+        await prisma.teamMember.create({ data: { teamId: team.id, userId } });
+      }
+    }
+
+    if (system === "round_robin" || !system) {
+      for (const gameId of gameIds) {
+        for (let i = 0; i < createdTeams.length; i++) {
+          for (let j = i + 1; j < createdTeams.length; j++) {
+            await prisma.match.create({
+              data: {
+                tournamentId: tournament.id,
+                gameId,
+                team1Id: createdTeams[i].id,
+                team2Id: createdTeams[j].id,
+              },
+            });
+          }
+        }
+      }
+    }
 
     res.status(201).json(season);
   }
