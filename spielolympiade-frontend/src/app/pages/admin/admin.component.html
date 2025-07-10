@@ -1,5 +1,14 @@
 <div class="admin">
   <h2>Userverwaltung</h2>
+  <form (ngSubmit)="createUser()" #form="ngForm" class="new-user">
+    <input name="name" [(ngModel)]="newName" placeholder="Name" required />
+    <input name="username" [(ngModel)]="newUsername" placeholder="Username" required />
+    <select name="role" [(ngModel)]="newRole">
+      <option value="player">player</option>
+      <option value="admin">admin</option>
+    </select>
+    <button type="submit" [disabled]="!form.form.valid">Hinzufügen</button>
+  </form>
   <table class="users">
     <thead>
       <tr>
@@ -19,7 +28,10 @@
             <option value="admin">admin</option>
           </select>
         </td>
-        <td><button (click)="deleteUser(u.id)">Löschen</button></td>
+        <td>
+          <button (click)="resetPassword(u.id)">Passwort zurücksetzen</button>
+          <button (click)="deleteUser(u.id)">Löschen</button>
+        </td>
       </tr>
     </tbody>
   </table>

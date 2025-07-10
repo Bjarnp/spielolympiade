@@ -3,6 +3,10 @@ div.admin {
   flex-direction: column;
   gap: 0.5rem;
   max-width: 400px;
+  form.new-user {
+    display: flex;
+    gap: 0.25rem;
+  }
   table.users {
     width: 100%;
     border-collapse: collapse;
