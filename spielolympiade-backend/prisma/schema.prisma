@@ -12,6 +12,7 @@ model User {
   name         String
   username     String   @unique
   passwordHash String
+  mustChangePassword Boolean @default(false)
   role         Role
   createdAt    DateTime @default(now())
 
