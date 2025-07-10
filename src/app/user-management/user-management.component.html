@@ -1,0 +1,19 @@
+<div class="user-mgmt">
+  <h2>Userverwaltung</h2>
+  <form (ngSubmit)="addUser()" #f="ngForm">
+    <input type="text" name="username" [(ngModel)]="newUsername" placeholder="Benutzername" required>
+    <select name="role" [(ngModel)]="newRole">
+      <option value="user">User</option>
+      <option value="admin">Admin</option>
+    </select>
+    <button type="submit">Erstellen</button>
+  </form>
+  <table>
+    <tr><th>Name</th><th>Rolle</th><th>Aktion</th></tr>
+    <tr *ngFor="let u of users">
+      <td>{{u.username}}</td>
+      <td>{{u.role}}</td>
+      <td><button (click)="resetPassword(u)">Passwort zurücksetzen</button></td>
+    </tr>
+  </table>
+</div>

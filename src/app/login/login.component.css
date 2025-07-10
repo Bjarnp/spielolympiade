@@ -1,0 +1,9 @@
+.login-container {
+  width: 300px;
+  margin: 2rem auto;
+  display: flex;
+  flex-direction: column;
+}
+.error {
+  color: red;
+}

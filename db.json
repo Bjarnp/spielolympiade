@@ -501,5 +501,8 @@
       "team1Score": "1",
       "team2Score": "0"
     }
+    ],
+  "users": [
+    {"id": "u1", "username": "admin", "password": "start", "role": "admin", "needsPasswordChange": false}
   ]
 }
