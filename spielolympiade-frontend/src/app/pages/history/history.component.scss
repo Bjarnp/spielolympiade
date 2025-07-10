@@ -5,3 +5,27 @@ ul {
     margin-bottom: 0.5rem;
   }
 }
+
+.filters {
+  margin-bottom: 1rem;
+  display: flex;
+  gap: 1rem;
+  label {
+    display: flex;
+    flex-direction: column;
+    font-weight: bold;
+  }
+}
+
+.result-table {
+  width: 100%;
+  border-collapse: collapse;
+  th,
+  td {
+    padding: 0.25rem 0.5rem;
+    border-bottom: 1px solid #ccc;
+  }
+  th {
+    text-align: left;
+  }
+}

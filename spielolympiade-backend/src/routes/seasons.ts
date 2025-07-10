@@ -72,7 +72,15 @@ router.get(
         },
         tournaments: {
           include: {
-            matches: { include: { game: true, results: true, winner: true } },
+            matches: {
+              include: {
+                game: true,
+                results: true,
+                winner: true,
+                team1: true,
+                team2: true,
+              },
+            },
           },
         },
       },

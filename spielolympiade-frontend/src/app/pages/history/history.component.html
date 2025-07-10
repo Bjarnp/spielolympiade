@@ -17,15 +17,42 @@
     </ul>
 
     <h4>Ergebnisse</h4>
-    <ul>
-      <li *ngFor="let m of selected.tournaments[0]?.matches">
-        {{ m.game.name }}:
-        {{ m.team1Id }} vs {{ m.team2Id }} -
-        <ng-container *ngIf="m.results.length">
-          {{ m.results[0].score }} : {{ m.results[1].score }}
-        </ng-container>
-        <ng-container *ngIf="!m.results.length">noch offen</ng-container>
-      </li>
-    </ul>
+    <div class="filters">
+      <label>
+        Spiel:
+        <select [(ngModel)]="gameFilter">
+          <option value="all">Alle</option>
+          <option *ngFor="let g of gameOptions" [value]="g.id">{{ g.name }}</option>
+        </select>
+      </label>
+      <label>
+        Team:
+        <select [(ngModel)]="teamFilter">
+          <option value="all">Alle</option>
+          <option *ngFor="let t of teamOptions" [value]="t.id">{{ t.name }}</option>
+        </select>
+      </label>
+    </div>
+    <table class="result-table">
+      <thead>
+        <tr>
+          <th>Spiel</th>
+          <th>Match</th>
+          <th>Ergebnis</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let m of filteredMatches">
+          <td>{{ m.game.name }}</td>
+          <td>{{ m.team1.name }} vs {{ m.team2.name }}</td>
+          <td>
+            <ng-container *ngIf="m.results.length; else open">
+              {{ m.team1.name }} {{ m.results[0].score }} : {{ m.results[1].score }} {{ m.team2.name }}
+            </ng-container>
+            <ng-template #open>noch offen</ng-template>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </section>
 </div>
