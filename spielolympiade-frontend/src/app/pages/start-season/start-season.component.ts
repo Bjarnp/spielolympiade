@@ -74,9 +74,16 @@ export class StartSeasonComponent {
     for (let i = 0; i < shuffled.length; i += 2) {
       const members = shuffled.slice(i, i + 2);
       this.teams.push({
-        name: 'Team ' + (i / 2 + 1),
+        name: 'Team ' + (this.teams.length + 1),
         playerIds: members.map((m) => m.id),
       });
+    }
+    if (
+      this.teams.length > 1 &&
+      this.teams[this.teams.length - 1].playerIds.length === 1
+    ) {
+      const last = this.teams.pop();
+      this.teams[this.teams.length - 1].playerIds.push(last!.playerIds[0]);
     }
   }
 

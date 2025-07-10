@@ -50,18 +50,10 @@ export class DashboardComponent {
   activeGameDay = true; // optional: später dynamisch machen
   seasonActive = false;
 
-  // Saison starten
-  newYear = new Date().getFullYear();
-  newName = 'Spielolympiade ' + this.newYear;
-  showStartForm = false;
-
-  // Ergebnis eintragen
-  matchId = '';
-  team1Score = 0;
-  team2Score = 0;
+  // Ergebnis eintragen direkt in Liste
 
   // Filter
-  filterMode: 'all' | 'upcoming' = 'upcoming';
+  filterMode: 'all' | 'open' | 'played' = 'open';
   onlyMine = false;
   filteredGames: any[] = [];
 
@@ -127,12 +119,12 @@ export class DashboardComponent {
 
   buildUpcoming(): void {
     this.upcomingGames = this.allResults.filter(
-      (r) => !r.team1Score && !r.team2Score
+      (r) => r.team1Score == null && r.team2Score == null
     );
     this.applyFilters();
   }
 
-  setFilter(mode: 'all' | 'upcoming'): void {
+  setFilter(mode: 'all' | 'open' | 'played'): void {
     this.filterMode = mode;
     this.applyFilters();
   }
@@ -140,8 +132,10 @@ export class DashboardComponent {
   applyFilters(): void {
     let games = [...this.allResults];
 
-    if (this.filterMode === 'upcoming') {
-      games = games.filter((g) => !g.team1Score && !g.team2Score);
+    if (this.filterMode === 'open') {
+      games = games.filter((g) => g.team1Score == null && g.team2Score == null);
+    } else if (this.filterMode === 'played') {
+      games = games.filter((g) => g.team1Score != null && g.team2Score != null);
     }
 
     if (this.onlyMine && this.team) {
@@ -161,34 +155,13 @@ export class DashboardComponent {
     return this.allGames.find((g) => g.id === id)?.name ?? id;
   }
 
-  toggleStart(): void {
-    this.showStartForm = !this.showStartForm;
-  }
-
-  startSeason(): void {
+  saveResultFor(m: any): void {
     this.http
-      .post(`${API_URL}/seasons/start`, {
-        year: this.newYear,
-        name: this.newName,
+      .put(`${API_URL}/matches/${m.id}/result`, {
+        team1Score: m.team1Score,
+        team2Score: m.team2Score,
       })
       .subscribe(() => {
-        this.showStartForm = false;
-        this.loadMyTeam();
-        this.loadData();
-      });
-  }
-
-  saveResult(): void {
-    if (!this.matchId) return;
-    this.http
-      .put(`${API_URL}/matches/${this.matchId}/result`, {
-        team1Score: this.team1Score,
-        team2Score: this.team2Score,
-      })
-      .subscribe(() => {
-        this.matchId = '';
-        this.team1Score = 0;
-        this.team2Score = 0;
         this.loadData();
         this.loadTable();
       });

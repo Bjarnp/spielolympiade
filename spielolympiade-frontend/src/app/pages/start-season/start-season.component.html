@@ -16,7 +16,8 @@
     <h3>2. Teams erstellen</h3>
     <button mat-button (click)="generateTeams()">Zufallsgenerator</button>
     <div *ngFor="let t of teams">
-      {{ t.name }} - {{ t.playerIds.map(getPlayerName).join(', ') }}
+      <input [(ngModel)]="t.name" placeholder="Teamname" /> -
+      {{ t.playerIds.map(getPlayerName).join(', ') }}
     </div>
     <h4>Manuell hinzufügen</h4>
     <input [(ngModel)]="newTeamName" placeholder="Teamname" />
