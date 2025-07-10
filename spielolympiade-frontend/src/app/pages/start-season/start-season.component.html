@@ -1,0 +1,64 @@
+<div class="start-season">
+  <h2>Neue Spielolympiade starten</h2>
+
+  <div *ngIf="step === 1">
+    <h3>1. Spieler auswählen</h3>
+    <div *ngFor="let p of players">
+      <label>
+        <input type="checkbox" (change)="togglePlayer(p, $event)" />
+        {{ p.name }}
+      </label>
+    </div>
+    <button mat-raised-button color="primary" (click)="next()">Weiter</button>
+  </div>
+
+  <div *ngIf="step === 2">
+    <h3>2. Teams erstellen</h3>
+    <button mat-button (click)="generateTeams()">Zufallsgenerator</button>
+    <div *ngFor="let t of teams">
+      {{ t.name }} - {{ t.playerIds.map(getPlayerName).join(', ') }}
+    </div>
+    <h4>Manuell hinzufügen</h4>
+    <input [(ngModel)]="newTeamName" placeholder="Teamname" />
+    <select multiple [(ngModel)]="newTeamPlayers">
+      <option *ngFor="let p of players" [value]="p.id">{{ p.name }}</option>
+    </select>
+    <button mat-button (click)="addTeam()">Hinzufügen</button>
+    <br />
+    <button mat-raised-button (click)="prev()">Zurück</button>
+    <button mat-raised-button color="primary" (click)="next()">Weiter</button>
+  </div>
+
+  <div *ngIf="step === 3">
+    <h3>3. Spiele auswählen</h3>
+    <div *ngFor="let g of games">
+      <label>
+        <input type="checkbox" (change)="toggleGame(g.id, $event)" />
+        {{ g.name }}
+      </label>
+    </div>
+    <h3>Turnierform</h3>
+    <select [(ngModel)]="system">
+      <option value="round_robin">Jeder gegen Jeden</option>
+      <option value="single_elim">K.O.</option>
+      <option value="double_elim">Double K.O.</option>
+    </select>
+    <br />
+    <button mat-raised-button (click)="prev()">Zurück</button>
+    <button mat-raised-button color="primary" (click)="next()">Weiter</button>
+  </div>
+
+  <div *ngIf="step === 4">
+    <h3>4. Übersicht</h3>
+    <p>{{ name }} ({{ year }})</p>
+    <ul>
+      <li *ngFor="let t of teams">
+        {{ t.name }} - {{ t.playerIds.map(getPlayerName).join(', ') }}
+      </li>
+    </ul>
+    <p>Spiele: {{ selectedGameIds.map(getGameName).join(', ') }}</p>
+    <p>System: {{ system }}</p>
+    <button mat-raised-button (click)="prev()">Zurück</button>
+    <button mat-raised-button color="accent" (click)="start()">Spielolympiade starten</button>
+  </div>
+</div>

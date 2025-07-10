@@ -42,6 +42,13 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./pages/admin/admin.component').then((m) => m.AdminComponent),
       },
+      {
+        path: 'start-season',
+        loadComponent: () =>
+          import('./pages/start-season/start-season.component').then(
+            (m) => m.StartSeasonComponent
+          ),
+      },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
     ],
   },
