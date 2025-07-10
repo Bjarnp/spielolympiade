@@ -6,6 +6,7 @@ import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatCardModule } from '@angular/material/card';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../core/auth.service';
 import { environment } from '../../../environments/environment';
@@ -24,6 +25,7 @@ const API_URL = environment.apiUrl;
     MatFormFieldModule,
     MatInputModule,
     MatCardModule,
+    MatCheckboxModule,
     FormsModule,
   ],
   templateUrl: './dashboard.component.html',
@@ -55,6 +57,11 @@ export class DashboardComponent {
   team1Score = 0;
   team2Score = 0;
 
+  // Filter
+  filterMode: 'all' | 'upcoming' = 'upcoming';
+  onlyMine = false;
+  filteredGames: any[] = [];
+
   ngOnInit(): void {
     this.loadMyTeam();
     this.loadData();
@@ -67,6 +74,7 @@ export class DashboardComponent {
         this.seasonYear = this.extractYear(res.season);
         this.seasonActive = true;
         this.loadTable();
+        this.applyFilters();
       },
       error: () => {
         this.team = null;
@@ -114,11 +122,31 @@ export class DashboardComponent {
   }
 
   buildUpcoming(): void {
-    if (!this.team) return;
+    this.upcomingGames = this.allResults.filter(
+      (r) => !r.team1Score && !r.team2Score
+    );
+    this.applyFilters();
+  }
 
-    this.upcomingGames = this.allResults
-      .filter((r) => !r.team1Score && !r.team2Score)
-      .filter((r) => r.team1Id === this.team.id || r.team2Id === this.team.id);
+  setFilter(mode: 'all' | 'upcoming'): void {
+    this.filterMode = mode;
+    this.applyFilters();
+  }
+
+  applyFilters(): void {
+    let games = [...this.allResults];
+
+    if (this.filterMode === 'upcoming') {
+      games = games.filter((g) => !g.team1Score && !g.team2Score);
+    }
+
+    if (this.onlyMine && this.team) {
+      games = games.filter(
+        (g) => g.team1Id === this.team.id || g.team2Id === this.team.id
+      );
+    }
+
+    this.filteredGames = games;
   }
 
   getTeamName(id: string): string {
