@@ -1,8 +1,9 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
+import { MatSortModule, MatSort } from '@angular/material/sort';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatCardModule } from '@angular/material/card';
@@ -21,6 +22,7 @@ const API_URL = environment.apiUrl;
     RouterLink,
     MatButtonModule,
     MatTableModule,
+    MatSortModule,
     MatFormFieldModule,
     MatInputModule,
     MatCardModule,
@@ -40,6 +42,7 @@ export class DashboardComponent {
   upcomingGames: any[] = [];
   tableData: any[] = [];
   dataSource = new MatTableDataSource<any>();
+  @ViewChild(MatSort) sort!: MatSort;
   displayedColumns = ['place', 'name', 'spiele', 'siege', 'niederlagen', 'punkte'];
   seasonYear = '';
   activeGameDay = true; // optional: später dynamisch machen
@@ -83,6 +86,7 @@ export class DashboardComponent {
         next: (data) => {
           this.tableData = data;
           this.dataSource.data = data;
+          this.dataSource.sort = this.sort;
         },
         error: (err) => console.error('Fehler beim Laden der Tabelle', err),
       });
