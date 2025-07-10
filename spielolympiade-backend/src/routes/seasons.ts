@@ -211,7 +211,7 @@ router.post(
       return;
     }
 
-    const season = await prisma.season.create({ data: { year, name, isActive: true } });
+    const season = await prisma.season.create({ data: { year, name } });
     const tournament = await prisma.tournament.create({
       data: { seasonId: season.id, system: system || "round_robin" },
     });
