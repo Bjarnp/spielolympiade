@@ -23,7 +23,7 @@
     <div class="filters">
       <label>
         Spiel:
-        <select [(ngModel)]="gameFilter">
+        <select [(ngModel)]="gameFilter" (ngModelChange)="onGameFilterChange()">
           <option value="all">Alle</option>
           <option *ngFor="let g of gameOptions" [value]="g.id">{{ g.name }}</option>
         </select>
@@ -36,6 +36,27 @@
         </select>
       </label>
     </div>
+    <h4>Tabelle</h4>
+    <table class="score-table">
+      <thead>
+        <tr>
+          <th>Team</th>
+          <th>Spiele</th>
+          <th>Siege</th>
+          <th>Niederl.</th>
+          <th>Punkte</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let t of tableData">
+          <td>{{ t.name }}</td>
+          <td>{{ t.spiele }}</td>
+          <td>{{ t.siege }}</td>
+          <td>{{ t.niederlagen }}</td>
+          <td>{{ t.points }}</td>
+        </tr>
+      </tbody>
+    </table>
     <table class="result-table">
       <thead>
         <tr>
