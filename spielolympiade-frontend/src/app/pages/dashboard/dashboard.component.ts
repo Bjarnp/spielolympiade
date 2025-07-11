@@ -10,6 +10,8 @@ import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatSelectModule } from '@angular/material/select';
 import { MatIconModule } from '@angular/material/icon';
+import { MatListModule } from "@angular/material/list";
+import { MatDividerModule } from "@angular/material/divider";
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../core/auth.service';
 import { environment } from '../../../environments/environment';
@@ -31,6 +33,8 @@ const API_URL = environment.apiUrl;
     MatCardModule,
     MatCheckboxModule,
     MatSelectModule,
+    MatListModule,
+    MatDividerModule,
     MatIconModule,
     FormsModule,
   ],
