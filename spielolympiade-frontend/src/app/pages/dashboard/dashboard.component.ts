@@ -8,6 +8,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatSelectModule } from '@angular/material/select';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../core/auth.service';
 import { environment } from '../../../environments/environment';
@@ -28,6 +29,7 @@ const API_URL = environment.apiUrl;
     MatInputModule,
     MatCardModule,
     MatCheckboxModule,
+    MatSelectModule,
     FormsModule,
   ],
   templateUrl: './dashboard.component.html',
@@ -200,6 +202,12 @@ export class DashboardComponent {
       groups[g].sort((a, b) => b.points - a.points);
     }
     return groups;
+  }
+
+  koMatchesFor(gameId: string): any[] {
+    return this.allMatches.filter(
+      (m) => m.gameId === gameId && m.stage !== 'group'
+    );
   }
 
   deleteSeason(): void {

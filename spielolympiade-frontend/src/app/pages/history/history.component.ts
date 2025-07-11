@@ -2,6 +2,8 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+import { AuthService } from '../../core/auth.service';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 
@@ -10,12 +12,13 @@ const API_URL = environment.apiUrl;
 @Component({
   selector: 'app-history',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatIconModule],
+  imports: [CommonModule, FormsModule, MatIconModule, MatButtonModule],
   templateUrl: './history.component.html',
   styleUrls: ['./history.component.scss']
 })
 export class HistoryComponent {
   http = inject(HttpClient);
+  auth = inject(AuthService);
 
   seasons: any[] = [];
   selected: any = null;
@@ -69,37 +72,6 @@ export class HistoryComponent {
     return matches;
   }
 
-  onGameFilterChange(): void {
-    this.updateTable();
-  }
-
-  updateTable(): void {
-    if (!this.selected) {
-      this.tableData = [];
-      return;
-    }
-    let matches = this.selected.tournaments[0]?.matches.filter((m: any) => m.winnerId) || [];
-    if (this.gameFilter !== 'all') {
-      matches = matches.filter((m: any) => m.game.id === this.gameFilter);
-    }
-    const teams = this.selected.teams;
-    const table = teams.map((t: any) => {
-      const teamMatches = matches.filter((m: any) => m.team1Id === t.id || m.team2Id === t.id);
-      const wins = teamMatches.filter((m: any) => m.winnerId === t.id).length;
-      const games = teamMatches.length;
-      const losses = games - wins;
-      return {
-        id: t.id,
-        name: t.name,
-        spiele: games,
-        siege: wins,
-        niederlagen: losses,
-        points: wins,
-      };
-    });
-    table.sort((a: any, b: any) => b.points - a.points);
-    this.tableData = table;
-    
   deleteSeason(id: string): void {
     this.http.delete(`${API_URL}/seasons/${id}`).subscribe(() => {
       this.selected = null;

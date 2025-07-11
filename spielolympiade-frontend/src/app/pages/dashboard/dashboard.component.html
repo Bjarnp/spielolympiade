@@ -91,7 +91,7 @@
     </div>
     <h4>K.O.-Phase</h4>
     <ul>
-      <li *ngFor="let m of allMatches.filter(m => m.gameId===viewMode && m.stage !== 'group')">
+      <li *ngFor="let m of koMatchesFor(viewMode)">
         {{ getTeamName(m.team1Id) }} vs {{ getTeamName(m.team2Id) }} -
         <ng-container *ngIf="m.team1Score != null && m.team2Score != null; else open">
           {{ m.team1Score }} : {{ m.team2Score }}
