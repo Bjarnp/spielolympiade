@@ -22,7 +22,7 @@ router.get(
       });
 
       if (!season) {
-        res.json({ teams: [], games: [], results: [] });
+        res.json({ teams: [], games: [], tournament: null });
         return;
       }
 
@@ -30,11 +30,12 @@ router.get(
         where: { seasonId: season.id },
       });
       const games = await prisma.game.findMany();
-      const results = await prisma.matchResult.findMany({
-        where: { match: { tournament: { seasonId: season.id } } },
+      const tournament = await prisma.tournament.findFirst({
+        where: { seasonId: season.id },
+        include: { matches: { include: { results: true } } },
       });
 
-      res.json({ teams, games, results });
+      res.json({ teams, games, tournament });
     } catch (err) {
       console.error("Fehler beim Laden der Dashboard-Daten:", err);
       res.status(500).json({ error: "Interner Serverfehler" });
@@ -229,7 +230,9 @@ router.post(
       return;
     }
 
-    const season = await prisma.season.create({ data: { year, name } });
+    const season = await prisma.season.create({
+      data: { year, name, isActive: true },
+    });
     const tournament = await prisma.tournament.create({
       data: { seasonId: season.id, system: system || "round_robin" },
     });
@@ -260,6 +263,32 @@ router.post(
           }
         }
       }
+    } else if (system === "group_ko") {
+      for (const gameId of gameIds) {
+        const shuffled = [...createdTeams].sort(() => Math.random() - 0.5);
+        const mid = Math.ceil(shuffled.length / 2);
+        const groups = {
+          A: shuffled.slice(0, mid),
+          B: shuffled.slice(mid),
+        } as Record<string, any[]>;
+
+        for (const [groupName, groupTeams] of Object.entries(groups)) {
+          for (let i = 0; i < groupTeams.length; i++) {
+            for (let j = i + 1; j < groupTeams.length; j++) {
+              await prisma.match.create({
+                data: {
+                  tournamentId: tournament.id,
+                  gameId,
+                  team1Id: groupTeams[i].id,
+                  team2Id: groupTeams[j].id,
+                  stage: "group",
+                  groupName,
+                },
+              });
+            }
+          }
+        }
+      }
     }
 
     res.status(201).json(season);
@@ -285,6 +314,30 @@ router.post(
     });
 
     res.json(season);
+  }
+);
+
+// ❌ Saison löschen
+router.delete(
+  "/:id",
+  authorizeRole("admin"),
+  async (req: Request, res: Response): Promise<void> => {
+    const { id } = req.params;
+
+    await prisma.matchResult.deleteMany({
+      where: { match: { tournament: { seasonId: id } } },
+    });
+    await prisma.match.deleteMany({
+      where: { tournament: { seasonId: id } },
+    });
+    await prisma.teamMember.deleteMany({
+      where: { team: { seasonId: id } },
+    });
+    await prisma.team.deleteMany({ where: { seasonId: id } });
+    await prisma.tournament.deleteMany({ where: { seasonId: id } });
+    await prisma.season.delete({ where: { id } });
+
+    res.json({ success: true });
   }
 );
 

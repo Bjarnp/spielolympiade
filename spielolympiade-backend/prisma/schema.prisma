@@ -88,6 +88,9 @@ model Match {
   scheduledAt  DateTime?
   playedAt     DateTime?
 
+  stage        MatchStage @default(group)
+  groupName    String?
+
   results      MatchResult[]
 }
 
@@ -110,4 +113,12 @@ enum TournamentSystem {
   round_robin
   single_elim
   double_elim
+  group_ko
+}
+
+enum MatchStage {
+  group
+  semi_final
+  final
+  third_place
 }

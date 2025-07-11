@@ -15,8 +15,23 @@
   </div>
 
   <ng-container *ngIf="seasonActive">
+  <button
+      mat-raised-button
+      color="warn"
+      *ngIf="auth.getUser()?.role === 'admin'"
+      (click)="deleteSeason()"
+    >Saison löschen</button>
 
-  <section class="table-section" *ngIf="tableData.length">
+  <div class="view-switch" *ngIf="tournamentSystem === 'group_ko'">
+    <mat-form-field>
+      <mat-select [(ngModel)]="viewMode">
+        <mat-option value="overall">Gesamtübersicht</mat-option>
+        <mat-option *ngFor="let g of allGames" [value]="g.id">{{ g.name }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <section class="table-section" *ngIf="tableData.length && (viewMode === 'overall' || tournamentSystem !== 'group_ko')">
     <mat-card class="table-card">
       <mat-card-title>Spielolympiade {{ seasonYear }}</mat-card-title>
       <div class="table-wrapper">
@@ -57,6 +72,33 @@
         </table>
       </div>
     </mat-card>
+  </section>
+
+  <section *ngIf="tournamentSystem === 'group_ko' && viewMode !== 'overall'">
+    <h3>{{ getGameName(viewMode) }} - Gruppen</h3>
+    <div class="groups" *ngFor="let group of ['A','B']">
+      <h4>Gruppe {{ group }}</h4>
+      <table class="result-table">
+        <tr>
+          <th>Team</th>
+          <th>Punkte</th>
+        </tr>
+        <tr *ngFor="let row of groupStandings(viewMode)[group]">
+          <td>{{ getTeamName(row.teamId) }}</td>
+          <td>{{ row.points }}</td>
+        </tr>
+      </table>
+    </div>
+    <h4>K.O.-Phase</h4>
+    <ul>
+      <li *ngFor="let m of koMatchesFor(viewMode)">
+        {{ getTeamName(m.team1Id) }} vs {{ getTeamName(m.team2Id) }} -
+        <ng-container *ngIf="m.team1Score != null && m.team2Score != null; else open">
+          {{ m.team1Score }} : {{ m.team2Score }}
+        </ng-container>
+        <ng-template #open>noch offen</ng-template>
+      </li>
+    </ul>
   </section>
 
   <section *ngIf="team">
