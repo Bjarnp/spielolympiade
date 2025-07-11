@@ -75,7 +75,7 @@ ng serve
 ### backend/.env
 
 ```
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/spielolympiade
+DATABASE_URL=postgresql://postgres:<dein_passwort>@localhost:5432/spielolympiade
 PORT=3000
 JWT_SECRET=dein_geheimer_jwt_schluessel
 ```

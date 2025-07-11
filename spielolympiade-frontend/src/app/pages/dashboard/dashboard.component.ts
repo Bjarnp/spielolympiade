@@ -9,6 +9,9 @@ import { MatInputModule } from '@angular/material/input';
 import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatSelectModule } from '@angular/material/select';
+import { MatIconModule } from '@angular/material/icon';
+import { MatListModule } from "@angular/material/list";
+import { MatDividerModule } from "@angular/material/divider";
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../core/auth.service';
 import { environment } from '../../../environments/environment';
@@ -30,6 +33,9 @@ const API_URL = environment.apiUrl;
     MatCardModule,
     MatCheckboxModule,
     MatSelectModule,
+    MatListModule,
+    MatDividerModule,
+    MatIconModule,
     FormsModule,
   ],
   templateUrl: './dashboard.component.html',
@@ -42,6 +48,7 @@ export class DashboardComponent {
   allTeams: any[] = [];
   allGames: any[] = [];
   allMatches: any[] = [];
+  newMatch: any = { team1Id: '', team2Id: '', gameId: '' };
   todayResults: any[] = [];
   upcomingGames: any[] = [];
   tableData: any[] = [];
@@ -114,6 +121,7 @@ export class DashboardComponent {
             ...m,
             team1Score: m.results.find((r: any) => r.teamId === m.team1Id)?.score ?? null,
             team2Score: m.results.find((r: any) => r.teamId === m.team2Id)?.score ?? null,
+            saved: true,
           })
         );
         this.tournamentSystem = data.tournament?.system || 'round_robin';
@@ -175,10 +183,29 @@ export class DashboardComponent {
         team2Score: m.team2Score,
       })
       .subscribe(() => {
+        m.saved = true;
         this.loadData();
         this.loadTable();
         this.loadRecommendations();
       });
+  }
+
+  toggleSave(m: any): void {
+    if (m.saved) {
+      const password = prompt('Passwort zum Bearbeiten eingeben:');
+      if (!password) return;
+      const username = this.auth.getUser()?.username;
+      this.http
+        .post(`${API_URL}/auth/login`, { username, password })
+        .subscribe({
+          next: () => {
+            m.saved = false;
+          },
+          error: () => alert('Passwort falsch'),
+        });
+    } else {
+      this.saveResultFor(m);
+    }
   }
 
   groupStandings(gameId: string): Record<string, { teamId: string; points: number }[]> {
@@ -232,9 +259,15 @@ export class DashboardComponent {
 
   deleteSeason(): void {
     if (!this.team?.seasonId) return;
-    this.http.delete(`${API_URL}/seasons/${this.team.seasonId}`).subscribe(() => {
-      this.seasonActive = false;
-      this.loadData();
-    });
+    const password = prompt('Bitte Passwort zum Löschen eingeben:');
+    if (!password) return;
+    this.http
+      .request('delete', `${API_URL}/seasons/${this.team.seasonId}`, {
+        body: { password },
+      })
+      .subscribe(() => {
+        this.seasonActive = false;
+        this.loadData();
+      });
   }
 }

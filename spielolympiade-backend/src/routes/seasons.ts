@@ -1,9 +1,14 @@
 import express, { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
+import { createHash } from "crypto";
 import { authorizeRole } from "../middleware/auth";
 
 const router = express.Router();
 const prisma = new PrismaClient();
+
+function getUser(req: Request) {
+  return (req as any).user;
+}
 
 // ✅ GET /seasons – alle Saisons abrufen
 router.get("/", async (req: Request, res: Response): Promise<void> => {
@@ -323,6 +328,23 @@ router.delete(
   authorizeRole("admin"),
   async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
+    const { password } = req.body;
+
+    const userInfo = getUser(req);
+    if (!userInfo) {
+      res.sendStatus(403);
+      return;
+    }
+    const user = await prisma.user.findUnique({ where: { id: userInfo.id } });
+    if (!user) {
+      res.sendStatus(403);
+      return;
+    }
+    const hash = createHash("sha256").update(password || "").digest("hex");
+    if (hash !== user.passwordHash) {
+      res.status(401).json({ error: "Passwort falsch" });
+      return;
+    }
 
     await prisma.matchResult.deleteMany({
       where: { match: { tournament: { seasonId: id } } },
