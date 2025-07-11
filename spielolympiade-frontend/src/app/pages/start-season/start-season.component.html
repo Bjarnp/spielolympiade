@@ -45,7 +45,11 @@
     <div *ngFor="let g of games">
       <mat-checkbox (change)="toggleGame(g.id, $event)">{{ g.name }}</mat-checkbox>
     </div>
-    <h3>Turnierform</h3>
+    <h3>Turnierform
+      <button mat-icon-button (click)="openInfo()" aria-label="Info">
+        <mat-icon>info</mat-icon>
+      </button>
+    </h3>
     <mat-form-field>
       <mat-select [(ngModel)]="system" placeholder="System">
         <mat-option value="round_robin">Jeder gegen Jeden</mat-option>
@@ -53,6 +57,7 @@
         <mat-option value="double_elim">Double K.O.</mat-option>
       </mat-select>
     </mat-form-field>
+    <p class="beer-info">Bier pro Person: {{ getBeerCount() }}</p>
     <br />
     <button mat-raised-button (click)="prev()">Zurück</button>
     <button mat-raised-button color="primary" (click)="next()">Weiter</button>
@@ -72,3 +77,22 @@
     <button mat-raised-button color="accent" (click)="start()">Spielolympiade starten</button>
   </div>
 </div>
+
+<ng-template #systemInfo>
+  <h2 mat-dialog-title>Information zur Turnierform</h2>
+  <mat-dialog-content>
+    <p *ngIf="system === 'round_robin'">
+      Beim Jeder-gegen-Jeden spielt jedes Team gegen alle anderen Teams.
+    </p>
+    <p *ngIf="system === 'single_elim'">
+      Beim K.O.-System scheidet ein Team nach einer Niederlage aus.
+    </p>
+    <p *ngIf="system === 'double_elim'">
+      Beim Double K.O. scheidet ein Team erst nach zwei Niederlagen aus.
+    </p>
+    <p>Jeder spielt etwa {{ getBeerCount() }} Bier.</p>
+  </mat-dialog-content>
+  <mat-dialog-actions>
+    <button mat-button mat-dialog-close>OK</button>
+  </mat-dialog-actions>
+</ng-template>

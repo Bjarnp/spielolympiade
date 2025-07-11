@@ -1,8 +1,9 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, TemplateRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { MatCheckboxModule, MatCheckboxChange } from '@angular/material/checkbox';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -27,6 +28,7 @@ const API_URL = environment.apiUrl;
     MatSelectModule,
     MatListModule,
     MatIconModule,
+    MatDialogModule,
   ],
   templateUrl: './start-season.component.html',
   styleUrls: ['./start-season.component.scss']
@@ -34,6 +36,9 @@ const API_URL = environment.apiUrl;
 export class StartSeasonComponent {
   http = inject(HttpClient);
   router = inject(Router);
+  dialog = inject(MatDialog);
+
+  @ViewChild('systemInfo') systemInfo!: TemplateRef<unknown>;
 
   step = 1;
   year = new Date().getFullYear() + 1;
@@ -59,13 +64,13 @@ export class StartSeasonComponent {
   }
 
 
-  getPlayerName(id: string): string {
+  getPlayerName = (id: string): string => {
     return this.players.find((p) => p.id === id)?.name ?? id;
-  }
+  };
 
-  getGameName(id: string): string {
+  getGameName = (id: string): string => {
     return this.games.find((g) => g.id === id)?.name ?? id;
-  }
+  };
 
   toggleGame(id: string, event: MatCheckboxChange): void {
     const checked = event.checked;
@@ -109,6 +114,25 @@ export class StartSeasonComponent {
 
   prev(): void {
     if (this.step > 1) this.step--;
+  }
+
+  openInfo(): void {
+    this.dialog.open(this.systemInfo);
+  }
+
+  getBeerCount(): number {
+    const teams = this.teams.length;
+    if (teams <= 1) return 0;
+    switch (this.system) {
+      case 'round_robin':
+        return teams - 1;
+      case 'single_elim':
+        return Math.ceil(Math.log2(teams));
+      case 'double_elim':
+        return 2 * Math.ceil(Math.log2(teams));
+      default:
+        return 0;
+    }
   }
 
   start(): void {
