@@ -73,9 +73,9 @@ export class StartSeasonComponent {
   }
 
 
-  getPlayerName(id: string): string {
+  getPlayerName = (id: string): string => {
     return this.players.find((p) => p.id === id)?.name ?? id;
-  }
+  };
 
   formatPlayers(ids: string[]): string {
     return ids.map((id) => this.getPlayerName(id)).join(', ');
