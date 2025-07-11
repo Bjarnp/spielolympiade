@@ -1,3 +1,29 @@
 .start-season {
+  max-width: 800px;
+  margin: auto;
   padding: 1rem;
+
+  .team-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  mat-form-field {
+    width: 100%;
+  }
+
+  .players-select {
+    min-width: 200px;
+  }
+
+  .beer-info {
+    margin: 0.5rem 0;
+    font-style: italic;
+  }
+
+  button {
+    margin-top: 0.5rem;
+  }
 }
