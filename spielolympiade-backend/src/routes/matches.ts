@@ -24,7 +24,15 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
 router.get(
   "/recommendations",
   async (_req: Request, res: Response): Promise<void> => {
-    const all = await prisma.match.findMany();
+    const season = await prisma.season.findFirst({ where: { isActive: true } });
+    if (!season) {
+      res.json([]);
+      return;
+    }
+
+    const all = await prisma.match.findMany({
+      where: { tournament: { seasonId: season.id } },
+    });
 
     const lastPlayed: Record<string, Date> = {};
     const inProgress: Record<string, number> = {};
