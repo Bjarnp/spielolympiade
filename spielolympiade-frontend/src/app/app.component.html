@@ -11,6 +11,7 @@
 
 <mat-menu #menu="matMenu">
   <button mat-menu-item routerLink="/history">Historie</button>
+  <button mat-menu-item routerLink="/dashboard">Dashboard</button>
   <button mat-menu-item routerLink="/admin" *ngIf="auth.getUser()?.role === 'admin'">Userverwaltung</button>
   <button mat-menu-item (click)="logout()">Logout</button>
 </mat-menu>
