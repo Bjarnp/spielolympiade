@@ -1,6 +1,14 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, TemplateRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatDialogModule, MatDialog } from '@angular/material/dialog';
+import { MatCheckboxModule, MatCheckboxChange } from '@angular/material/checkbox';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatListModule } from '@angular/material/list';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
@@ -10,13 +18,27 @@ const API_URL = environment.apiUrl;
 @Component({
   selector: 'app-start-season',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatButtonModule,
+    MatCheckboxModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatListModule,
+    MatIconModule,
+    MatDialogModule,
+  ],
   templateUrl: './start-season.component.html',
   styleUrls: ['./start-season.component.scss']
 })
 export class StartSeasonComponent {
   http = inject(HttpClient);
   router = inject(Router);
+  dialog = inject(MatDialog);
+
+  @ViewChild('systemInfo') systemInfo!: TemplateRef<unknown>;
 
   step = 1;
   year = new Date().getFullYear() + 1;
@@ -36,27 +58,20 @@ export class StartSeasonComponent {
 
   ngOnInit(): void {
     this.http.get<any[]>(`${API_URL}/users`).subscribe((u) => (this.players = u));
-    this.http
-      .get<any>(`${API_URL}/seasons/public/dashboard-data`)
-      .subscribe((d) => (this.games = d.games));
+    this.http.get<any[]>(`${API_URL}/games`).subscribe((g) => (this.games = g));
   }
 
-  togglePlayer(p: any, event: Event): void {
-    const checked = (event.target as HTMLInputElement).checked;
-    if (checked) this.selectedPlayers.push(p);
-    else this.selectedPlayers = this.selectedPlayers.filter((x) => x.id !== p.id);
-  }
 
-  getPlayerName(id: string): string {
+  getPlayerName = (id: string): string => {
     return this.players.find((p) => p.id === id)?.name ?? id;
-  }
+  };
 
-  getGameName(id: string): string {
+  getGameName = (id: string): string => {
     return this.games.find((g) => g.id === id)?.name ?? id;
-  }
+  };
 
-  toggleGame(id: string, event: Event): void {
-    const checked = (event.target as HTMLInputElement).checked;
+  toggleGame(id: string, event: MatCheckboxChange): void {
+    const checked = event.checked;
     if (checked) this.selectedGameIds.push(id);
     else this.selectedGameIds = this.selectedGameIds.filter((g) => g !== id);
   }
@@ -66,6 +81,15 @@ export class StartSeasonComponent {
     this.teams.push({ name: this.newTeamName, playerIds: [...this.newTeamPlayers] });
     this.newTeamName = '';
     this.newTeamPlayers = [];
+  }
+
+  removeTeam(index: number): void {
+    this.teams.splice(index, 1);
+  }
+
+  availablePlayers(): any[] {
+    const used = this.teams.flatMap((t) => t.playerIds);
+    return this.selectedPlayers.filter((p) => !used.includes(p.id));
   }
 
   generateTeams(): void {
@@ -93,6 +117,27 @@ export class StartSeasonComponent {
 
   prev(): void {
     if (this.step > 1) this.step--;
+  }
+
+  openInfo(): void {
+    this.dialog.open(this.systemInfo);
+  }
+
+  getBeerCount(): number {
+    const teams = this.teams.length;
+    if (teams <= 1) return 0;
+    switch (this.system) {
+      case 'round_robin':
+        return (teams - 1) * this.selectedGameIds.length;
+      case 'single_elim':
+        return Math.ceil(Math.log2(teams)) * this.selectedGameIds.length;
+      case 'double_elim':
+        return 2 * Math.ceil(Math.log2(teams)) * this.selectedGameIds.length;
+      case 'group_ko':
+        return (teams - 1) * this.selectedGameIds.length;
+      default:
+        return 0;
+    }
   }
 
   start(): void {

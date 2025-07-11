@@ -260,6 +260,32 @@ router.post(
           }
         }
       }
+    } else if (system === "group_ko") {
+      const shuffled = [...createdTeams].sort(() => Math.random() - 0.5);
+      const mid = Math.ceil(shuffled.length / 2);
+      const groups = {
+        A: shuffled.slice(0, mid),
+        B: shuffled.slice(mid),
+      } as Record<string, any[]>;
+
+      for (const gameId of gameIds) {
+        for (const [groupName, groupTeams] of Object.entries(groups)) {
+          for (let i = 0; i < groupTeams.length; i++) {
+            for (let j = i + 1; j < groupTeams.length; j++) {
+              await prisma.match.create({
+                data: {
+                  tournamentId: tournament.id,
+                  gameId,
+                  team1Id: groupTeams[i].id,
+                  team2Id: groupTeams[j].id,
+                  stage: "group",
+                  groupName,
+                },
+              });
+            }
+          }
+        }
+      }
     }
 
     res.status(201).json(season);
