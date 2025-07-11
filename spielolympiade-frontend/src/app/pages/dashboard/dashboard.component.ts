@@ -67,10 +67,12 @@ export class DashboardComponent {
   filterMode: 'all' | 'open' | 'played' = 'open';
   onlyMine = false;
   filteredGames: any[] = [];
+  recommendations: any[] = [];
 
   ngOnInit(): void {
     this.loadMyTeam();
     this.loadData();
+    this.loadRecommendations();
   }
 
   loadMyTeam(): void {
@@ -184,6 +186,7 @@ export class DashboardComponent {
         m.saved = true;
         this.loadData();
         this.loadTable();
+        this.loadRecommendations();
       });
   }
 
@@ -237,34 +240,21 @@ export class DashboardComponent {
     );
   }
 
-  createMatch(): void {
-    if (!this.newMatch.team1Id || !this.newMatch.team2Id || !this.newMatch.gameId) return;
-    const tournamentId = this.allMatches[0]?.tournamentId;
+  loadRecommendations(): void {
     this.http
-      .post(`${API_URL}/matches`, {
-        tournamentId,
-        gameId: this.newMatch.gameId,
-        team1Id: this.newMatch.team1Id,
-        team2Id: this.newMatch.team2Id,
-      })
-      .subscribe(() => {
-        this.newMatch = { team1Id: '', team2Id: '', gameId: '' };
-        this.loadData();
+      .get<any[]>(`${API_URL}/matches/recommendations`)
+      .subscribe({
+        next: (data) => (this.recommendations = data),
+        error: (err) =>
+          console.error('Fehler beim Laden der Empfehlungen', err),
       });
   }
 
-  setWinner(m: any, winner: 'team1' | 'team2' | 'none'): void {
-    if (winner === 'team1') {
-      m.team1Score = 1;
-      m.team2Score = 0;
-    } else if (winner === 'team2') {
-      m.team1Score = 0;
-      m.team2Score = 1;
-    } else {
-      m.team1Score = null;
-      m.team2Score = null;
-    }
-    m.saved = false;
+  startMatch(id: string): void {
+    this.http.post(`${API_URL}/matches/${id}/start`, {}).subscribe(() => {
+      this.loadData();
+      this.loadRecommendations();
+    });
   }
 
   deleteSeason(): void {

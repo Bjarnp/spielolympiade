@@ -117,71 +117,38 @@
   </section>
 
   <section *ngIf="activeGameDay">
-    <mat-card class="matches-card">
-      <mat-card-title>Spiele</mat-card-title>
-      <mat-card-content>
-        <h3>Aktuelle Begegnungen</h3>
-        <div class="filters">
-          <button mat-raised-button (click)="setFilter('all')">Alle Begegnungen</button>
-          <button mat-raised-button (click)="setFilter('open')">Offen</button>
-          <button mat-raised-button (click)="setFilter('played')">Gespielt</button>
-          <mat-checkbox [(ngModel)]="onlyMine" (change)="applyFilters()">Nur meine Spiele</mat-checkbox>
-        </div>
-        <mat-list>
-          <mat-list-item *ngFor="let r of filteredGames" class="match-item">
-            {{ getGameName(r.gameId) }} |
-            {{ getTeamName(r.team1Id) }}
-            <ng-container *ngIf="auth.getUser()?.role === 'admin'; else view1">
-              <mat-form-field appearance="fill" class="score-select">
-                <mat-select [(ngModel)]="r.team1Score" (selectionChange)="setWinner(r, $event.value == null ? 'none' : ($event.value == 1 ? 'team1' : 'team2'))">
-                  <mat-option [value]="null">offen</mat-option>
-                  <mat-option [value]="1">gewonnen</mat-option>
-                  <mat-option [value]="0">verloren</mat-option>
-                </mat-select>
-              </mat-form-field>
-            </ng-container>
-            <ng-template #view1>({{ r.team1Score ?? '-' }})</ng-template>
-            –
-            {{ getTeamName(r.team2Id) }}
-            <ng-container *ngIf="auth.getUser()?.role === 'admin'; else view2">
-              <mat-form-field appearance="fill" class="score-select">
-                <mat-select [(ngModel)]="r.team2Score" (selectionChange)="setWinner(r, $event.value == null ? 'none' : ($event.value == 1 ? 'team2' : 'team1'))">
-                  <mat-option [value]="null">offen</mat-option>
-                  <mat-option [value]="1">gewonnen</mat-option>
-                  <mat-option [value]="0">verloren</mat-option>
-                </mat-select>
-              </mat-form-field>
-            </ng-container>
-            <ng-template #view2>({{ r.team2Score ?? '-' }})</ng-template>
-            <button *ngIf="auth.getUser()?.role === 'admin'" mat-icon-button color="accent" (click)="toggleSave(r)">
-              <mat-icon>{{ r.saved ? 'edit' : 'save' }}</mat-icon>
-            </button>
-          </mat-list-item>
-        </mat-list>
-        <mat-divider></mat-divider>
-        <div *ngIf="auth.getUser()?.role === 'admin'" class="new-match-form">
-          <mat-form-field appearance="fill">
-            <mat-select placeholder="Team 1" [(ngModel)]="newMatch.team1Id">
-              <mat-option *ngFor="let t of allTeams" [value]="t.id">{{ t.name }}</mat-option>
-            </mat-select>
-          </mat-form-field>
-          <mat-form-field appearance="fill">
-            <mat-select placeholder="Team 2" [(ngModel)]="newMatch.team2Id">
-              <mat-option *ngFor="let t of allTeams" [value]="t.id">{{ t.name }}</mat-option>
-            </mat-select>
-          </mat-form-field>
-          <mat-form-field appearance="fill">
-            <mat-select placeholder="Spiel" [(ngModel)]="newMatch.gameId">
-              <mat-option *ngFor="let g of allGames" [value]="g.id">{{ g.name }}</mat-option>
-            </mat-select>
-          </mat-form-field>
-          <button mat-raised-button color="primary" (click)="createMatch()">Anlegen</button>
-        </div>
-      </mat-card-content>
-    </mat-card>
+    <h2>Spiele</h2>
+    <div *ngIf="recommendations.length" class="recommendations">
+      <h3>Empfohlene nächste Spiele</h3>
+      <ul>
+        <li *ngFor="let g of recommendations | slice:0:5">
+          {{ getGameName(g.gameId) }}: {{ getTeamName(g.team1Id) }} vs
+          {{ getTeamName(g.team2Id) }}
+          <button mat-button color="primary" (click)="startMatch(g.id)">
+            Jetzt spielen
+          </button>
+        </li>
+      </ul>
+    </div>
+    <div class="filters">
+      <button mat-raised-button (click)="setFilter('all')">Alle Begegnungen</button>
+      <button mat-raised-button (click)="setFilter('open')">Offen</button>
+      <button mat-raised-button (click)="setFilter('played')">Gespielt</button>
+      <mat-checkbox [(ngModel)]="onlyMine" (change)="applyFilters()">Nur meine Spiele</mat-checkbox>
+    </div>
+    <ul>
+      <li *ngFor="let r of filteredGames">
+        {{ getGameName(r.gameId) }} |
+        {{ getTeamName(r.team1Id) }}
+        <input *ngIf="auth.getUser()?.role === 'admin'" type="number" [(ngModel)]="r.team1Score" style="width:40px" />
+        <span *ngIf="auth.getUser()?.role !== 'admin'">({{ r.team1Score ?? '-' }})</span>
+        –
+        {{ getTeamName(r.team2Id) }}
+        <input *ngIf="auth.getUser()?.role === 'admin'" type="number" [(ngModel)]="r.team2Score" style="width:40px" />
+        <span *ngIf="auth.getUser()?.role !== 'admin'">({{ r.team2Score ?? '-' }})</span>
+        <button *ngIf="auth.getUser()?.role === 'admin'" mat-button color="accent" (click)="saveResultFor(r)">Speichern</button>
+      </li>
+    </ul>
   </section>
-
-
-
   </ng-container>
 </div>
