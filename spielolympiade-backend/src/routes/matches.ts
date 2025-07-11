@@ -1,8 +1,15 @@
 import express, { Request, Response } from "express";
+import { createHash } from "crypto";
 import { PrismaClient } from "@prisma/client";
 import { authorizeRole } from "../middleware/auth";
 
+import { progressTournament } from "../utils/tournament";
+
 const router = express.Router();
+function getUser(req: Request) {
+  return (req as any).user;
+}
+
 const prisma = new PrismaClient();
 
 // ✅ GET /matches – alle Matches inkl. Teams, Spiel, Ergebnisse
@@ -176,7 +183,7 @@ router.post(
       },
       include: { results: true, winner: true },
     });
-
+    await progressTournament(match.tournamentId);
     res.json(updatedMatch);
   }
 );
@@ -217,7 +224,7 @@ router.put(
       },
       include: { results: true, winner: true },
     });
-
+    await progressTournament(match.tournamentId);
     res.json(updated);
   }
 );
@@ -245,8 +252,43 @@ router.delete(
       },
       include: { results: true },
     });
-
+    await progressTournament(match.tournamentId);
     res.json(cleared);
+  }
+);
+
+// ❌ Match löschen mit Passwort
+router.delete(
+  "/:id",
+  authorizeRole("admin"),
+  async (req: Request, res: Response): Promise<void> => {
+    const { id } = req.params;
+    const { password } = req.body;
+
+    const match = await prisma.match.findUnique({ where: { id } });
+    if (!match) {
+      res.status(404).json({ error: "Match nicht gefunden" });
+      return;
+    }
+    const userInfo = getUser(req);
+    if (!userInfo) {
+      res.sendStatus(403);
+      return;
+    }
+    const user = await prisma.user.findUnique({ where: { id: userInfo.id } });
+    if (!user) {
+      res.sendStatus(403);
+      return;
+    }
+    const hash = createHash("sha256").update(password || "").digest("hex");
+    if (hash !== user.passwordHash) {
+      res.status(401).json({ error: "Passwort falsch" });
+      return;
+    }
+    await prisma.matchResult.deleteMany({ where: { matchId: id } });
+    await prisma.match.delete({ where: { id } });
+    await progressTournament(match.tournamentId);
+    res.json({ success: true });
   }
 );
 
