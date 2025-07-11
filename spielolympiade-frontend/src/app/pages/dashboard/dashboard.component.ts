@@ -39,7 +39,7 @@ export class DashboardComponent {
   team: any;
   allTeams: any[] = [];
   allGames: any[] = [];
-  allResults: any[] = [];
+  allMatches: any[] = [];
   todayResults: any[] = [];
   upcomingGames: any[] = [];
   tableData: any[] = [];
@@ -49,6 +49,8 @@ export class DashboardComponent {
   seasonYear = '';
   activeGameDay = true; // optional: später dynamisch machen
   seasonActive = false;
+  tournamentSystem = 'round_robin';
+  viewMode = 'overall';
 
   // Ergebnis eintragen direkt in Liste
 
@@ -103,7 +105,14 @@ export class DashboardComponent {
       next: (data) => {
         this.allTeams = data.teams;
         this.allGames = data.games;
-        this.allResults = data.results;
+        this.allMatches = (data.tournament ? data.tournament.matches : []).map(
+          (m: any) => ({
+            ...m,
+            team1Score: m.results.find((r: any) => r.teamId === m.team1Id)?.score ?? null,
+            team2Score: m.results.find((r: any) => r.teamId === m.team2Id)?.score ?? null,
+          })
+        );
+        this.tournamentSystem = data.tournament?.system || 'round_robin';
 
         this.buildTodayData();
         this.buildUpcoming();
@@ -114,11 +123,11 @@ export class DashboardComponent {
 
   buildTodayData(): void {
     const today = new Date().toISOString().split('T')[0]; // yyyy-mm-dd
-    this.todayResults = this.allResults.filter((r) => r.date === today);
+    this.todayResults = this.allMatches.filter((r) => r.date === today);
   }
 
   buildUpcoming(): void {
-    this.upcomingGames = this.allResults.filter(
+    this.upcomingGames = this.allMatches.filter(
       (r) => r.team1Score == null && r.team2Score == null
     );
     this.applyFilters();
@@ -130,7 +139,7 @@ export class DashboardComponent {
   }
 
   applyFilters(): void {
-    let games = [...this.allResults];
+    let games = [...this.allMatches];
 
     if (this.filterMode === 'open') {
       games = games.filter((g) => g.team1Score == null && g.team2Score == null);
@@ -165,5 +174,39 @@ export class DashboardComponent {
         this.loadData();
         this.loadTable();
       });
+  }
+
+  groupStandings(gameId: string): Record<string, { teamId: string; points: number }[]> {
+    const groups: Record<string, { teamId: string; points: number }[]> = {};
+    const matches = this.allMatches.filter(
+      (m) => m.gameId === gameId && m.stage === 'group'
+    );
+    for (const m of matches) {
+      const g = m.groupName || 'A';
+      groups[g] = groups[g] || [];
+      const ensure = (id: string) => {
+        if (!groups[g].find((e) => e.teamId === id)) {
+          groups[g].push({ teamId: id, points: 0 });
+        }
+      };
+      ensure(m.team1Id);
+      ensure(m.team2Id);
+      if (m.winnerId) {
+        const entry = groups[g].find((e) => e.teamId === m.winnerId);
+        if (entry) entry.points += 1;
+      }
+    }
+    for (const g of Object.keys(groups)) {
+      groups[g].sort((a, b) => b.points - a.points);
+    }
+    return groups;
+  }
+
+  deleteSeason(): void {
+    if (!this.team?.seasonId) return;
+    this.http.delete(`${API_URL}/seasons/${this.team.seasonId}`).subscribe(() => {
+      this.seasonActive = false;
+      this.loadData();
+    });
   }
 }
