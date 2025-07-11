@@ -54,6 +54,15 @@ export class HistoryComponent {
       });
   }
 
+  // legacy handlers for template bindings
+  onGameFilterChange(): void {
+    // Angular change detection will update the view automatically
+  }
+
+  updateTable(): void {
+    // kept for backward compatibility with older templates
+  }
+
   getMemberNames(members: any[]): string {
     return members.map((m: any) => m.user.name).join(', ');
   }
