@@ -1,1 +1,12 @@
-<p>teams works!</p>
+<div class="team-list">
+  <mat-card class="team-card" *ngFor="let t of teams">
+    <mat-card-title>{{ t.name }}</mat-card-title>
+    <mat-card-content>
+      <mat-list>
+        <mat-list-item *ngFor="let m of t.members">
+          {{ m.user.name }}
+        </mat-list-item>
+      </mat-list>
+    </mat-card-content>
+  </mat-card>
+</div>
