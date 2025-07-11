@@ -1,6 +1,9 @@
 <mat-toolbar color="primary" *ngIf="auth.isLoggedIn()" class="main-nav">
   <a routerLink="/dashboard" class="title">Willkommen zur Spielolympiade</a>
   <span class="spacer"></span>
+  <mat-slide-toggle (change)="toggleDarkMode($event.checked)" [checked]="darkMode">
+    Dark Mode
+  </mat-slide-toggle>
   <button mat-icon-button [matMenuTriggerFor]="menu">
     <mat-icon>more_vert</mat-icon>
   </button>
