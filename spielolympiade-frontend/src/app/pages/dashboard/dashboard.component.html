@@ -177,5 +177,10 @@
       </tbody>
     </table>
     </section>
+    <div class="delete-wrapper" *ngIf="auth.getUser()?.role === 'admin'">
+      <button mat-raised-button color="warn" (click)="deleteSeason()">
+        Saison löschen
+      </button>
+    </div>
   </ng-container>
 </div>
