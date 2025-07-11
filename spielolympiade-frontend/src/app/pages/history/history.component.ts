@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { MatIconModule } from '@angular/material/icon';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 
@@ -9,7 +10,7 @@ const API_URL = environment.apiUrl;
 @Component({
   selector: 'app-history',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, MatIconModule],
   templateUrl: './history.component.html',
   styleUrls: ['./history.component.scss']
 })
@@ -64,5 +65,12 @@ export class HistoryComponent {
       );
     }
     return matches;
+  }
+
+  deleteSeason(id: string): void {
+    this.http.delete(`${API_URL}/seasons/${id}`).subscribe(() => {
+      this.selected = null;
+      this.loadSeasons();
+    });
   }
 }
