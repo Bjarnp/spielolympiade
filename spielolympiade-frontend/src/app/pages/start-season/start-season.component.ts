@@ -62,9 +62,9 @@ export class StartSeasonComponent {
   }
 
 
-  getPlayerName(id: string): string {
+  getPlayerName = (id: string): string => {
     return this.players.find((p) => p.id === id)?.name ?? id;
-  }
+  };
 
   getGameName = (id: string): string => {
     return this.games.find((g) => g.id === id)?.name ?? id;
@@ -122,7 +122,7 @@ export class StartSeasonComponent {
   openInfo(): void {
     this.dialog.open(this.systemInfo);
   }
-
+  
   getBeerInfo(): string {
     const teams = this.teams.length;
     const games = this.selectedGameIds.length || 1;
