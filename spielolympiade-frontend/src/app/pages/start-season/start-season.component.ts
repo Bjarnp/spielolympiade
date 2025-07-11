@@ -81,10 +81,6 @@ export class StartSeasonComponent {
     return ids.map((id) => this.getPlayerName(id)).join(', ');
   }
 
-  formatPlayers(ids: string[]): string {
-    return ids.map((id) => this.getPlayerName(id)).join(', ');
-  }
-
   getGameName = (id: string): string => {
     return this.games.find((g) => g.id === id)?.name ?? id;
   };
