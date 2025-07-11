@@ -13,6 +13,35 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
   res.json(seasons);
 });
 
+router.get(
+  "/public/dashboard-data",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const season = await prisma.season.findFirst({
+        where: { isActive: true },
+      });
+
+      if (!season) {
+        res.json({ teams: [], games: [], results: [] });
+        return;
+      }
+
+      const teams = await prisma.team.findMany({
+        where: { seasonId: season.id },
+      });
+      const games = await prisma.game.findMany();
+      const results = await prisma.matchResult.findMany({
+        where: { match: { tournament: { seasonId: season.id } } },
+      });
+
+      res.json({ teams, games, results });
+    } catch (err) {
+      console.error("Fehler beim Laden der Dashboard-Daten:", err);
+      res.status(500).json({ error: "Interner Serverfehler" });
+    }
+  }
+);
+
 // ✅ GET /seasons/:id – einzelne Saison inkl. Teams & Turniere
 router.get("/:id", async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
@@ -35,27 +64,6 @@ router.get("/:id", async (req: Request, res: Response): Promise<void> => {
   }
 
   res.json(season);
-});
-
-router.get("/public/dashboard-data", async (_req, res) => {
-  try {
-    const season = await prisma.season.findFirst({ where: { isActive: true } });
-
-    if (!season) {
-      return res.json({ teams: [], games: [], results: [] });
-    }
-
-    const teams = await prisma.team.findMany({ where: { seasonId: season.id } });
-    const games = await prisma.game.findMany();
-    const results = await prisma.matchResult.findMany({
-      where: { match: { tournament: { seasonId: season.id } } },
-    });
-
-    res.json({ teams, games, results });
-  } catch (err) {
-    console.error("Fehler beim Laden der Dashboard-Daten:", err);
-    res.status(500).json({ error: "Interner Serverfehler" });
-  }
 });
 
 // 📜 GET /seasons/:id/history – Saison mit Matches & Ergebnissen
@@ -183,7 +191,9 @@ router.post(
       return;
     }
 
-    const season = await prisma.season.create({ data: { year, name, isActive: true } });
+    const season = await prisma.season.create({
+      data: { year, name, isActive: true },
+    });
     await prisma.tournament.create({
       data: { seasonId: season.id, system: "round_robin" },
     });
