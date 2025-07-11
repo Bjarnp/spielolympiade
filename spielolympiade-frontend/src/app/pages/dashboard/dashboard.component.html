@@ -185,5 +185,10 @@
     >
       Saison speichern
     </button>
+    <div class="delete-wrapper" *ngIf="auth.getUser()?.role === 'admin'">
+      <button mat-raised-button color="warn" (click)="deleteSeason()">
+        Saison löschen
+      </button>
+    </di
   </ng-container>
 </div>
