@@ -15,12 +15,6 @@
   </div>
 
   <ng-container *ngIf="seasonActive">
-    <button
-      mat-raised-button
-      color="warn"
-      *ngIf="auth.getUser()?.role === 'admin'"
-      (click)="deleteSeason()"
-    >Saison löschen</button>
 
     <div class="view-switch" *ngIf="tournamentSystem === 'group_ko'">
       <mat-form-field appearance="fill">
@@ -150,5 +144,11 @@
       </li>
     </ul>
   </section>
+  <button
+    mat-raised-button
+    color="warn"
+    *ngIf="auth.getUser()?.role === 'admin'"
+    (click)="deleteSeason()"
+  >Löschen</button>
   </ng-container>
 </div>
