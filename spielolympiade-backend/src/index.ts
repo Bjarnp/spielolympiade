@@ -7,6 +7,8 @@ import userRoutes from "./routes/users";
 import teamRoutes from "./routes/teams";
 import matchRoutes from "./routes/matches";
 import seasonRoutes from "./routes/seasons";
+import gameRoutes from "./routes/games";
+import tournamentRoutes from "./routes/tournaments";
 import { authenticateToken } from "./middleware/auth";
 
 dotenv.config();
@@ -20,6 +22,8 @@ app.use("/users", authenticateToken, userRoutes);
 app.use("/teams", authenticateToken, teamRoutes);
 app.use("/matches", authenticateToken, matchRoutes);
 app.use("/seasons", authenticateToken, seasonRoutes);
+app.use("/games", authenticateToken, gameRoutes);
+app.use("/tournaments", authenticateToken, tournamentRoutes);
 
 // ✅ Typen explizit angeben
 app.get("/", (req: Request, res: Response): void => {
