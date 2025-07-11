@@ -102,6 +102,7 @@ VITE_API_URL=http://localhost:3000
 - Turnierverwaltung (zukünftig)
 - Historienansicht vergangener Spielolympiaden
 - Ergebnisverwaltung durch Admin (Edit, Delete)
+- Unter der Spiele-Liste können Spiele auch manuell hinzugefügt werden
 
 ---
 
