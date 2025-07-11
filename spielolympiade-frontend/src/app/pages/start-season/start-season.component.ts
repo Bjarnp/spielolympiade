@@ -122,21 +122,42 @@ export class StartSeasonComponent {
   openInfo(): void {
     this.dialog.open(this.systemInfo);
   }
-
-  getBeerCount(): number {
+  
+  getBeerInfo(): string {
     const teams = this.teams.length;
-    if (teams <= 1) return 0;
+    const games = this.selectedGameIds.length || 1;
+
+    if (teams <= 1) {
+      return '0 Bier';
+    }
+
     switch (this.system) {
-      case 'round_robin':
-        return (teams - 1) * this.selectedGameIds.length;
-      case 'single_elim':
-        return Math.ceil(Math.log2(teams)) * this.selectedGameIds.length;
-      case 'double_elim':
-        return 2 * Math.ceil(Math.log2(teams)) * this.selectedGameIds.length;
-      case 'group_ko':
-        return (teams - 1) * this.selectedGameIds.length;
+      case 'round_robin': {
+        const beers = (teams - 1) * games;
+        return `${beers} Bier pro Person`;
+      }
+      case 'single_elim': {
+        const rounds = Math.ceil(Math.log2(teams));
+        const beers = rounds * games;
+        return `${beers} Bier pro Person`;
+      }
+      case 'double_elim': {
+        const rounds = Math.ceil(Math.log2(teams)) * 2;
+        const beers = rounds * games;
+        return `${beers} Bier pro Person`;
+      }
+      case 'group_ko': {
+        const groupA = Math.ceil(teams / 2);
+        const groupB = Math.floor(teams / 2);
+        const minGroup = Math.min(groupA, groupB) - 1;
+        const maxGroup = Math.max(groupA, groupB) - 1;
+        const groupOnly = `${minGroup * games}-${maxGroup * games}`;
+        const semi = `${(minGroup + 1) * games}-${(maxGroup + 1) * games}`;
+        const finale = `${(minGroup + 2) * games}-${(maxGroup + 2) * games}`;
+        return `Nur Gruppenphase: ${groupOnly}, Halbfinale: ${semi}, Finale/Platz 3: ${finale}`;
+      }
       default:
-        return 0;
+        return '0 Bier';
     }
   }
 
