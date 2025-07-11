@@ -1,6 +1,13 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatCheckboxModule, MatCheckboxChange } from '@angular/material/checkbox';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatListModule } from '@angular/material/list';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
@@ -10,7 +17,17 @@ const API_URL = environment.apiUrl;
 @Component({
   selector: 'app-start-season',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatButtonModule,
+    MatCheckboxModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatListModule,
+    MatIconModule,
+  ],
   templateUrl: './start-season.component.html',
   styleUrls: ['./start-season.component.scss']
 })
@@ -41,11 +58,6 @@ export class StartSeasonComponent {
       .subscribe((d) => (this.games = d.games));
   }
 
-  togglePlayer(p: any, event: Event): void {
-    const checked = (event.target as HTMLInputElement).checked;
-    if (checked) this.selectedPlayers.push(p);
-    else this.selectedPlayers = this.selectedPlayers.filter((x) => x.id !== p.id);
-  }
 
   getPlayerName(id: string): string {
     return this.players.find((p) => p.id === id)?.name ?? id;
@@ -55,8 +67,8 @@ export class StartSeasonComponent {
     return this.games.find((g) => g.id === id)?.name ?? id;
   }
 
-  toggleGame(id: string, event: Event): void {
-    const checked = (event.target as HTMLInputElement).checked;
+  toggleGame(id: string, event: MatCheckboxChange): void {
+    const checked = event.checked;
     if (checked) this.selectedGameIds.push(id);
     else this.selectedGameIds = this.selectedGameIds.filter((g) => g !== id);
   }
@@ -66,6 +78,10 @@ export class StartSeasonComponent {
     this.teams.push({ name: this.newTeamName, playerIds: [...this.newTeamPlayers] });
     this.newTeamName = '';
     this.newTeamPlayers = [];
+  }
+
+  removeTeam(index: number): void {
+    this.teams.splice(index, 1);
   }
 
   generateTeams(): void {
