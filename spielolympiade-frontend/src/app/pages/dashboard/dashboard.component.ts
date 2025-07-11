@@ -60,10 +60,12 @@ export class DashboardComponent {
   filterMode: 'all' | 'open' | 'played' = 'open';
   onlyMine = false;
   filteredGames: any[] = [];
+  recommendations: any[] = [];
 
   ngOnInit(): void {
     this.loadMyTeam();
     this.loadData();
+    this.loadRecommendations();
   }
 
   loadMyTeam(): void {
@@ -175,6 +177,7 @@ export class DashboardComponent {
       .subscribe(() => {
         this.loadData();
         this.loadTable();
+        this.loadRecommendations();
       });
   }
 
@@ -208,6 +211,23 @@ export class DashboardComponent {
     return this.allMatches.filter(
       (m) => m.gameId === gameId && m.stage !== 'group'
     );
+  }
+
+  loadRecommendations(): void {
+    this.http
+      .get<any[]>(`${API_URL}/matches/recommendations`)
+      .subscribe({
+        next: (data) => (this.recommendations = data),
+        error: (err) =>
+          console.error('Fehler beim Laden der Empfehlungen', err),
+      });
+  }
+
+  startMatch(id: string): void {
+    this.http.post(`${API_URL}/matches/${id}/start`, {}).subscribe(() => {
+      this.loadData();
+      this.loadRecommendations();
+    });
   }
 
   deleteSeason(): void {

@@ -20,6 +20,66 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
   res.json(matches);
 });
 
+// 🔮 GET /matches/recommendations – empfohlene nächste Spiele
+router.get(
+  "/recommendations",
+  async (_req: Request, res: Response): Promise<void> => {
+    const all = await prisma.match.findMany();
+
+    const lastPlayed: Record<string, Date> = {};
+    const inProgress: Record<string, number> = {};
+
+    for (const m of all) {
+      if (m.scheduledAt && !m.playedAt) {
+        inProgress[m.gameId] = (inProgress[m.gameId] || 0) + 1;
+      }
+      const ref = m.playedAt ?? m.scheduledAt;
+      if (ref) {
+        if (!lastPlayed[m.team1Id] || lastPlayed[m.team1Id] < ref)
+          lastPlayed[m.team1Id] = ref;
+        if (!lastPlayed[m.team2Id] || lastPlayed[m.team2Id] < ref)
+          lastPlayed[m.team2Id] = ref;
+      }
+    }
+
+    const open = all.filter((m) => !m.scheduledAt && !m.playedAt);
+
+    const ranked = open
+      .map((m) => {
+        const last1 = lastPlayed[m.team1Id] ?? new Date(0);
+        const last2 = lastPlayed[m.team2Id] ?? new Date(0);
+        const score = Math.max(last1.getTime(), last2.getTime());
+        return { m, score };
+      })
+      .sort((a, b) => {
+        const gameDiff =
+          (inProgress[a.m.gameId] || 0) - (inProgress[b.m.gameId] || 0);
+        if (gameDiff !== 0) return gameDiff;
+        return a.score - b.score;
+      })
+      .map((r) => r.m);
+
+  res.json(ranked);
+  }
+);
+
+// ▶️ POST /matches/:id/start – Spiel starten (für alle Nutzer)
+router.post(
+  "/:id/start",
+  async (req: Request, res: Response): Promise<void> => {
+    const { id } = req.params;
+    try {
+      const match = await prisma.match.update({
+        where: { id },
+        data: { scheduledAt: new Date() },
+      });
+      res.json(match);
+    } catch {
+      res.status(404).json({ error: "Match nicht gefunden" });
+    }
+  }
+);
+
 // ✅ GET /matches/:id – Match-Details
 router.get("/:id", async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
@@ -43,6 +103,7 @@ router.get("/:id", async (req: Request, res: Response): Promise<void> => {
 
   res.json(match);
 });
+
 
 // ✅ POST /matches – neues Match anlegen
 router.post(
