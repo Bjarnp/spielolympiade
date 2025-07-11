@@ -82,9 +82,13 @@ export class HistoryComponent {
   }
 
   deleteSeason(id: string): void {
-    this.http.delete(`${API_URL}/seasons/${id}`).subscribe(() => {
-      this.selected = null;
-      this.loadSeasons();
-    });
+    const password = prompt('Bitte Passwort zum Löschen eingeben:');
+    if (!password) return;
+    this.http
+      .request('delete', `${API_URL}/seasons/${id}`, { body: { password } })
+      .subscribe(() => {
+        this.selected = null;
+        this.loadSeasons();
+      });
   }
 }

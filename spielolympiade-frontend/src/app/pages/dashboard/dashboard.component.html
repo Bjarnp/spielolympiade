@@ -108,6 +108,7 @@
 
   <section *ngIf="activeGameDay">
     <h2>Spiele</h2>
+    <h3>Aktuelle Begegnungen</h3>
     <div class="filters">
       <button mat-raised-button (click)="setFilter('all')">Alle Begegnungen</button>
       <button mat-raised-button (click)="setFilter('open')">Offen</button>
@@ -118,15 +119,45 @@
       <li *ngFor="let r of filteredGames">
         {{ getGameName(r.gameId) }} |
         {{ getTeamName(r.team1Id) }}
-        <input *ngIf="auth.getUser()?.role === 'admin'" type="number" [(ngModel)]="r.team1Score" style="width:40px" />
-        <span *ngIf="auth.getUser()?.role !== 'admin'">({{ r.team1Score ?? '-' }})</span>
+        <ng-container *ngIf="auth.getUser()?.role === 'admin'; else view1">
+          <select [(ngModel)]="r.team1Score" (ngModelChange)="setWinner(r, $event == null ? 'none' : ($event == 1 ? 'team1' : 'team2'))">
+            <option [ngValue]="null">offen</option>
+            <option [ngValue]="1">gewonnen</option>
+            <option [ngValue]="0">verloren</option>
+          </select>
+        </ng-container>
+        <ng-template #view1>({{ r.team1Score ?? '-' }})</ng-template>
         –
         {{ getTeamName(r.team2Id) }}
-        <input *ngIf="auth.getUser()?.role === 'admin'" type="number" [(ngModel)]="r.team2Score" style="width:40px" />
-        <span *ngIf="auth.getUser()?.role !== 'admin'">({{ r.team2Score ?? '-' }})</span>
-        <button *ngIf="auth.getUser()?.role === 'admin'" mat-button color="accent" (click)="saveResultFor(r)">Speichern</button>
+        <ng-container *ngIf="auth.getUser()?.role === 'admin'; else view2">
+          <select [(ngModel)]="r.team2Score" (ngModelChange)="setWinner(r, $event == null ? 'none' : ($event == 1 ? 'team2' : 'team1'))">
+            <option [ngValue]="null">offen</option>
+            <option [ngValue]="1">gewonnen</option>
+            <option [ngValue]="0">verloren</option>
+          </select>
+        </ng-container>
+        <ng-template #view2>({{ r.team2Score ?? '-' }})</ng-template>
+        <button *ngIf="auth.getUser()?.role === 'admin'" mat-icon-button color="accent" (click)="toggleSave(r)">
+          <mat-icon>{{ r.saved ? 'edit' : 'save' }}</mat-icon>
+        </button>
       </li>
     </ul>
+    <div *ngIf="auth.getUser()?.role === 'admin'" class="new-match">
+      <h4>Neues Spiel</h4>
+      <select [(ngModel)]="newMatch.team1Id">
+        <option value="" disabled selected>Team 1</option>
+        <option *ngFor="let t of allTeams" [value]="t.id">{{ t.name }}</option>
+      </select>
+      <select [(ngModel)]="newMatch.team2Id">
+        <option value="" disabled selected>Team 2</option>
+        <option *ngFor="let t of allTeams" [value]="t.id">{{ t.name }}</option>
+      </select>
+      <select [(ngModel)]="newMatch.gameId">
+        <option value="" disabled selected>Spiel</option>
+        <option *ngFor="let g of allGames" [value]="g.id">{{ g.name }}</option>
+      </select>
+      <button mat-raised-button color="primary" (click)="createMatch()">Anlegen</button>
+    </div>
   </section>
 
 
