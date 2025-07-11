@@ -1,7 +1,7 @@
 <div class="dashboard">
   <div class="info" *ngIf="!seasonActive">
     <p>
-      Die Spielolympiade beginnt bald!
+      Die Spielolympiade beginnt bald! Die nächste Spielolympiade ist dieses Jahr 2025.
       <a routerLink="/history">Werfe doch ein Blick in die Historie!</a>
     </p>
     <button
@@ -174,8 +174,16 @@
             </button>
           </td>
         </tr>
-      </tbody>
-    </table>
+    </tbody>
+  </table>
     </section>
+    <button
+      mat-raised-button
+      color="primary"
+      *ngIf="auth.getUser()?.role === 'admin'"
+      (click)="finishSeason()"
+    >
+      Saison speichern
+    </button>
   </ng-container>
 </div>

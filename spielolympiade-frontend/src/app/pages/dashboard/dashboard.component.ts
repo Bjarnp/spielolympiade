@@ -281,4 +281,16 @@ export class DashboardComponent {
         this.loadData();
       });
   }
+
+  finishSeason(): void {
+    if (!this.team?.seasonId) return;
+    const password = prompt('Bitte Passwort zum Speichern eingeben:');
+    if (!password) return;
+    this.http
+      .post(`${API_URL}/seasons/${this.team.seasonId}/finish`, { password })
+      .subscribe(() => {
+        this.seasonActive = false;
+        this.loadData();
+      });
+  }
 }
