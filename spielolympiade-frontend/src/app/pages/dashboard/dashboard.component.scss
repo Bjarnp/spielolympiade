@@ -13,13 +13,8 @@
     margin-bottom: 1rem;
   }
 
-  ul {
-    list-style: none;
-    padding-left: 0;
-
-    li {
-      margin-bottom: 0.5rem;
-    }
+  mat-list-item {
+    margin-bottom: 0.5rem;
   }
 }
 
@@ -30,6 +25,11 @@
 .table-card {
   padding: 1rem;
   margin-bottom: 1rem;
+}
+
+.group-card,
+.matches-card {
+  margin-top: 1rem;
 }
 
 .table-wrapper {
@@ -68,4 +68,17 @@
   display: flex;
   gap: 0.5rem;
   align-items: center;
+}
+
+.new-match-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin-top: 1rem;
+}
+
+.score-select {
+  width: 100px;
+  margin: 0 0.5rem;
 }
