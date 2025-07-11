@@ -176,6 +176,17 @@ export class DashboardComponent {
     return this.allGames.find((g) => g.id === id)?.name ?? id;
   }
 
+  updateResult(m: any, team: 'team1' | 'team2', value: number): void {
+    if (team === 'team1') {
+      m.team1Score = value;
+      m.team2Score = value === 1 ? 0 : 1;
+    } else {
+      m.team2Score = value;
+      m.team1Score = value === 1 ? 0 : 1;
+    }
+    m.saved = false;
+  }
+
   saveResultFor(m: any): void {
     this.http
       .put(`${API_URL}/matches/${m.id}/result`, {

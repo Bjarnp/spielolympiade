@@ -130,25 +130,52 @@
       <button mat-raised-button (click)="setFilter('played')">Gespielt</button>
       <mat-checkbox [(ngModel)]="onlyMine" (change)="applyFilters()">Nur meine Spiele</mat-checkbox>
     </div>
-    <ul>
-      <li *ngFor="let r of filteredGames">
-        {{ getGameName(r.gameId) }} |
-        {{ getTeamName(r.team1Id) }}
-        <input *ngIf="auth.getUser()?.role === 'admin'" type="number" [(ngModel)]="r.team1Score" style="width:40px" />
-        <span *ngIf="auth.getUser()?.role !== 'admin'">({{ r.team1Score ?? '-' }})</span>
-        –
-        {{ getTeamName(r.team2Id) }}
-        <input *ngIf="auth.getUser()?.role === 'admin'" type="number" [(ngModel)]="r.team2Score" style="width:40px" />
-        <span *ngIf="auth.getUser()?.role !== 'admin'">({{ r.team2Score ?? '-' }})</span>
-        <button *ngIf="auth.getUser()?.role === 'admin'" mat-button color="accent" (click)="saveResultFor(r)">Speichern</button>
-      </li>
-    </ul>
-  </section>
-  <button
-    mat-raised-button
-    color="warn"
-    *ngIf="auth.getUser()?.role === 'admin'"
-    (click)="deleteSeason()"
-  >Löschen</button>
+    <table class="result-table">
+      <thead>
+        <tr>
+          <th>Spiel</th>
+          <th>Team 1</th>
+          <th>Ergebnis</th>
+          <th>Team 2</th>
+          <th>Ergebnis</th>
+          <th *ngIf="auth.getUser()?.role === 'admin'"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let r of filteredGames">
+          <td>{{ getGameName(r.gameId) }}</td>
+          <td>{{ getTeamName(r.team1Id) }}</td>
+          <td>
+            <ng-container *ngIf="auth.getUser()?.role === 'admin'; else t1score">
+              <mat-form-field appearance="fill" class="score-select">
+                <mat-select [ngModel]="r.team1Score" (ngModelChange)="updateResult(r, 'team1', $event)">
+                  <mat-option [value]="1">gewonnen</mat-option>
+                  <mat-option [value]="0">verloren</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </ng-container>
+            <ng-template #t1score>{{ r.team1Score ?? '-' }}</ng-template>
+          </td>
+          <td>{{ getTeamName(r.team2Id) }}</td>
+          <td>
+            <ng-container *ngIf="auth.getUser()?.role === 'admin'; else t2score">
+              <mat-form-field appearance="fill" class="score-select">
+                <mat-select [ngModel]="r.team2Score" (ngModelChange)="updateResult(r, 'team2', $event)">
+                  <mat-option [value]="1">gewonnen</mat-option>
+                  <mat-option [value]="0">verloren</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </ng-container>
+            <ng-template #t2score>{{ r.team2Score ?? '-' }}</ng-template>
+          </td>
+          <td class="action-cell" *ngIf="auth.getUser()?.role === 'admin'">
+            <button mat-icon-button color="accent" (click)="toggleSave(r)">
+              <mat-icon>{{ r.saved ? 'edit' : 'save' }}</mat-icon>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    </section>
   </ng-container>
 </div>
