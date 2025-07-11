@@ -22,6 +22,7 @@ export class HistoryComponent {
   teamFilter = 'all';
   gameOptions: any[] = [];
   teamOptions: any[] = [];
+  tableData: any[] = [];
 
   ngOnInit(): void {
     this.loadSeasons();
@@ -45,6 +46,7 @@ export class HistoryComponent {
         this.teamOptions = this.selected.teams;
         this.gameFilter = 'all';
         this.teamFilter = 'all';
+        this.updateTable();
       });
   }
 
@@ -64,5 +66,37 @@ export class HistoryComponent {
       );
     }
     return matches;
+  }
+
+  onGameFilterChange(): void {
+    this.updateTable();
+  }
+
+  updateTable(): void {
+    if (!this.selected) {
+      this.tableData = [];
+      return;
+    }
+    let matches = this.selected.tournaments[0]?.matches.filter((m: any) => m.winnerId) || [];
+    if (this.gameFilter !== 'all') {
+      matches = matches.filter((m: any) => m.game.id === this.gameFilter);
+    }
+    const teams = this.selected.teams;
+    const table = teams.map((t: any) => {
+      const teamMatches = matches.filter((m: any) => m.team1Id === t.id || m.team2Id === t.id);
+      const wins = teamMatches.filter((m: any) => m.winnerId === t.id).length;
+      const games = teamMatches.length;
+      const losses = games - wins;
+      return {
+        id: t.id,
+        name: t.name,
+        spiele: games,
+        siege: wins,
+        niederlagen: losses,
+        points: wins,
+      };
+    });
+    table.sort((a: any, b: any) => b.points - a.points);
+    this.tableData = table;
   }
 }

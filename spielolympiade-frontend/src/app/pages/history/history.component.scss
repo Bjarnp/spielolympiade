@@ -29,3 +29,17 @@ ul {
     text-align: left;
   }
 }
+
+.score-table {
+  margin-top: 1rem;
+  width: 100%;
+  border-collapse: collapse;
+  th,
+  td {
+    padding: 0.25rem 0.5rem;
+    border-bottom: 1px solid #ccc;
+  }
+  th {
+    text-align: left;
+  }
+}
