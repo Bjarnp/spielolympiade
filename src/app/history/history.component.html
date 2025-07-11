@@ -17,10 +17,12 @@
   </div>
 
   <ul class="list-group">
-    <li class="list-group-item d-flex justify-content-between align-items-center" *ngFor="let result of filteredResults">
-      <span>{{ getGameName(result.gameId) }}</span>
-      <span class="fw-bold">{{ formatResult(result) }}</span>
-      <button class="btn btn-danger btn-sm" (click)="deleteResult(result.id)">Löschen</button>
-    </li>
+      <li class="list-group-item d-flex justify-content-between align-items-center" *ngFor="let result of filteredResults">
+        <span>{{ getGameName(result.gameId) }}</span>
+        <span class="fw-bold">
+          {{ result.team1Id | teamName }} {{ result.team1Score }}:{{ result.team2Score }} {{ result.team2Id | teamName }}
+        </span>
+        <button class="btn btn-danger btn-sm" (click)="deleteResult(result.id)">Löschen</button>
+      </li>
   </ul>
 </div>
