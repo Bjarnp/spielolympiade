@@ -29,7 +29,7 @@
     </mat-form-field>
     <mat-form-field class="players-select">
       <mat-select multiple [(ngModel)]="newTeamPlayers" placeholder="Spieler">
-        <mat-option *ngFor="let p of selectedPlayers" [value]="p.id">
+        <mat-option *ngFor="let p of availablePlayers()" [value]="p.id">
           {{ p.name }}
         </mat-option>
       </mat-select>
@@ -55,6 +55,7 @@
         <mat-option value="round_robin">Jeder gegen Jeden</mat-option>
         <mat-option value="single_elim">K.O.</mat-option>
         <mat-option value="double_elim">Double K.O.</mat-option>
+        <mat-option value="group_ko">Gruppenphase + K.O.</mat-option>
       </mat-select>
     </mat-form-field>
     <p class="beer-info">Bier pro Person: {{ getBeerCount() }}</p>
@@ -89,6 +90,9 @@
     </p>
     <p *ngIf="system === 'double_elim'">
       Beim Double K.O. scheidet ein Team erst nach zwei Niederlagen aus.
+    </p>
+    <p *ngIf="system === 'group_ko'">
+      Teams spielen zunächst in Gruppen und die Besten treten im K.O.-System an.
     </p>
     <p>Jeder spielt etwa {{ getBeerCount() }} Bier.</p>
   </mat-dialog-content>

@@ -58,9 +58,7 @@ export class StartSeasonComponent {
 
   ngOnInit(): void {
     this.http.get<any[]>(`${API_URL}/users`).subscribe((u) => (this.players = u));
-    this.http
-      .get<any>(`${API_URL}/seasons/public/dashboard-data`)
-      .subscribe((d) => (this.games = d.games));
+    this.http.get<any[]>(`${API_URL}/games`).subscribe((g) => (this.games = g));
   }
 
 
@@ -87,6 +85,11 @@ export class StartSeasonComponent {
 
   removeTeam(index: number): void {
     this.teams.splice(index, 1);
+  }
+
+  availablePlayers(): any[] {
+    const used = this.teams.flatMap((t) => t.playerIds);
+    return this.selectedPlayers.filter((p) => !used.includes(p.id));
   }
 
   generateTeams(): void {
@@ -125,11 +128,13 @@ export class StartSeasonComponent {
     if (teams <= 1) return 0;
     switch (this.system) {
       case 'round_robin':
-        return teams - 1;
+        return (teams - 1) * this.selectedGameIds.length;
       case 'single_elim':
-        return Math.ceil(Math.log2(teams));
+        return Math.ceil(Math.log2(teams)) * this.selectedGameIds.length;
       case 'double_elim':
-        return 2 * Math.ceil(Math.log2(teams));
+        return 2 * Math.ceil(Math.log2(teams)) * this.selectedGameIds.length;
+      case 'group_ko':
+        return (teams - 1) * this.selectedGameIds.length;
       default:
         return 0;
     }
