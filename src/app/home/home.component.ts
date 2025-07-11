@@ -5,6 +5,7 @@ import { TournamentService } from '../tournament.service';
 import { Team } from '../models/team.model';
 import { Game } from '../models/game.model';
 import { Result } from '../models/result.model';
+import { AuthService } from '../auth.service';
 
 @Component({
   selector: 'app-home',
@@ -28,7 +29,7 @@ export class HomeComponent implements OnInit {
     team2Score: '0'
   };
 
-  constructor(private tournamentService: TournamentService) { }
+  constructor(private tournamentService: TournamentService, public auth: AuthService) { }
 
   ngOnInit(): void {
     this.loadTeams();
@@ -98,6 +99,14 @@ export class HomeComponent implements OnInit {
             this.newResult.team1Score = '1';
         }
     }
+  }
+
+  clearAllResults(): void {
+    if (confirm('Alle Ergebnisse löschen?')) {
+      this.tournamentService.clearAllResults().subscribe(() => {
+        this.ngOnInit();
+      });
+    }
+  }
 }
 
-}

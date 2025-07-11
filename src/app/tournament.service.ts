@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, forkJoin, of } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 import { Team } from './models/team.model';
 import { Player } from './models/player.model';
@@ -219,5 +219,21 @@ updateTeamStatsAfterDeletion(result: Result): Observable<void> {
     })
   );
 }
+
+  clearAllResults(): Observable<void> {
+    return this.getResults().pipe(
+      switchMap(results => {
+        if (results.length === 0) {
+          return of(void 0);
+        }
+        const ops = results.map(r =>
+          this.deleteResult(r.id).pipe(
+            switchMap(() => this.updateTeamStatsAfterDeletion(r))
+          )
+        );
+        return forkJoin(ops).pipe(map(() => void 0));
+      })
+    );
+  }
 
 }

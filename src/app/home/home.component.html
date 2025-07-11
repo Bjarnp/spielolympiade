@@ -70,5 +70,6 @@
       </button>
     </form>
   </div>
-  
+  <button *ngIf="auth.isAdmin()" class="btn btn-danger mt-3" (click)="clearAllResults()">Alle Ergebnisse löschen</button>
+
 </div>
