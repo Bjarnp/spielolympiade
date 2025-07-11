@@ -26,6 +26,7 @@ export class HistoryComponent {
   teamFilter = 'all';
   gameOptions: any[] = [];
   teamOptions: any[] = [];
+  tableData: any[] = [];
 
   ngOnInit(): void {
     this.loadSeasons();
@@ -49,6 +50,7 @@ export class HistoryComponent {
         this.teamOptions = this.selected.teams;
         this.gameFilter = 'all';
         this.teamFilter = 'all';
+        this.updateTable();
       });
   }
 
