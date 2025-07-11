@@ -25,3 +25,9 @@ Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To u
 ## Further help
 
 To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+
+## Game management
+
+Navigate to the **Spiele** page in the running application to maintain the list of games. You can
+create new game entries manually by providing a name and description. Newly created games then
+appear in the dropdown when adding results on the home page.
