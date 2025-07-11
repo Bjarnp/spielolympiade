@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { RouterOutlet, RouterLink } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
@@ -25,10 +25,17 @@ import { OverlayContainer } from '@angular/cdk/overlay';
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   darkMode = false;
 
   constructor(public auth: AuthService, private overlayContainer: OverlayContainer) {}
+
+  ngOnInit(): void {
+    const saved = localStorage.getItem('darkMode');
+    if (saved === 'true') {
+      this.toggleDarkMode(true);
+    }
+  }
 
   logout(): void {
     this.auth.logout();
@@ -36,6 +43,7 @@ export class AppComponent {
 
   toggleDarkMode(isDark: boolean): void {
     this.darkMode = isDark;
+    localStorage.setItem('darkMode', `${isDark}`);
     const classList = this.overlayContainer.getContainerElement().classList;
     if (isDark) {
       document.body.classList.add('dark-theme');
