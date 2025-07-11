@@ -3,6 +3,9 @@
   <ul>
     <li *ngFor="let s of seasons">
       <button (click)="selectSeason(s.id)">{{ s.name }}</button>
+      <button *ngIf="auth.getUser()?.role === 'admin'" (click)="deleteSeason(s.id)" mat-icon-button>
+        <mat-icon>delete</mat-icon>
+      </button>
     </li>
   </ul>
 

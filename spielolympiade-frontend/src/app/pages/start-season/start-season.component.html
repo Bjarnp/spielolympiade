@@ -18,9 +18,9 @@
       <mat-form-field>
         <input matInput [(ngModel)]="t.name" placeholder="Teamname" />
       </mat-form-field>
-      <span>{{ t.playerIds.map(getPlayerName).join(', ') }}</span>
+      <span>{{ formatPlayers(t.playerIds) }}</span>
       <button mat-icon-button color="warn" (click)="removeTeam(i)">
-        <mat-icon fontIcon="delete"></mat-icon>
+        <mat-icon>delete</mat-icon>
       </button>
     </div>
     <h4>Manuell hinzufügen</h4>
@@ -69,7 +69,7 @@
     <p>{{ name }} ({{ year }})</p>
     <ul>
       <li *ngFor="let t of teams">
-        {{ t.name }} - {{ t.playerIds.map(getPlayerName).join(', ') }}
+        {{ t.name }} - {{ formatPlayers(t.playerIds) }}
       </li>
     </ul>
     <p>Spiele: {{ selectedGameIds.map(getGameName).join(', ') }}</p>

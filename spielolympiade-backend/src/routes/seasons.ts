@@ -22,7 +22,7 @@ router.get(
       });
 
       if (!season) {
-        res.json({ teams: [], games: [], results: [] });
+        res.json({ teams: [], games: [], tournament: null });
         return;
       }
 
@@ -30,11 +30,12 @@ router.get(
         where: { seasonId: season.id },
       });
       const games = await prisma.game.findMany();
-      const results = await prisma.matchResult.findMany({
-        where: { match: { tournament: { seasonId: season.id } } },
+      const tournament = await prisma.tournament.findFirst({
+        where: { seasonId: season.id },
+        include: { matches: { include: { results: true } } },
       });
 
-      res.json({ teams, games, results });
+      res.json({ teams, games, tournament });
     } catch (err) {
       console.error("Fehler beim Laden der Dashboard-Daten:", err);
       res.status(500).json({ error: "Interner Serverfehler" });
@@ -229,7 +230,9 @@ router.post(
       return;
     }
 
-    const season = await prisma.season.create({ data: { year, name } });
+    const season = await prisma.season.create({
+      data: { year, name, isActive: true },
+    });
     const tournament = await prisma.tournament.create({
       data: { seasonId: season.id, system: system || "round_robin" },
     });
@@ -311,6 +314,30 @@ router.post(
     });
 
     res.json(season);
+  }
+);
+
+// ❌ Saison löschen
+router.delete(
+  "/:id",
+  authorizeRole("admin"),
+  async (req: Request, res: Response): Promise<void> => {
+    const { id } = req.params;
+
+    await prisma.matchResult.deleteMany({
+      where: { match: { tournament: { seasonId: id } } },
+    });
+    await prisma.match.deleteMany({
+      where: { tournament: { seasonId: id } },
+    });
+    await prisma.teamMember.deleteMany({
+      where: { team: { seasonId: id } },
+    });
+    await prisma.team.deleteMany({ where: { seasonId: id } });
+    await prisma.tournament.deleteMany({ where: { seasonId: id } });
+    await prisma.season.delete({ where: { id } });
+
+    res.json({ success: true });
   }
 );
 

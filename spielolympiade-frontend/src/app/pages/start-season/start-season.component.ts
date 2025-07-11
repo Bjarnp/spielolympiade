@@ -44,6 +44,8 @@ export class StartSeasonComponent {
   year = new Date().getFullYear() + 1;
   name = 'Spielolympiade ' + this.year;
 
+  seasons: any[] = [];
+
   players: any[] = [];
   selectedPlayers: any[] = [];
 
@@ -59,12 +61,25 @@ export class StartSeasonComponent {
   ngOnInit(): void {
     this.http.get<any[]>(`${API_URL}/users`).subscribe((u) => (this.players = u));
     this.http.get<any[]>(`${API_URL}/games`).subscribe((g) => (this.games = g));
+    this.http.get<any[]>(`${API_URL}/seasons`).subscribe((s) => {
+      this.seasons = s;
+      const maxYear = this.seasons.reduce(
+        (max, cur) => (cur.year > max ? cur.year : max),
+        new Date().getFullYear()
+      );
+      this.year = maxYear + 1;
+      this.name = 'Spielolympiade ' + this.year;
+    });
   }
 
 
   getPlayerName = (id: string): string => {
     return this.players.find((p) => p.id === id)?.name ?? id;
   };
+
+  formatPlayers(ids: string[]): string {
+    return ids.map((id) => this.getPlayerName(id)).join(', ');
+  }
 
   getGameName = (id: string): string => {
     return this.games.find((g) => g.id === id)?.name ?? id;
@@ -122,7 +137,7 @@ export class StartSeasonComponent {
   openInfo(): void {
     this.dialog.open(this.systemInfo);
   }
-  
+
   getBeerInfo(): string {
     const teams = this.teams.length;
     const games = this.selectedGameIds.length || 1;
