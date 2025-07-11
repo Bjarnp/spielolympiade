@@ -4,6 +4,7 @@ import { Game } from '../models/game.model';
 import { Result } from '../models/result.model';
 import {Team} from '../models/team.model'
 import { NgFor } from '@angular/common';
+import { TeamNamePipe } from '../team-name.pipe';
 import { FormsModule } from '@angular/forms';
 
 @Component({
@@ -11,7 +12,7 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './history.component.html',
   styleUrls: ['./history.component.css'],
   standalone: true,
-  imports: [NgFor, FormsModule],
+  imports: [NgFor, FormsModule, TeamNamePipe],
 })
 export class HistoryComponent implements OnInit {
   results: Result[] = [];
