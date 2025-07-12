@@ -10,8 +10,8 @@ import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatSelectModule } from '@angular/material/select';
 import { MatIconModule } from '@angular/material/icon';
-import { MatListModule } from "@angular/material/list";
-import { MatDividerModule } from "@angular/material/divider";
+import { MatListModule } from '@angular/material/list';
+import { MatDividerModule } from '@angular/material/divider';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../core/auth.service';
 import { environment } from '../../../environments/environment';
@@ -55,7 +55,14 @@ export class DashboardComponent {
   tableData: any[] = [];
   dataSource = new MatTableDataSource<any>();
   @ViewChild(MatSort) sort!: MatSort;
-  displayedColumns = ['place', 'name', 'spiele', 'siege', 'niederlagen', 'punkte'];
+  displayedColumns = [
+    'place',
+    'name',
+    'spiele',
+    'siege',
+    'niederlagen',
+    'punkte',
+  ];
   seasonYear = '';
   activeGameDay = true; // optional: später dynamisch machen
   seasonActive = false;
@@ -121,8 +128,10 @@ export class DashboardComponent {
         this.allMatches = (data.tournament ? data.tournament.matches : []).map(
           (m: any) => ({
             ...m,
-            team1Score: m.results.find((r: any) => r.teamId === m.team1Id)?.score ?? null,
-            team2Score: m.results.find((r: any) => r.teamId === m.team2Id)?.score ?? null,
+            team1Score:
+              m.results.find((r: any) => r.teamId === m.team1Id)?.score ?? null,
+            team2Score:
+              m.results.find((r: any) => r.teamId === m.team2Id)?.score ?? null,
             saved: true,
           })
         );
@@ -221,7 +230,9 @@ export class DashboardComponent {
     }
   }
 
-  groupStandings(gameId: string): Record<string, { teamId: string; points: number }[]> {
+  groupStandings(
+    gameId: string
+  ): Record<string, { teamId: string; points: number }[]> {
     const groups: Record<string, { teamId: string; points: number }[]> = {};
     const matches = this.allMatches.filter(
       (m) => m.gameId === gameId && m.stage === 'group'
@@ -273,7 +284,9 @@ export class DashboardComponent {
     }
   }
 
-  overallStandings(gameId: string): { teamId: string; wins: number; losses: number; ratio: number }[] {
+  overallStandings(
+    gameId: string
+  ): { teamId: string; wins: number; losses: number; ratio: number }[] {
     if (!this.groupPhaseComplete(gameId)) return [];
     const stats: Record<string, { wins: number; losses: number }> = {};
     const matches = this.allMatches.filter(
@@ -304,14 +317,11 @@ export class DashboardComponent {
     );
 
     if (final && third) {
-      const finalLoser = final.team1Id === final.winnerId ? final.team2Id : final.team1Id;
-      const thirdLoser = third.team1Id === third.winnerId ? third.team2Id : third.team1Id;
-      const ranking = [
-        final.winnerId,
-        finalLoser,
-        third.winnerId,
-        thirdLoser,
-      ];
+      const finalLoser =
+        final.team1Id === final.winnerId ? final.team2Id : final.team1Id;
+      const thirdLoser =
+        third.team1Id === third.winnerId ? third.team2Id : third.team1Id;
+      const ranking = [final.winnerId, finalLoser, third.winnerId, thirdLoser];
       table = ranking
         .map((t) => table.find((e) => e.teamId === t)!)
         .filter(Boolean)
@@ -326,7 +336,11 @@ export class DashboardComponent {
   }
 
   createMatch(): void {
-    if (!this.newMatch.team1Id || !this.newMatch.team2Id || !this.newMatch.gameId)
+    if (
+      !this.newMatch.team1Id ||
+      !this.newMatch.team2Id ||
+      !this.newMatch.gameId
+    )
       return;
     const payload = {
       tournamentId: this.tournament?.id,
@@ -341,19 +355,9 @@ export class DashboardComponent {
   }
 
   loadRecommendations(): void {
-    this.http
-      .get<any[]>(`${API_URL}/matches/recommendations`)
-      .subscribe({
-        next: (data) => (this.recommendations = data),
-        error: (err) =>
-          console.error('Fehler beim Laden der Empfehlungen', err),
-      });
-  }
-
-  startMatch(id: string): void {
-    this.http.post(`${API_URL}/matches/${id}/start`, {}).subscribe(() => {
-      this.loadData();
-      this.loadRecommendations();
+    this.http.get<any[]>(`${API_URL}/matches/recommendations`).subscribe({
+      next: (data) => (this.recommendations = data),
+      error: (err) => console.error('Fehler beim Laden der Empfehlungen', err),
     });
   }
 
