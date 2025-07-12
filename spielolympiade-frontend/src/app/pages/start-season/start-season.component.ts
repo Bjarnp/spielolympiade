@@ -4,7 +4,10 @@ import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
-import { MatCheckboxModule, MatCheckboxChange } from '@angular/material/checkbox';
+import {
+  MatCheckboxModule,
+  MatCheckboxChange,
+} from '@angular/material/checkbox';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
@@ -31,7 +34,7 @@ const API_URL = environment.apiUrl;
     MatDialogModule,
   ],
   templateUrl: './start-season.component.html',
-  styleUrls: ['./start-season.component.scss']
+  styleUrls: ['./start-season.component.scss'],
 })
 export class StartSeasonComponent {
   http = inject(HttpClient);
@@ -59,7 +62,9 @@ export class StartSeasonComponent {
   system = 'round_robin';
 
   ngOnInit(): void {
-    this.http.get<any[]>(`${API_URL}/users`).subscribe((u) => (this.players = u));
+    this.http
+      .get<any[]>(`${API_URL}/users`)
+      .subscribe((u) => (this.players = u));
     this.http.get<any[]>(`${API_URL}/games`).subscribe((g) => (this.games = g));
     this.http.get<any[]>(`${API_URL}/seasons`).subscribe((s) => {
       this.seasons = s;
@@ -67,11 +72,10 @@ export class StartSeasonComponent {
         (max, cur) => (cur.year > max ? cur.year : max),
         new Date().getFullYear()
       );
-      this.year = maxYear + 1;
+      this.year = maxYear;
       this.name = 'Spielolympiade ' + this.year;
     });
   }
-
 
   getPlayerName = (id: string): string => {
     return this.players.find((p) => p.id === id)?.name ?? id;
@@ -93,7 +97,10 @@ export class StartSeasonComponent {
 
   addTeam(): void {
     if (!this.newTeamName || this.newTeamPlayers.length === 0) return;
-    this.teams.push({ name: this.newTeamName, playerIds: [...this.newTeamPlayers] });
+    this.teams.push({
+      name: this.newTeamName,
+      playerIds: [...this.newTeamPlayers],
+    });
     this.newTeamName = '';
     this.newTeamPlayers = [];
   }
