@@ -291,6 +291,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
         return 'Finale';
       case 'third_place':
         return 'Spiel um Platz 3';
+      case 'extra':
+        return 'Entscheidungsspiel';
       default:
         return stage;
     }
@@ -302,16 +304,19 @@ export class DashboardComponent implements OnInit, OnDestroy {
     if (!this.groupPhaseComplete(gameId)) return [];
     const stats: Record<string, { wins: number; losses: number }> = {};
     const matches = this.allMatches.filter(
-      (m) => m.gameId === gameId && m.stage === 'group'
+      (m) =>
+        m.gameId === gameId &&
+        ['group', 'semi_final', 'final', 'third_place', 'extra'].includes(
+          m.stage
+        ) &&
+        m.winnerId
     );
     for (const m of matches) {
       stats[m.team1Id] = stats[m.team1Id] || { wins: 0, losses: 0 };
       stats[m.team2Id] = stats[m.team2Id] || { wins: 0, losses: 0 };
-      if (m.winnerId) {
-        const loser = m.team1Id === m.winnerId ? m.team2Id : m.team1Id;
-        stats[m.winnerId].wins += 1;
-        stats[loser].losses += 1;
-      }
+      const loser = m.team1Id === m.winnerId ? m.team2Id : m.team1Id;
+      stats[m.winnerId].wins += 1;
+      stats[loser].losses += 1;
     }
 
     const totalTeams = Object.keys(stats).length;
@@ -372,6 +377,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       gameId: this.newMatch.gameId,
       team1Id: this.newMatch.team1Id,
       team2Id: this.newMatch.team2Id,
+      stage: 'extra',
     };
     this.http.post(`${API_URL}/matches`, payload).subscribe(() => {
       this.newMatch = { team1Id: '', team2Id: '', gameId: '' };
