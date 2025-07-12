@@ -1,4 +1,4 @@
-import { Component, inject, ViewChild } from '@angular/core';
+import { Component, inject, ViewChild, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -41,7 +41,7 @@ const API_URL = environment.apiUrl;
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss'],
 })
-export class DashboardComponent {
+export class DashboardComponent implements OnInit, OnDestroy {
   auth = inject(AuthService);
   http = inject(HttpClient);
   team: any;
@@ -77,10 +77,22 @@ export class DashboardComponent {
   filteredGames: any[] = [];
   recommendations: any[] = [];
 
+  private refreshInterval: any;
+
   ngOnInit(): void {
     this.loadMyTeam();
     this.loadData();
     this.loadRecommendations();
+
+    this.refreshInterval = setInterval(() => {
+      this.loadMyTeam();
+      this.loadData();
+      this.loadRecommendations();
+    }, 10000);
+  }
+
+  ngOnDestroy(): void {
+    clearInterval(this.refreshInterval);
   }
 
   loadMyTeam(): void {
