@@ -146,8 +146,18 @@
                 <th mat-header-cell *matHeaderCellDef>Quote</th>
                 <td mat-cell *matCellDef="let row">{{ row.ratio | number:'1.2-2' }}</td>
               </ng-container>
-              <tr mat-header-row *matHeaderRowDef="['rank','team','ratio']"></tr>
-              <tr mat-row *matRowDef="let row; columns: ['rank','team','ratio']"></tr>
+              <ng-container matColumnDef="points">
+                <th mat-header-cell *matHeaderCellDef>Punkte</th>
+                <td mat-cell *matCellDef="let row">{{ row.points }}</td>
+              </ng-container>
+              <tr
+                mat-header-row
+                *matHeaderRowDef="['rank', 'team', 'ratio', 'points']"
+              ></tr>
+              <tr
+                mat-row
+                *matRowDef="let row; columns: ['rank', 'team', 'ratio', 'points']"
+              ></tr>
             </table>
           </div>
           <h4>K.O.-Phase</h4>

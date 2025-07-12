@@ -1,4 +1,14 @@
-import { PrismaClient, Match } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
+
+interface BasicMatch {
+  id: string;
+  gameId: string;
+  team1Id: string;
+  team2Id: string;
+  winnerId: string | null;
+  stage: string | null;
+  groupName: string | null;
+}
 
 const prisma = new PrismaClient();
 
@@ -95,7 +105,7 @@ export async function progressTournament(tournamentId: string): Promise<void> {
   }
 }
 
-export function calculateGroupKoStandings(matches: Match[]): {
+export function calculateGroupKoStandings(matches: BasicMatch[]): {
   teamId: string;
   wins: number;
   losses: number;
@@ -152,11 +162,11 @@ export function calculateGroupKoStandings(matches: Match[]): {
         })
     );
 
-  const pointsTable = [8, 6, 4, 3, 2, 1];
+  const totalTeams = ordered.length;
   return ordered.map((e, idx) => ({
     ...e,
     rank: idx + 1,
-    points: pointsTable[idx] ?? 0,
+    points: Math.max(totalTeams - idx - 1, 0),
   }));
 }
 
