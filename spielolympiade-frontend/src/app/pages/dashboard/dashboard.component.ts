@@ -84,11 +84,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.loadData();
     this.loadRecommendations();
 
-    this.refreshInterval = setInterval(() => {
-      this.loadMyTeam();
-      this.loadData();
-      this.loadRecommendations();
-    }, 10000);
+    const user = this.auth.getUser();
+    if (user?.role !== 'admin') {
+      this.refreshInterval = setInterval(() => {
+        this.loadMyTeam();
+        this.loadData();
+        this.loadRecommendations();
+      }, 10000);
+    }
   }
 
   ngOnDestroy(): void {
@@ -301,35 +304,32 @@ export class DashboardComponent implements OnInit, OnDestroy {
   overallStandings(
     gameId: string
   ): { teamId: string; wins: number; losses: number; ratio: number; points: number; rank: number }[] {
-    if (!this.groupPhaseComplete(gameId)) return [];
     const stats: Record<string, { wins: number; losses: number }> = {};
-    const matches = this.allMatches.filter(
-      (m) =>
-        m.gameId === gameId &&
-        ['group', 'semi_final', 'final', 'third_place', 'extra'].includes(
-          m.stage
-        ) &&
-        m.winnerId
-    );
+    const matches = this.allMatches.filter((m) => m.gameId === gameId);
+
+    // nur Gruppenspiele für die Statistik berücksichtigen
+    for (const m of matches.filter((x) => x.stage === 'group')) {
+      stats[m.team1Id] = stats[m.team1Id] || { wins: 0, losses: 0 };
+      stats[m.team2Id] = stats[m.team2Id] || { wins: 0, losses: 0 };
+      if (m.winnerId) {
+        const loser = m.team1Id === m.winnerId ? m.team2Id : m.team1Id;
+        stats[m.winnerId].wins += 1;
+        stats[loser].losses += 1;
+      }
+    }
+
+    // sicherstellen, dass jedes Team vorkommt
     for (const m of matches) {
       stats[m.team1Id] = stats[m.team1Id] || { wins: 0, losses: 0 };
       stats[m.team2Id] = stats[m.team2Id] || { wins: 0, losses: 0 };
-      const loser = m.team1Id === m.winnerId ? m.team2Id : m.team1Id;
-      stats[m.winnerId].wins += 1;
-      stats[loser].losses += 1;
     }
 
-    const totalTeams = Object.keys(stats).length;
-    let table: { teamId: string; wins: number; losses: number; ratio: number; points: number; rank: number }[] = Object.entries(stats).map(
-      ([teamId, s]) => ({
-        teamId,
-        wins: s.wins,
-        losses: s.losses,
-        ratio: s.wins + s.losses > 0 ? s.wins / (s.wins + s.losses) : 0,
-        points: 0,
-        rank: 0,
-      })
-    );
+    let table = Object.entries(stats).map(([teamId, s]) => ({
+      teamId,
+      wins: s.wins,
+      losses: s.losses,
+      ratio: s.wins + s.losses > 0 ? s.wins / (s.wins + s.losses) : 0,
+    }));
 
     const final = this.allMatches.find(
       (m) => m.gameId === gameId && m.stage === 'final' && m.winnerId
@@ -338,31 +338,34 @@ export class DashboardComponent implements OnInit, OnDestroy {
       (m) => m.gameId === gameId && m.stage === 'third_place' && m.winnerId
     );
 
+    let ordered: typeof table = [];
     if (final && third) {
       const finalLoser =
         final.team1Id === final.winnerId ? final.team2Id : final.team1Id;
       const thirdLoser =
         third.team1Id === third.winnerId ? third.team2Id : third.team1Id;
       const ranking = [final.winnerId, finalLoser, third.winnerId, thirdLoser];
-      table = ranking
+      ordered = ranking
         .map((t) => table.find((e) => e.teamId === t)!)
         .filter(Boolean)
-        .concat(table.filter((e) => !ranking.includes(e.teamId)))
-        .map((e, idx) => ({
-          ...e,
-          rank: idx + 1,
-          points: Math.max(totalTeams - idx - 1, 0),
-        }));
+        .concat(
+          table
+            .filter((e) => !ranking.includes(e.teamId))
+            .sort((a, b) => {
+              if (b.ratio !== a.ratio) return b.ratio - a.ratio;
+              return Math.random() - 0.5;
+            })
+        );
     } else {
-      table.sort((a, b) => b.ratio - a.ratio);
-      table = table.map((e, idx) => ({
-        ...e,
-        rank: idx + 1,
-        points: Math.max(totalTeams - idx - 1, 0),
-      }));
+      ordered = table.sort((a, b) => b.ratio - a.ratio);
     }
 
-    return table;
+    const totalTeams = ordered.length;
+    return ordered.map((e, idx) => ({
+      ...e,
+      rank: idx + 1,
+      points: Math.max(totalTeams - idx - 1, 0),
+    }));
   }
 
   createMatch(): void {
