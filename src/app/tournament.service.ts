@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, forkJoin, of } from 'rxjs';
-import { map, switchMap } from 'rxjs/operators';
+import { Observable, forkJoin, of, Subject } from 'rxjs';
+import { map, switchMap, tap } from 'rxjs/operators';
 import { Team } from './models/team.model';
 import { Player } from './models/player.model';
 import { Game } from './models/game.model';
@@ -15,6 +15,9 @@ export class TournamentService {
 
   teams: Team[] = [];
   games: Game[] = [];
+
+  private resultsUpdatedSource = new Subject<void>();
+  resultsUpdated$ = this.resultsUpdatedSource.asObservable();
 
   private apiUrl = 'http://localhost:3000';  // URL zu deinem JSON-Server
   private httpOptions = {
@@ -81,9 +84,10 @@ export class TournamentService {
             return this.updateTeamStats(newResult).pipe(
                 map(() => newResult)
             );
-        })
+        }),
+        tap(() => this.resultsUpdatedSource.next())
     );
-}
+  }
 
   updateResult(result: Result): Observable<Result> {
     result.id = result.id.toString();
@@ -92,7 +96,9 @@ export class TournamentService {
     result.team2Id = result.team2Id.toString();
     result.team1Score = result.team1Score.toString();
     result.team2Score = result.team2Score.toString();
-    return this.http.put<Result>(`${this.apiUrl}/results/${result.id}`, result, this.httpOptions);
+    return this.http.put<Result>(`${this.apiUrl}/results/${result.id}`, result, this.httpOptions).pipe(
+      tap(() => this.resultsUpdatedSource.next())
+    );
   }
 
   private updateTeamStats(result: Result): Observable<void> {
@@ -161,7 +167,9 @@ export class TournamentService {
     );
 }
 deleteResult(id: string): Observable<void> {
-  return this.http.delete<void>(`${this.apiUrl}/results/${id}`);
+  return this.http.delete<void>(`${this.apiUrl}/results/${id}`).pipe(
+    tap(() => this.resultsUpdatedSource.next())
+  );
 }
 
 updateTeamStatsAfterDeletion(result: Result): Observable<void> {
@@ -233,7 +241,7 @@ updateTeamStatsAfterDeletion(result: Result): Observable<void> {
         );
         return forkJoin(ops).pipe(map(() => void 0));
       })
-    );
+    ).pipe(tap(() => this.resultsUpdatedSource.next()));
   }
 
 }

@@ -19,6 +19,8 @@ export class HistoryComponent implements OnInit {
   teams: Team[] = [];
   games: Game[] = [];
 
+  recommendedMatches: { game: Game; team1: Team; team2: Team; playing?: boolean }[] = [];
+
   selectedGameId: string = '';
   selectedTeamId: string = '';
 
@@ -38,23 +40,29 @@ export class HistoryComponent implements OnInit {
     this.loadResults();
     this.loadTeams();
     this.loadGames();
+    this.tournamentService.resultsUpdated$.subscribe(() => {
+      this.loadResults();
+    });
   }
 
   loadResults(): void {
     this.tournamentService.getResults().subscribe(results => {
       this.results = results;
+      this.generateRecommendations();
     });
   }
 
   loadTeams(): void {
     this.tournamentService.getTeams().subscribe(teams => {
       this.teams = teams;
+      this.generateRecommendations();
     });
   }
 
   loadGames(): void {
     this.tournamentService.getGames().subscribe(games => {
       this.games = games;
+      this.generateRecommendations();
     });
   }
 
@@ -93,6 +101,41 @@ export class HistoryComponent implements OnInit {
   updateTeamsAfterResultDeletion(result: Result): void {
     this.tournamentService.updateTeamStatsAfterDeletion(result).subscribe(() => {
       this.loadTeams(); // Aktualisiere die Teams nach dem Löschen eines Ergebnisses
+    });
+  }
+
+  startMatch(match: { game: Game; team1: Team; team2: Team; playing?: boolean }): void {
+    match.playing = true;
+  }
+
+  private generateRecommendations(): void {
+    if (!this.results.length || !this.teams.length || !this.games.length) {
+      return;
+    }
+
+    const counts: Record<string, Record<string, number>> = {};
+    this.teams.forEach(t => {
+      counts[t.id] = {};
+      this.games.forEach(g => counts[t.id][g.id] = 0);
+    });
+    this.results.forEach(r => {
+      counts[r.team1Id][r.gameId]++;
+      counts[r.team2Id][r.gameId]++;
+    });
+
+    const scheduled = new Set<string>();
+    this.recommendedMatches = [];
+    this.games.forEach(game => {
+      const available = this.teams
+        .filter(t => !scheduled.has(t.id))
+        .sort((a, b) => counts[a.id][game.id] - counts[b.id][game.id]);
+      if (available.length >= 2) {
+        const team1 = available[0];
+        const team2 = available[1];
+        scheduled.add(team1.id);
+        scheduled.add(team2.id);
+        this.recommendedMatches.push({ game, team1, team2 });
+      }
     });
   }
 }
