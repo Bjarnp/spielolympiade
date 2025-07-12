@@ -133,7 +133,11 @@ router.get("/:id/table", async (req: Request, res: Response): Promise<void> => {
     points: 0,
   }));
   const map: Record<string, any> = {};
-  for (const s of stats) map[s.id] = s;
+  const headToHead: Record<string, Record<string, number>> = {};
+  for (const s of stats) {
+    map[s.id] = s;
+    headToHead[s.id] = {};
+  }
 
   for (const t of season.tournaments) {
     for (const m of t.matches) {
@@ -141,6 +145,7 @@ router.get("/:id/table", async (req: Request, res: Response): Promise<void> => {
       if (m.winnerId) {
         map[m.team1Id].spiele += 1;
         map[m.team2Id].spiele += 1;
+        const loser = m.winnerId === m.team1Id ? m.team2Id : m.team1Id;
         if (m.winnerId === m.team1Id) {
           map[m.team1Id].siege += 1;
           map[m.team2Id].niederlagen += 1;
@@ -148,6 +153,9 @@ router.get("/:id/table", async (req: Request, res: Response): Promise<void> => {
           map[m.team2Id].siege += 1;
           map[m.team1Id].niederlagen += 1;
         }
+        headToHead[m.winnerId][loser] =
+          (headToHead[m.winnerId][loser] || 0) + 1;
+        headToHead[loser][m.winnerId] = headToHead[loser][m.winnerId] || 0;
       }
     }
 
@@ -168,7 +176,13 @@ router.get("/:id/table", async (req: Request, res: Response): Promise<void> => {
     }
   }
 
-  const table = Object.values(map).sort((a: any, b: any) => b.points - a.points);
+  const table = Object.values(map).sort((a: any, b: any) => {
+    if (b.points !== a.points) return b.points - a.points;
+    const diff =
+      (headToHead[b.id]?.[a.id] || 0) - (headToHead[a.id]?.[b.id] || 0);
+    if (diff !== 0) return diff;
+    return 0;
+  });
 
   res.json(table);
 });

@@ -152,12 +152,11 @@ export function calculateGroupKoStandings(matches: Match[]): {
         })
     );
 
-  const totalTeams = ordered.length;
-
+  const pointsTable = [8, 6, 4, 3, 2, 1];
   return ordered.map((e, idx) => ({
     ...e,
     rank: idx + 1,
-    points: totalTeams - (idx + 1),
+    points: pointsTable[idx] ?? 0,
   }));
 }
 
