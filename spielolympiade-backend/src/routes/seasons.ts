@@ -1,5 +1,6 @@
 import express, { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
+import { calculateGroupKoStandings } from "../utils/tournament";
 import { createHash } from "crypto";
 import { authorizeRole } from "../middleware/auth";
 
@@ -115,7 +116,7 @@ router.get("/:id/table", async (req: Request, res: Response): Promise<void> => {
 
   const season = await prisma.season.findUnique({
     where: { id },
-    include: { teams: true },
+    include: { teams: true, tournaments: { include: { matches: true } } },
   });
 
   if (!season) {
@@ -123,30 +124,65 @@ router.get("/:id/table", async (req: Request, res: Response): Promise<void> => {
     return;
   }
 
-  const matches = await prisma.match.findMany({
-    where: { tournament: { seasonId: id }, winnerId: { not: null } },
-    select: { id: true, team1Id: true, team2Id: true, winnerId: true },
-  });
+  const stats = season.teams.map((t: any) => ({
+    id: t.id,
+    name: t.name,
+    spiele: 0,
+    siege: 0,
+    niederlagen: 0,
+    points: 0,
+  }));
+  const map: Record<string, any> = {};
+  const headToHead: Record<string, Record<string, number>> = {};
+  for (const s of stats) {
+    map[s.id] = s;
+    headToHead[s.id] = {};
+  }
 
-  const table = season.teams.map((team: any) => {
-    const teamMatches = matches.filter(
-      (m: any) => m.team1Id === team.id || m.team2Id === team.id
-    );
-    const wins = teamMatches.filter((m: any) => m.winnerId === team.id).length;
-    const games = teamMatches.length;
-    const losses = games - wins;
-    const points = wins; // 1 Punkt pro Sieg
-    return {
-      id: team.id,
-      name: team.name,
-      spiele: games,
-      siege: wins,
-      niederlagen: losses,
-      points,
-    };
-  });
+  for (const t of season.tournaments) {
+    for (const m of t.matches) {
+      if (!m.team1Id || !m.team2Id) continue;
+      if (m.winnerId) {
+        map[m.team1Id].spiele += 1;
+        map[m.team2Id].spiele += 1;
+        const loser = m.winnerId === m.team1Id ? m.team2Id : m.team1Id;
+        if (m.winnerId === m.team1Id) {
+          map[m.team1Id].siege += 1;
+          map[m.team2Id].niederlagen += 1;
+        } else {
+          map[m.team2Id].siege += 1;
+          map[m.team1Id].niederlagen += 1;
+        }
+        headToHead[m.winnerId][loser] =
+          (headToHead[m.winnerId][loser] || 0) + 1;
+        headToHead[loser][m.winnerId] = headToHead[loser][m.winnerId] || 0;
+      }
+    }
 
-  table.sort((a: any, b: any) => b.points - a.points);
+    if (t.system === "round_robin") {
+      for (const m of t.matches) {
+        if (m.winnerId) map[m.winnerId].points += 1;
+      }
+    } else if (t.system === "group_ko") {
+      const gameIds = Array.from(new Set(t.matches.map((m) => m.gameId))) as string[];
+      for (const gameId of gameIds) {
+        const standings = calculateGroupKoStandings(
+          t.matches.filter((m) => m.gameId === gameId)
+        );
+        for (const s of standings) {
+          map[s.teamId].points += s.points;
+        }
+      }
+    }
+  }
+
+  const table = Object.values(map).sort((a: any, b: any) => {
+    if (b.points !== a.points) return b.points - a.points;
+    const diff =
+      (headToHead[b.id]?.[a.id] || 0) - (headToHead[a.id]?.[b.id] || 0);
+    if (diff !== 0) return diff;
+    return 0;
+  });
 
   res.json(table);
 });

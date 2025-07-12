@@ -176,6 +176,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
   applyFilters(): void {
     let games = [...this.allMatches];
 
+    if (this.viewMode !== 'overall') {
+      games = games.filter((g) => g.gameId === this.viewMode);
+    }
+
     if (this.filterMode === 'open') {
       games = games.filter((g) => g.team1Score == null && g.team2Score == null);
     } else if (this.filterMode === 'played') {
@@ -298,7 +302,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   overallStandings(
     gameId: string
-  ): { teamId: string; wins: number; losses: number; ratio: number }[] {
+  ): { teamId: string; wins: number; losses: number; ratio: number; points: number; rank: number }[] {
     if (!this.groupPhaseComplete(gameId)) return [];
     const stats: Record<string, { wins: number; losses: number }> = {};
     const matches = this.allMatches.filter(
@@ -314,12 +318,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
       }
     }
 
-    let table = Object.entries(stats).map(([teamId, s]) => ({
-      teamId,
-      wins: s.wins,
-      losses: s.losses,
-      ratio: s.wins + s.losses > 0 ? s.wins / (s.wins + s.losses) : 0,
-    }));
+    const totalTeams = Object.keys(stats).length;
+    let table: { teamId: string; wins: number; losses: number; ratio: number; points: number; rank: number }[] = Object.entries(stats).map(
+      ([teamId, s]) => ({
+        teamId,
+        wins: s.wins,
+        losses: s.losses,
+        ratio: s.wins + s.losses > 0 ? s.wins / (s.wins + s.losses) : 0,
+        points: 0,
+        rank: 0,
+      })
+    );
 
     const final = this.allMatches.find(
       (m) => m.gameId === gameId && m.stage === 'final' && m.winnerId
@@ -338,10 +347,18 @@ export class DashboardComponent implements OnInit, OnDestroy {
         .map((t) => table.find((e) => e.teamId === t)!)
         .filter(Boolean)
         .concat(table.filter((e) => !ranking.includes(e.teamId)))
-        .map((e, idx) => ({ ...e, rank: idx + 1 }));
+        .map((e, idx) => ({
+          ...e,
+          rank: idx + 1,
+          points: Math.max(totalTeams - idx - 1, 0),
+        }));
     } else {
       table.sort((a, b) => b.ratio - a.ratio);
-      table = table.map((e, idx) => ({ ...e, rank: idx + 1 }));
+      table = table.map((e, idx) => ({
+        ...e,
+        rank: idx + 1,
+        points: Math.max(totalTeams - idx - 1, 0),
+      }));
     }
 
     return table;
