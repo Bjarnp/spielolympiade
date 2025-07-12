@@ -184,9 +184,6 @@
           <li *ngFor="let g of recommendations | slice : 0 : 5">
             {{ getGameName(g.gameId) }}: {{ getTeamName(g.team1Id) }} vs
             {{ getTeamName(g.team2Id) }}
-            <button mat-button color="primary" (click)="startMatch(g.id)">
-              Jetzt spielen
-            </button>
           </li>
         </ul>
       </div>

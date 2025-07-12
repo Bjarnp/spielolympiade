@@ -1,4 +1,4 @@
-import { Component, inject, ViewChild } from '@angular/core';
+import { Component, inject, ViewChild, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -10,8 +10,8 @@ import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatSelectModule } from '@angular/material/select';
 import { MatIconModule } from '@angular/material/icon';
-import { MatListModule } from "@angular/material/list";
-import { MatDividerModule } from "@angular/material/divider";
+import { MatListModule } from '@angular/material/list';
+import { MatDividerModule } from '@angular/material/divider';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../core/auth.service';
 import { environment } from '../../../environments/environment';
@@ -41,7 +41,7 @@ const API_URL = environment.apiUrl;
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss'],
 })
-export class DashboardComponent {
+export class DashboardComponent implements OnInit, OnDestroy {
   auth = inject(AuthService);
   http = inject(HttpClient);
   team: any;
@@ -55,7 +55,14 @@ export class DashboardComponent {
   tableData: any[] = [];
   dataSource = new MatTableDataSource<any>();
   @ViewChild(MatSort) sort!: MatSort;
-  displayedColumns = ['place', 'name', 'spiele', 'siege', 'niederlagen', 'punkte'];
+  displayedColumns = [
+    'place',
+    'name',
+    'spiele',
+    'siege',
+    'niederlagen',
+    'punkte',
+  ];
   seasonYear = '';
   activeGameDay = true; // optional: später dynamisch machen
   seasonActive = false;
@@ -70,10 +77,22 @@ export class DashboardComponent {
   filteredGames: any[] = [];
   recommendations: any[] = [];
 
+  private refreshInterval: any;
+
   ngOnInit(): void {
     this.loadMyTeam();
     this.loadData();
     this.loadRecommendations();
+
+    this.refreshInterval = setInterval(() => {
+      this.loadMyTeam();
+      this.loadData();
+      this.loadRecommendations();
+    }, 10000);
+  }
+
+  ngOnDestroy(): void {
+    clearInterval(this.refreshInterval);
   }
 
   loadMyTeam(): void {
@@ -121,8 +140,10 @@ export class DashboardComponent {
         this.allMatches = (data.tournament ? data.tournament.matches : []).map(
           (m: any) => ({
             ...m,
-            team1Score: m.results.find((r: any) => r.teamId === m.team1Id)?.score ?? null,
-            team2Score: m.results.find((r: any) => r.teamId === m.team2Id)?.score ?? null,
+            team1Score:
+              m.results.find((r: any) => r.teamId === m.team1Id)?.score ?? null,
+            team2Score:
+              m.results.find((r: any) => r.teamId === m.team2Id)?.score ?? null,
             saved: true,
           })
         );
@@ -221,7 +242,9 @@ export class DashboardComponent {
     }
   }
 
-  groupStandings(gameId: string): Record<string, { teamId: string; points: number }[]> {
+  groupStandings(
+    gameId: string
+  ): Record<string, { teamId: string; points: number }[]> {
     const groups: Record<string, { teamId: string; points: number }[]> = {};
     const matches = this.allMatches.filter(
       (m) => m.gameId === gameId && m.stage === 'group'
@@ -353,10 +376,29 @@ export class DashboardComponent {
       });
   }
 
-  startMatch(id: string): void {
-    this.http.post(`${API_URL}/matches/${id}/start`, {}).subscribe(() => {
+  createMatch(): void {
+    if (
+      !this.newMatch.team1Id ||
+      !this.newMatch.team2Id ||
+      !this.newMatch.gameId
+    )
+      return;
+    const payload = {
+      tournamentId: this.tournament?.id,
+      gameId: this.newMatch.gameId,
+      team1Id: this.newMatch.team1Id,
+      team2Id: this.newMatch.team2Id,
+    };
+    this.http.post(`${API_URL}/matches`, payload).subscribe(() => {
+      this.newMatch = { team1Id: '', team2Id: '', gameId: '' };
       this.loadData();
-      this.loadRecommendations();
+    });
+  }
+
+  loadRecommendations(): void {
+    this.http.get<any[]>(`${API_URL}/matches/recommendations`).subscribe({
+      next: (data) => (this.recommendations = data),
+      error: (err) => console.error('Fehler beim Laden der Empfehlungen', err),
     });
   }
 
