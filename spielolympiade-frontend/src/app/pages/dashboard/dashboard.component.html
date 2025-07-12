@@ -117,18 +117,24 @@
                   {{ getTeamName(row.teamId) }}
                 </td>
               </ng-container>
-              <ng-container *ngIf="groupPhaseComplete(viewMode)" matColumnDef="points">
-                <th mat-header-cell *matHeaderCellDef>Punkte</th>
-                <td mat-cell *matCellDef="let row">{{ row.points }}</td>
+              <ng-container matColumnDef="points">
+                <th
+                  mat-header-cell
+                  *matHeaderCellDef
+                  [hidden]="!groupPhaseComplete(viewMode)"
+                >
+                  Punkte
+                </th>
+                <td
+                  mat-cell
+                  *matCellDef="let row"
+                  [hidden]="!groupPhaseComplete(viewMode)"
+                >
+                  {{ row.points }}
+                </td>
               </ng-container>
-              <tr
-                mat-header-row
-                *matHeaderRowDef="groupPhaseComplete(viewMode) ? ['team', 'points'] : ['team']"
-              ></tr>
-              <tr
-                mat-row
-                *matRowDef="let row; columns: groupPhaseComplete(viewMode) ? ['team', 'points'] : ['team']"
-              ></tr>
+              <tr mat-header-row *matHeaderRowDef="['team', 'points']"></tr>
+              <tr mat-row *matRowDef="let row; columns: ['team', 'points']"></tr>
             </table>
           </div>
           <div *ngIf="overallStandings(viewMode).length" class="overall-table">
@@ -145,6 +151,10 @@
               <ng-container matColumnDef="ratio">
                 <th mat-header-cell *matHeaderCellDef>Quote</th>
                 <td mat-cell *matCellDef="let row">{{ row.ratio | number:'1.2-2' }}</td>
+              </ng-container>
+              <ng-container matColumnDef="points">
+                <th mat-header-cell *matHeaderCellDef>Punkte</th>
+                <td mat-cell *matCellDef="let row">{{ row.points }}</td>
               </ng-container>
               <ng-container matColumnDef="points">
                 <th mat-header-cell *matHeaderCellDef>Punkte</th>
