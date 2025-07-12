@@ -117,20 +117,43 @@
                   {{ getTeamName(row.teamId) }}
                 </td>
               </ng-container>
-              <ng-container matColumnDef="points">
+              <ng-container *ngIf="groupPhaseComplete(viewMode)" matColumnDef="points">
                 <th mat-header-cell *matHeaderCellDef>Punkte</th>
                 <td mat-cell *matCellDef="let row">{{ row.points }}</td>
               </ng-container>
-              <tr mat-header-row *matHeaderRowDef="['team', 'points']"></tr>
+              <tr
+                mat-header-row
+                *matHeaderRowDef="groupPhaseComplete(viewMode) ? ['team', 'points'] : ['team']"
+              ></tr>
               <tr
                 mat-row
-                *matRowDef="let row; columns: ['team', 'points']"
+                *matRowDef="let row; columns: groupPhaseComplete(viewMode) ? ['team', 'points'] : ['team']"
               ></tr>
+            </table>
+          </div>
+          <div *ngIf="overallStandings(viewMode).length" class="overall-table">
+            <h4>Gesamtwertung</h4>
+            <table mat-table [dataSource]="overallStandings(viewMode)" class="result-table">
+              <ng-container matColumnDef="rank">
+                <th mat-header-cell *matHeaderCellDef>Platz</th>
+                <td mat-cell *matCellDef="let row">{{ row.rank }}</td>
+              </ng-container>
+              <ng-container matColumnDef="team">
+                <th mat-header-cell *matHeaderCellDef>Team</th>
+                <td mat-cell *matCellDef="let row">{{ getTeamName(row.teamId) }}</td>
+              </ng-container>
+              <ng-container matColumnDef="ratio">
+                <th mat-header-cell *matHeaderCellDef>Quote</th>
+                <td mat-cell *matCellDef="let row">{{ row.ratio | number:'1.2-2' }}</td>
+              </ng-container>
+              <tr mat-header-row *matHeaderRowDef="['rank','team','ratio']"></tr>
+              <tr mat-row *matRowDef="let row; columns: ['rank','team','ratio']"></tr>
             </table>
           </div>
           <h4>K.O.-Phase</h4>
           <mat-list>
             <mat-list-item *ngFor="let m of koMatchesFor(viewMode)">
+              <strong>{{ stageLabel(m.stage) }}:</strong>
               {{ getTeamName(m.team1Id) }} vs {{ getTeamName(m.team2Id) }} -
               <ng-container
                 *ngIf="m.team1Score != null && m.team2Score != null; else open"
@@ -166,6 +189,33 @@
             </button>
           </li>
         </ul>
+      </div>
+      <div class="new-match" *ngIf="auth.getUser()?.role === 'admin'">
+        <h3>Spiel hinzufügen</h3>
+        <mat-form-field appearance="fill">
+          <mat-select [(ngModel)]="newMatch.gameId" placeholder="Spiel">
+            <mat-option *ngFor="let g of allGames" [value]="g.id">
+              {{ g.name }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="fill">
+          <mat-select [(ngModel)]="newMatch.team1Id" placeholder="Team 1">
+            <mat-option *ngFor="let t of allTeams" [value]="t.id">
+              {{ t.name }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="fill">
+          <mat-select [(ngModel)]="newMatch.team2Id" placeholder="Team 2">
+            <mat-option *ngFor="let t of allTeams" [value]="t.id">
+              {{ t.name }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+        <button mat-raised-button color="primary" (click)="createMatch()">
+          Anlegen
+        </button>
       </div>
       <div class="filters">
         <button mat-raised-button (click)="setFilter('all')">
