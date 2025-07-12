@@ -121,4 +121,5 @@ enum MatchStage {
   semi_final
   final
   third_place
+  extra
 }
