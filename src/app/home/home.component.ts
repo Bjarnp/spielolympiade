@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TournamentService } from '../tournament.service';
@@ -14,7 +14,7 @@ import { AuthService } from '../auth.service';
   standalone: true,
   imports: [CommonModule, FormsModule]  // Importiere hier CommonModule und FormsModule
 })
-export class HomeComponent implements OnInit {
+export class HomeComponent implements OnInit, OnDestroy {
 
   teams: Team[] = [];
   games: Game[] = [];
@@ -29,11 +29,25 @@ export class HomeComponent implements OnInit {
     team2Score: '0'
   };
 
+  private refreshInterval: any;
+
   constructor(private tournamentService: TournamentService, public auth: AuthService) { }
 
   ngOnInit(): void {
     this.loadTeams();
     this.loadGames();
+    if (!this.auth.isAdmin()) {
+      this.refreshInterval = setInterval(() => {
+        this.loadTeams();
+        this.loadGames();
+      }, 10000);
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (this.refreshInterval) {
+      clearInterval(this.refreshInterval);
+    }
   }
 
  
