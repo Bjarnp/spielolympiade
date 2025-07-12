@@ -18,7 +18,7 @@
   <ng-container *ngIf="seasonActive">
     <div class="view-switch" *ngIf="tournamentSystem === 'group_ko'">
       <mat-form-field appearance="fill">
-        <mat-select [(ngModel)]="viewMode">
+        <mat-select [(ngModel)]="viewMode" (selectionChange)="applyFilters()">
           <mat-option value="overall">Gesamtübersicht</mat-option>
           <mat-option *ngFor="let g of allGames" [value]="g.id">{{
             g.name
@@ -117,28 +117,24 @@
                   {{ getTeamName(row.teamId) }}
                 </td>
               </ng-container>
-              <ng-container
-                *ngIf="groupPhaseComplete(viewMode)"
-                matColumnDef="points"
-              >
-                <th mat-header-cell *matHeaderCellDef>Punkte</th>
-                <td mat-cell *matCellDef="let row">{{ row.points }}</td>
+              <ng-container matColumnDef="groupPoints">
+                <th
+                  mat-header-cell
+                  *matHeaderCellDef
+                  [hidden]="!groupPhaseComplete(viewMode)"
+                >
+                  Punkte
+                </th>
+                <td
+                  mat-cell
+                  *matCellDef="let row"
+                  [hidden]="!groupPhaseComplete(viewMode)"
+                >
+                  {{ row.points }}
+                </td>
               </ng-container>
-              <tr
-                mat-header-row
-                *matHeaderRowDef="
-                  groupPhaseComplete(viewMode) ? ['team', 'points'] : ['team']
-                "
-              ></tr>
-              <tr
-                mat-row
-                *matRowDef="
-                  let row;
-                  columns: groupPhaseComplete(viewMode)
-                    ? ['team', 'points']
-                    : ['team']
-                "
-              ></tr>
+              <tr mat-header-row *matHeaderRowDef="['team', 'groupPoints']"></tr>
+              <tr mat-row *matRowDef="let row; columns: ['team', 'groupPoints']"></tr>
             </table>
           </div>
           <div *ngIf="overallStandings(viewMode).length" class="overall-table">
@@ -164,13 +160,17 @@
                   {{ row.ratio | number : "1.2-2" }}
                 </td>
               </ng-container>
+              <ng-container matColumnDef="totalPoints">
+                <th mat-header-cell *matHeaderCellDef>Punkte</th>
+                <td mat-cell *matCellDef="let row">{{ row.points }}</td>
+              </ng-container>
               <tr
                 mat-header-row
-                *matHeaderRowDef="['rank', 'team', 'ratio']"
+                *matHeaderRowDef="['rank', 'team', 'ratio', 'totalPoints']"
               ></tr>
               <tr
                 mat-row
-                *matRowDef="let row; columns: ['rank', 'team', 'ratio']"
+                *matRowDef="let row; columns: ['rank', 'team', 'ratio', 'totalPoints']"
               ></tr>
             </table>
           </div>
