@@ -74,7 +74,14 @@ router.get(
       })
       .map((r) => r.m);
 
-  res.json(ranked);
+    const simplified = ranked.map((m) => ({
+      id: m.id,
+      gameId: m.gameId,
+      team1Id: m.team1Id,
+      team2Id: m.team2Id,
+    }));
+
+    res.json(simplified);
   }
 );
 
