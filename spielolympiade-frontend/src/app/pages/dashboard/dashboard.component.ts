@@ -84,11 +84,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.loadData();
     this.loadRecommendations();
 
-    this.refreshInterval = setInterval(() => {
-      this.loadMyTeam();
-      this.loadData();
-      this.loadRecommendations();
-    }, 10000);
+    const user = this.auth.getUser();
+    if (user?.role !== 'admin') {
+      this.refreshInterval = setInterval(() => {
+        this.loadMyTeam();
+        this.loadData();
+        this.loadRecommendations();
+      }, 10000);
+    }
   }
 
   ngOnDestroy(): void {
