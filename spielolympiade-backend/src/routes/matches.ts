@@ -1,6 +1,6 @@
 import express, { Request, Response } from "express";
 import { createHash } from "crypto";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, MatchStage } from "@prisma/client";
 import { authorizeRole } from "../middleware/auth";
 
 import { progressTournament } from "../utils/tournament";
@@ -121,26 +121,28 @@ router.get("/:id", async (req: Request, res: Response): Promise<void> => {
 
 
 // ✅ POST /matches – neues Match anlegen
-router.post(
-  "/",
-  authorizeRole("admin"),
-  async (req: Request, res: Response): Promise<void> => {
-    const { tournamentId, gameId, team1Id, team2Id, scheduledAt } = req.body;
+  router.post(
+    "/",
+    authorizeRole("admin"),
+    async (req: Request, res: Response): Promise<void> => {
+      const { tournamentId, gameId, team1Id, team2Id, scheduledAt, stage } =
+        req.body;
 
     if (!tournamentId || !gameId || !team1Id || !team2Id) {
       res.status(400).json({ error: "Alle IDs erforderlich" });
       return;
     }
 
-    const match = await prisma.match.create({
-      data: {
-        tournamentId,
-        gameId,
-        team1Id,
-        team2Id,
-        scheduledAt: scheduledAt ? new Date(scheduledAt) : undefined,
-      },
-    });
+      const match = await prisma.match.create({
+        data: {
+          tournamentId,
+          gameId,
+          team1Id,
+          team2Id,
+          stage: (stage as MatchStage) || "extra",
+          scheduledAt: scheduledAt ? new Date(scheduledAt) : undefined,
+        },
+      });
 
     res.status(201).json(match);
   }

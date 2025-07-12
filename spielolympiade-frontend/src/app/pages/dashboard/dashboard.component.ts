@@ -48,6 +48,7 @@ export class DashboardComponent {
   allTeams: any[] = [];
   allGames: any[] = [];
   allMatches: any[] = [];
+  tournament: any = null;
   newMatch: any = { team1Id: '', team2Id: '', gameId: '' };
   todayResults: any[] = [];
   upcomingGames: any[] = [];
@@ -116,6 +117,7 @@ export class DashboardComponent {
       next: (data) => {
         this.allTeams = data.teams;
         this.allGames = data.games;
+        this.tournament = data.tournament;
         this.allMatches = (data.tournament ? data.tournament.matches : []).map(
           (m: any) => ({
             ...m,
@@ -249,6 +251,96 @@ export class DashboardComponent {
     return this.allMatches.filter(
       (m) => m.gameId === gameId && m.stage !== 'group'
     );
+  }
+
+  groupPhaseComplete(gameId: string): boolean {
+    const matches = this.allMatches.filter(
+      (m) => m.gameId === gameId && m.stage === 'group'
+    );
+    return matches.length > 0 && matches.every((m) => m.winnerId);
+  }
+
+  stageLabel(stage: string): string {
+    switch (stage) {
+      case 'semi_final':
+        return 'Halbfinale';
+      case 'final':
+        return 'Finale';
+      case 'third_place':
+        return 'Spiel um Platz 3';
+      case 'extra':
+        return 'Entscheidungsspiel';
+      default:
+        return stage;
+    }
+  }
+
+  overallStandings(gameId: string): { teamId: string; wins: number; losses: number; ratio: number }[] {
+    const stats: Record<string, { wins: number; losses: number }> = {};
+    const matches = this.allMatches.filter(
+      (m) =>
+        m.gameId === gameId &&
+        ['group', 'semi_final', 'final', 'third_place', 'extra'].includes(m.stage) &&
+        m.winnerId
+    );
+    for (const m of matches) {
+      stats[m.team1Id] = stats[m.team1Id] || { wins: 0, losses: 0 };
+      stats[m.team2Id] = stats[m.team2Id] || { wins: 0, losses: 0 };
+      const loser = m.team1Id === m.winnerId ? m.team2Id : m.team1Id;
+      stats[m.winnerId].wins += 1;
+      stats[loser].losses += 1;
+    }
+
+    let table = Object.entries(stats).map(([teamId, s]) => ({
+      teamId,
+      wins: s.wins,
+      losses: s.losses,
+      ratio: s.wins + s.losses > 0 ? s.wins / (s.wins + s.losses) : 0,
+    }));
+
+    const final = this.allMatches.find(
+      (m) => m.gameId === gameId && m.stage === 'final' && m.winnerId
+    );
+    const third = this.allMatches.find(
+      (m) => m.gameId === gameId && m.stage === 'third_place' && m.winnerId
+    );
+
+    if (final && third) {
+      const finalLoser = final.team1Id === final.winnerId ? final.team2Id : final.team1Id;
+      const thirdLoser = third.team1Id === third.winnerId ? third.team2Id : third.team1Id;
+      const ranking = [
+        final.winnerId,
+        finalLoser,
+        third.winnerId,
+        thirdLoser,
+      ];
+      table = ranking
+        .map((t) => table.find((e) => e.teamId === t)!)
+        .filter(Boolean)
+        .concat(table.filter((e) => !ranking.includes(e.teamId)))
+        .map((e, idx) => ({ ...e, rank: idx + 1 }));
+    } else {
+      table.sort((a, b) => b.ratio - a.ratio);
+      table = table.map((e, idx) => ({ ...e, rank: idx + 1 }));
+    }
+
+    return table;
+  }
+
+  createMatch(): void {
+    if (!this.newMatch.team1Id || !this.newMatch.team2Id || !this.newMatch.gameId)
+      return;
+    const payload = {
+      tournamentId: this.tournament?.id,
+      gameId: this.newMatch.gameId,
+      team1Id: this.newMatch.team1Id,
+      team2Id: this.newMatch.team2Id,
+      stage: 'extra',
+    };
+    this.http.post(`${API_URL}/matches`, payload).subscribe(() => {
+      this.newMatch = { team1Id: '', team2Id: '', gameId: '' };
+      this.loadData();
+    });
   }
 
   loadRecommendations(): void {
