@@ -117,7 +117,7 @@
                   {{ getTeamName(row.teamId) }}
                 </td>
               </ng-container>
-              <ng-container matColumnDef="points">
+              <ng-container matColumnDef="groupPoints">
                 <th
                   mat-header-cell
                   *matHeaderCellDef
@@ -133,6 +133,8 @@
                   {{ row.points }}
                 </td>
               </ng-container>
+              <tr mat-header-row *matHeaderRowDef="['team', 'groupPoints']"></tr>
+              <tr mat-row *matRowDef="let row; columns: ['team', 'groupPoints']"></tr>
               <tr mat-header-row *matHeaderRowDef="['team', 'points']"></tr>
               <tr mat-row *matRowDef="let row; columns: ['team', 'points']"></tr>
             </table>
@@ -164,13 +166,17 @@
                 <th mat-header-cell *matHeaderCellDef>Punkte</th>
                 <td mat-cell *matCellDef="let row">{{ row.points }}</td>
               </ng-container>
+              <ng-container matColumnDef="totalPoints">
+                <th mat-header-cell *matHeaderCellDef>Punkte</th>
+                <td mat-cell *matCellDef="let row">{{ row.points }}</td>
+              </ng-container>
               <tr
                 mat-header-row
-                *matHeaderRowDef="['rank', 'team', 'ratio', 'points']"
+                *matHeaderRowDef="['rank', 'team', 'ratio', 'totalPoints']"
               ></tr>
               <tr
                 mat-row
-                *matRowDef="let row; columns: ['rank', 'team', 'ratio', 'points']"
+                *matRowDef="let row; columns: ['rank', 'team', 'ratio', 'totalPoints']"
               ></tr>
             </table>
           </div>
