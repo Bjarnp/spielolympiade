@@ -298,12 +298,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
   }
 
-  overallStandings(gameId: string): { teamId: string; wins: number; losses: number; ratio: number }[] {
+  overallStandings(
+    gameId: string
+  ): { teamId: string; wins: number; losses: number; ratio: number }[] {
     const stats: Record<string, { wins: number; losses: number }> = {};
     const matches = this.allMatches.filter(
       (m) =>
         m.gameId === gameId &&
-        ['group', 'semi_final', 'final', 'third_place', 'extra'].includes(m.stage) &&
+        ['group', 'semi_final', 'final', 'third_place', 'extra'].includes(
+          m.stage
+        ) &&
         m.winnerId
     );
     for (const m of matches) {
@@ -329,14 +333,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
     );
 
     if (final && third) {
-      const finalLoser = final.team1Id === final.winnerId ? final.team2Id : final.team1Id;
-      const thirdLoser = third.team1Id === third.winnerId ? third.team2Id : third.team1Id;
-      const ranking = [
-        final.winnerId,
-        finalLoser,
-        third.winnerId,
-        thirdLoser,
-      ];
+      const finalLoser =
+        final.team1Id === final.winnerId ? final.team2Id : final.team1Id;
+      const thirdLoser =
+        third.team1Id === third.winnerId ? third.team2Id : third.team1Id;
+      const ranking = [final.winnerId, finalLoser, third.winnerId, thirdLoser];
       table = ranking
         .map((t) => table.find((e) => e.teamId === t)!)
         .filter(Boolean)
@@ -351,32 +352,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   createMatch(): void {
-    if (!this.newMatch.team1Id || !this.newMatch.team2Id || !this.newMatch.gameId)
-      return;
-    const payload = {
-      tournamentId: this.tournament?.id,
-      gameId: this.newMatch.gameId,
-      team1Id: this.newMatch.team1Id,
-      team2Id: this.newMatch.team2Id,
-      stage: 'extra',
-    };
-    this.http.post(`${API_URL}/matches`, payload).subscribe(() => {
-      this.newMatch = { team1Id: '', team2Id: '', gameId: '' };
-      this.loadData();
-    });
-  }
-
-  loadRecommendations(): void {
-    this.http
-      .get<any[]>(`${API_URL}/matches/recommendations`)
-      .subscribe({
-        next: (data) => (this.recommendations = data),
-        error: (err) =>
-          console.error('Fehler beim Laden der Empfehlungen', err),
-      });
-  }
-
-  createMatch(): void {
     if (
       !this.newMatch.team1Id ||
       !this.newMatch.team2Id ||
@@ -388,6 +363,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       gameId: this.newMatch.gameId,
       team1Id: this.newMatch.team1Id,
       team2Id: this.newMatch.team2Id,
+      stage: 'extra',
     };
     this.http.post(`${API_URL}/matches`, payload).subscribe(() => {
       this.newMatch = { team1Id: '', team2Id: '', gameId: '' };
