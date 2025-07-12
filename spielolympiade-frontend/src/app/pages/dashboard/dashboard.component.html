@@ -18,7 +18,7 @@
   <ng-container *ngIf="seasonActive">
     <div class="view-switch" *ngIf="tournamentSystem === 'group_ko'">
       <mat-form-field appearance="fill">
-        <mat-select [(ngModel)]="viewMode">
+        <mat-select [(ngModel)]="viewMode" (selectionChange)="applyFilters()">
           <mat-option value="overall">Gesamtübersicht</mat-option>
           <mat-option *ngFor="let g of allGames" [value]="g.id">{{
             g.name
@@ -145,6 +145,10 @@
               <ng-container matColumnDef="ratio">
                 <th mat-header-cell *matHeaderCellDef>Quote</th>
                 <td mat-cell *matCellDef="let row">{{ row.ratio | number:'1.2-2' }}</td>
+              </ng-container>
+              <ng-container matColumnDef="points">
+                <th mat-header-cell *matHeaderCellDef>Punkte</th>
+                <td mat-cell *matCellDef="let row">{{ row.points }}</td>
               </ng-container>
               <ng-container matColumnDef="points">
                 <th mat-header-cell *matHeaderCellDef>Punkte</th>

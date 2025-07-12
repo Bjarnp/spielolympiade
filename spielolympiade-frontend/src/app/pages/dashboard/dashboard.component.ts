@@ -176,6 +176,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
   applyFilters(): void {
     let games = [...this.allMatches];
 
+    if (this.viewMode !== 'overall') {
+      games = games.filter((g) => g.gameId === this.viewMode);
+    }
+
     if (this.filterMode === 'open') {
       games = games.filter((g) => g.team1Score == null && g.team2Score == null);
     } else if (this.filterMode === 'played') {
