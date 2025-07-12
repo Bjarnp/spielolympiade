@@ -84,11 +84,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.loadData();
     this.loadRecommendations();
 
-    this.refreshInterval = setInterval(() => {
-      this.loadMyTeam();
-      this.loadData();
-      this.loadRecommendations();
-    }, 10000);
+    const user = this.auth.getUser();
+    if (user?.role !== 'admin') {
+      this.refreshInterval = setInterval(() => {
+        this.loadMyTeam();
+        this.loadData();
+        this.loadRecommendations();
+      }, 10000);
+    }
   }
 
   ngOnDestroy(): void {
@@ -301,7 +304,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
   overallStandings(
     gameId: string
   ): { teamId: string; wins: number; losses: number; ratio: number; points: number; rank: number }[] {
-    if (!this.groupPhaseComplete(gameId)) return [];
     const stats: Record<string, { wins: number; losses: number }> = {};
     const matches = this.allMatches.filter((m) => m.gameId === gameId);
 
