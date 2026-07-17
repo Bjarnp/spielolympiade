@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../lib/prisma";
 
 type MatchResult = {
   teamId: string;
@@ -199,7 +199,6 @@ export type PlayerStatsDetail = PlayerStatsSummary & {
   }[];
 };
 
-const prisma = new PrismaClient();
 
 export function calculatePlacementPoints(
   place: number,
@@ -667,7 +666,7 @@ function buildSeasonGames(
     }
   }
 
-  return Object.entries(gameBuckets).map(([key, bucket]) => {
+  return Object.values(gameBuckets).map((bucket) => {
     const tournament = bucket.tournament;
     const matches = bucket.matches;
     const system = tournament.system;
@@ -824,23 +823,10 @@ export function buildPlayerStatistics(
   > = {};
 
   for (const season of seasons) {
-    const teamById = Object.fromEntries(
-      season.games.flatMap((game) =>
-        game.standings.map((standing) => [standing.teamId, standing]),
-      ),
-    );
     const teamPlayers = new Map<string, string[]>();
     for (const game of season.games) {
       for (const standing of game.standings) {
         teamPlayers.set(standing.teamId, standing.players);
-      }
-    }
-
-    for (const standing of season.overallStandings) {
-      const teamId = standing.teamId;
-      const playerNames = teamPlayers.get(teamId) ?? [];
-      for (const playerName of playerNames) {
-        const playerId = `${season.id}-${teamId}-${playerName}`;
       }
     }
 

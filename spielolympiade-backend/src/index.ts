@@ -26,7 +26,7 @@ app.use("/games", authenticateToken, gameRoutes);
 app.use("/tournaments", authenticateToken, tournamentRoutes);
 
 // ✅ Typen explizit angeben
-app.get("/", (req: Request, res: Response): void => {
+app.get("/", (_req: Request, res: Response): void => {
   res.send("✅ Spielolympiade Backend läuft!");
 });
 

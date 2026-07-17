@@ -869,9 +869,8 @@ export function buildPlayerStatsSummaries(
   > = {};
 
   for (const seasonRecord of seasons) {
-    const { summary, detail, teamMembers } = seasonRecord;
+    const { detail, teamMembers } = seasonRecord;
     const teamIds = Object.keys(teamMembers);
-    const teamIdToPlayers = teamMembers;
     const matchedGames = gameId
       ? detail.games.filter((game) => game.gameId === gameId)
       : detail.games;
@@ -1063,12 +1062,9 @@ export function buildPlayerStatsDetail(
     const losses = relevantMatches.filter(
       (m) => m.winnerId && m.winnerId !== teamId,
     ).length;
-    const winRate = matchCount > 0 ? wins / matchCount : 0;
     const placementPoints = points;
 
-    const playerName = teamMembers[teamId].includes(playerId)
-      ? playerId
-      : playerId;
+    const playerName = playerId;
 
     if (!stats) {
       stats = {
@@ -1122,8 +1118,6 @@ export function buildPlayerStatsDetail(
     });
 
     for (const match of relevantMatches) {
-      const opponentId =
-        match.team1Id === teamId ? match.team2Id : match.team1Id;
       const opponentName =
         match.team1Id === teamId ? match.team2Name : match.team1Name;
       stats.matches.push({

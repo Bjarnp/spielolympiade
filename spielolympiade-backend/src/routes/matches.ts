@@ -1,6 +1,7 @@
 import express, { Request, Response } from "express";
 import { createHash } from "crypto";
-import { PrismaClient, MatchStage } from "@prisma/client";
+import { MatchStage } from "@prisma/client";
+import { prisma } from "../lib/prisma";
 import { authorizeRole } from "../middleware/auth";
 
 import { progressTournament } from "../utils/tournament";
@@ -10,10 +11,9 @@ function getUser(req: Request) {
   return (req as any).user;
 }
 
-const prisma = new PrismaClient();
 
 // ✅ GET /matches – alle Matches inkl. Teams, Spiel, Ergebnisse
-router.get("/", async (req: Request, res: Response): Promise<void> => {
+router.get("/", async (_req: Request, res: Response): Promise<void> => {
   const matches = await prisma.match.findMany({
     include: {
       game: true,

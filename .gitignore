@@ -14,6 +14,10 @@ coverage/
 
 # TypeScript
 *.tsbuildinfo
+spielolympiade-backend/src/**/*.js
+spielolympiade-backend/prisma/seed.js
+spielolympiade-backend/tmp-*
+spielolympiade-backend/debug-output.txt
 
 # IDEs & Betriebssysteme
 .vscode/

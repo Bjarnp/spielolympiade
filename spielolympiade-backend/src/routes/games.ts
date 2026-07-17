@@ -1,9 +1,8 @@
 import express, { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../lib/prisma";
 import { authorizeRole } from "../middleware/auth";
 
 const router = express.Router();
-const prisma = new PrismaClient();
 
 // GET /games - list all games
 router.get("/", async (_req: Request, res: Response): Promise<void> => {

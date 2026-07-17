@@ -2,10 +2,9 @@ import express from "express";
 import jwt from "jsonwebtoken";
 import { createHash } from "crypto";
 import { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../lib/prisma";
 
 const router = express.Router();
-const prisma = new PrismaClient();
 
 router.post("/login", async (req: Request, res: Response) => {
   const { username, password } = req.body;

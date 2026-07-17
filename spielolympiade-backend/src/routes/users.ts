@@ -1,12 +1,11 @@
 import express, { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../lib/prisma";
 import { createHash } from "crypto";
 import { authorizeRole } from "../middleware/auth";
 
 const DEFAULT_PASSWORD = "changeme";
 
 const router = express.Router();
-const prisma = new PrismaClient();
 
 // 🔐 User aus JWT holen
 function getUser(req: Request) {

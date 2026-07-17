@@ -1,12 +1,11 @@
 import express, { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../lib/prisma";
 import { authorizeRole } from "../middleware/auth";
 
 const router = express.Router();
-const prisma = new PrismaClient();
 
 // 🔐 GET /teams – alle Teams mit Mitgliedern & Saison
-router.get("/", async (req: Request, res: Response): Promise<void> => {
+router.get("/", async (_req: Request, res: Response): Promise<void> => {
   const teams = await prisma.team.findMany({
     include: {
       members: {

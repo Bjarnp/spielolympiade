@@ -1,18 +1,17 @@
 import express, { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../lib/prisma";
 import { buildSeasonDetail } from "../utils/history-core";
 import { createHash } from "crypto";
 import { authorizeRole } from "../middleware/auth";
 
 const router = express.Router();
-const prisma = new PrismaClient();
 
 function getUser(req: Request) {
   return (req as any).user;
 }
 
 // ✅ GET /seasons – alle Saisons abrufen
-router.get("/", async (req: Request, res: Response): Promise<void> => {
+router.get("/", async (_req: Request, res: Response): Promise<void> => {
   const seasons = await prisma.season.findMany({
     orderBy: { year: "desc" },
   });
@@ -21,7 +20,7 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
 
 router.get(
   "/public/dashboard-data",
-  async (req: Request, res: Response): Promise<void> => {
+  async (_req: Request, res: Response): Promise<void> => {
     try {
       const season = await prisma.season.findFirst({
         where: { isActive: true },

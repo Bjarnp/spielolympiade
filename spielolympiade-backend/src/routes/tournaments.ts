@@ -1,10 +1,9 @@
 import express, { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../lib/prisma";
 import { authorizeRole } from "../middleware/auth";
 import { progressTournament, calculateGroupKoStandings } from "../utils/tournament";
 
 const router = express.Router();
-const prisma = new PrismaClient();
 
 // Manuell KO-Phase oder Finale starten
 router.post(

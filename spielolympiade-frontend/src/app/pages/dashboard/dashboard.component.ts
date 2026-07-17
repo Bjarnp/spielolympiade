@@ -58,8 +58,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
   newMatchError = '';
   newMatchSuccess = '';
   isCreatingMatch = false;
-  todayResults: any[] = [];
-  upcomingGames: any[] = [];
   tableData: any[] = [];
   dataSource = new MatTableDataSource<any>();
   @ViewChild(MatSort) sort!: MatSort;
@@ -134,12 +132,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
       });
   }
 
-  extractYear(name: string | undefined): string {
-    if (!name) return '';
-    const match = name.match(/\d{4}/);
-    return match ? match[0] : name;
-  }
-
   loadData(): void {
     this.http.get<any>(`${API_URL}/seasons/public/dashboard-data`).subscribe({
       next: (data) => {
@@ -159,23 +151,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
         );
         this.tournamentSystem = data.tournament?.system || 'round_robin';
 
-        this.buildTodayData();
-        this.buildUpcoming();
+        this.applyFilters();
       },
       error: (err) => console.error('Fehler beim Laden der Daten', err),
     });
-  }
-
-  buildTodayData(): void {
-    const today = new Date().toISOString().split('T')[0]; // yyyy-mm-dd
-    this.todayResults = this.allMatches.filter((r) => r.date === today);
-  }
-
-  buildUpcoming(): void {
-    this.upcomingGames = this.allMatches.filter(
-      (r) => r.team1Score == null && r.team2Score == null,
-    );
-    this.applyFilters();
   }
 
   setFilter(mode: 'all' | 'open' | 'played'): void {

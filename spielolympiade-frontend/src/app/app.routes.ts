@@ -24,13 +24,6 @@ export const routes: Routes = [
           import('./pages/teams/teams.component').then((m) => m.TeamsComponent),
       },
       {
-        path: 'matches',
-        loadComponent: () =>
-          import('./pages/matches/matches.component').then(
-            (m) => m.MatchesComponent
-          ),
-      },
-      {
         path: 'history',
         loadComponent: () =>
           import('./pages/history/history.component').then(
