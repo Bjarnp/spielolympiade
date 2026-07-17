@@ -1,0 +1,43 @@
+<mat-card *ngIf="game" class="game-card">
+  <header class="game-header">
+    <div class="game-mark"><mat-icon>{{ isGroupKo ? 'emoji_events' : 'sports_score' }}</mat-icon></div>
+    <div>
+      <p class="eyebrow">Spielart</p>
+      <h3>{{ game.gameName }}</h3>
+    </div>
+    <span class="status" [class.complete]="game.isComplete">
+      {{ game.isComplete ? 'Abgeschlossen' : 'Läuft' }}
+    </span>
+  </header>
+
+  <div class="table-scroll">
+    <table class="standings-table">
+      <thead><tr><th>Platz</th><th>Team</th><th>Spiele</th><th>Siege</th><th>Niederl.</th><th>Punkte</th></tr></thead>
+      <tbody>
+        <tr *ngFor="let row of game.standings">
+          <td><span class="rank">{{ row.rank }}</span></td><td class="team-name">{{ row.teamName }}</td>
+          <td>{{ row.games }}</td><td>{{ row.wins }}</td><td>{{ row.losses }}</td><td><strong>{{ row.points }}</strong></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <section *ngIf="isGroupKo && game.groupStandings?.length" class="phase-section">
+    <h4>Gruppenphase</h4>
+    <div class="group-grid">
+      <div class="group" *ngFor="let group of game.groupStandings">
+        <span class="group-title">Gruppe {{ group.groupName }}</span>
+        <div *ngFor="let row of group.standings" class="group-row"><span>{{ row.rank }}. {{ row.teamName }}</span><strong>{{ row.points }}</strong></div>
+      </div>
+    </div>
+  </section>
+
+  <section *ngIf="game.knockoutMatches?.length" class="phase-section">
+    <h4>K.-o.-Phase</h4>
+    <div class="match-grid">
+      <div class="match" *ngFor="let match of game.knockoutMatches">
+        <span>{{ stageLabel(match.stage) }}</span><strong>{{ match.team1Name }} <em>vs.</em> {{ match.team2Name }}</strong><small>{{ matchScore(match) }}</small>
+      </div>
+    </div>
+  </section>
+</mat-card>

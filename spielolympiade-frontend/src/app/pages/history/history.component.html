@@ -1,82 +1,131 @@
-<div class="history">
-  <h2>Vergangene Spielolympiaden</h2>
-  <ul>
-    <li *ngFor="let s of seasons">
-      <button (click)="selectSeason(s.id)">{{ s.name }}</button>
-      <button *ngIf="auth.getUser()?.role === 'admin'" (click)="deleteSeason(s.id)" mat-icon-button>
+<div class="history page-shell">
+  <header class="page-hero">
+    <p class="eyebrow">Archiv</p>
+    <h1>Spielolympiaden erleben.</h1>
+    <p>
+      Ergebnisse, Platzierungen und K.-o.-Phasen vergangener Jahre an einem Ort.
+    </p>
+  </header>
+
+  <section *ngIf="seasons.length; else noHistory" class="year-picker">
+    <button
+      *ngFor="let season of seasons"
+      type="button"
+      class="year-button"
+      [class.active]="selected?.id === season.id"
+      (click)="selectSeason(season.id)"
+    >
+      <span>{{ season.year }}</span
+      ><small>{{ season.name }}</small>
+    </button>
+  </section>
+  <ng-template #noHistory
+    ><div class="empty-state">
+      <mat-icon>history</mat-icon>
+      <p>Es sind noch keine abgeschlossenen Saisons vorhanden.</p>
+    </div></ng-template
+  >
+
+  <section *ngIf="selected" class="season-details">
+    <div class="season-heading">
+      <div>
+        <p class="eyebrow">{{ selected.finishedAt | date: "longDate" }}</p>
+        <h2>{{ selected.name }}</h2>
+      </div>
+      <button
+        *ngIf="auth.getUser()?.role === 'admin'"
+        mat-icon-button
+        color="warn"
+        aria-label="Saison löschen"
+        (click)="deleteSeason(selected.id)"
+      >
         <mat-icon>delete</mat-icon>
       </button>
-    </li>
-  </ul>
-
-  <section *ngIf="selected">
-    <h3>{{ selected.name }}</h3>
-
-    <h4>Teams</h4>
-    <ul>
-      <li *ngFor="let t of selected.teams">
-        {{ t.name }} - {{ getMemberNames(t.members) }}
-      </li>
-    </ul>
-
-    <h4>Ergebnisse</h4>
-    <div class="filters">
-      <label>
-        Spiel:
-        <select [(ngModel)]="gameFilter" (ngModelChange)="onGameFilterChange()">
-          <option value="all">Alle</option>
-          <option *ngFor="let g of gameOptions" [value]="g.id">{{ g.name }}</option>
-        </select>
-      </label>
-      <label>
-        Team:
-        <select [(ngModel)]="teamFilter">
-          <option value="all">Alle</option>
-          <option *ngFor="let t of teamOptions" [value]="t.id">{{ t.name }}</option>
-        </select>
-      </label>
     </div>
-    <h4>Tabelle</h4>
-    <table class="score-table">
-      <thead>
-        <tr>
-          <th>Team</th>
-          <th>Spiele</th>
-          <th>Siege</th>
-          <th>Niederl.</th>
-          <th>Punkte</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let t of tableData">
-          <td>{{ t.name }}</td>
-          <td>{{ t.spiele }}</td>
-          <td>{{ t.siege }}</td>
-          <td>{{ t.niederlagen }}</td>
-          <td>{{ t.points }}</td>
-        </tr>
-      </tbody>
-    </table>
-    <table class="result-table">
-      <thead>
-        <tr>
-          <th>Spiel</th>
-          <th>Match</th>
-          <th>Ergebnis</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let m of filteredMatches">
-          <td>{{ m.game.name }}</td>
-          <td>{{ m.team1.name }} vs {{ m.team2.name }}</td>
-          <td>
-            <ng-container *ngIf="m.results.length; else open">
-              {{ m.team1.name }} {{ m.results[0].score }} : {{ m.results[1].score }} {{ m.team2.name }}
-            </ng-container>
-            <ng-template #open>noch offen</ng-template>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+
+    <div class="season-stats">
+      <div>
+        <span>{{ selected.teams.length }}</span
+        ><small>Teams</small>
+      </div>
+      <div>
+        <span>{{ historyGameCount }}</span
+        ><small>Spielarten</small>
+      </div>
+      <div>
+        <span>{{ historyMatchCount }}</span
+        ><small>Begegnungen</small>
+      </div>
+    </div>
+
+    <section class="season-table-card">
+      <div class="section-title">
+        <div>
+          <p class="eyebrow">Saisonwertung</p>
+          <h3>Gesamtübersicht</h3>
+        </div>
+        <span class="points-note">Punkte aus Spielplatzierungen</span>
+      </div>
+      <div class="table-scroll">
+        <table class="score-table">
+          <thead>
+            <tr>
+              <th>Platz</th>
+              <th>Team</th>
+              <th>Spiele</th>
+              <th>Siege</th>
+              <th>Niederl.</th>
+              <th>Punkte</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let team of tableData">
+              <td>
+                <span class="rank">{{ team.rank }}</span>
+              </td>
+              <td class="team-name">{{ team.name }}</td>
+              <td>{{ team.spiele }}</td>
+              <td>{{ team.siege }}</td>
+              <td>{{ team.niederlagen }}</td>
+              <td>
+                <strong>{{ team.points }}</strong>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <div class="history-toolbar">
+      <div>
+        <p class="eyebrow">Spielarten</p>
+        <h3>Turnierdetails</h3>
+      </div>
+      <label
+        >Spiel auswählen<select [(ngModel)]="gameFilter">
+          <option value="all">Alle Spielarten</option>
+          <option *ngFor="let game of gameOptions" [value]="game.id">
+            {{ game.name }}
+          </option>
+        </select></label
+      >
+    </div>
+    <div class="game-cards">
+      <app-tournament-game-card
+        *ngFor="let game of historyGames"
+        [game]="game"
+      ></app-tournament-game-card>
+    </div>
+
+    <section class="teams-card">
+      <p class="eyebrow">Teilnehmende</p>
+      <h3>Teams der Saison</h3>
+      <div class="team-chips">
+        <span *ngFor="let team of selected.teams"
+          >{{ team.name
+          }}<small>{{ getMemberNames(team.members) }}</small></span
+        >
+      </div>
+    </section>
   </section>
 </div>

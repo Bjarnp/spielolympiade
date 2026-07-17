@@ -132,11 +132,29 @@ router.get("/:id", async (req: Request, res: Response): Promise<void> => {
     "/",
     authorizeRole("admin"),
     async (req: Request, res: Response): Promise<void> => {
-      const { tournamentId, gameId, team1Id, team2Id, scheduledAt, stage } =
+      const { tournamentId, gameId, team1Id, team2Id, scheduledAt, stage, password } =
         req.body;
 
     if (!tournamentId || !gameId || !team1Id || !team2Id) {
       res.status(400).json({ error: "Alle IDs erforderlich" });
+      return;
+    }
+
+    if (!password) {
+      res.status(400).json({ error: "Passwort erforderlich" });
+      return;
+    }
+
+    const userInfo = getUser(req);
+    const user = await prisma.user.findUnique({ where: { id: userInfo.id } });
+    if (!user) {
+      res.sendStatus(403);
+      return;
+    }
+
+    const passwordHash = createHash("sha256").update(password).digest("hex");
+    if (passwordHash !== user.passwordHash) {
+      res.status(401).json({ error: "Passwort falsch" });
       return;
     }
 
@@ -149,6 +167,7 @@ router.get("/:id", async (req: Request, res: Response): Promise<void> => {
           stage: (stage as MatchStage) || "extra",
           scheduledAt: scheduledAt ? new Date(scheduledAt) : undefined,
         },
+        include: { results: true, game: true, team1: true, team2: true },
       });
 
     res.status(201).json(match);

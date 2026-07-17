@@ -16,6 +16,7 @@ import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../core/auth.service';
 import { environment } from '../../../environments/environment';
 import { FormsModule } from '@angular/forms';
+import { TournamentGameCardComponent } from '../../shared/tournament-game-card/tournament-game-card.component';
 
 const API_URL = environment.apiUrl;
 
@@ -37,6 +38,7 @@ const API_URL = environment.apiUrl;
     MatDividerModule,
     MatIconModule,
     FormsModule,
+    TournamentGameCardComponent,
   ],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss'],
@@ -49,7 +51,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
   allGames: any[] = [];
   allMatches: any[] = [];
   tournament: any = null;
-  newMatch: any = { team1Id: '', team2Id: '', gameId: '' };
+  newMatch: any = { team1Id: '', team2Id: '', gameId: '', password: '' };
+  newMatchError = '';
+  newMatchSuccess = '';
+  isCreatingMatch = false;
   todayResults: any[] = [];
   upcomingGames: any[] = [];
   tableData: any[] = [];
@@ -102,7 +107,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.http.get<any>(`${API_URL}/users/my-team`).subscribe({
       next: (res) => {
         this.team = res;
-        this.seasonYear = this.extractYear(res.season);
         this.seasonActive = true;
         this.loadTable();
         this.applyFilters();
@@ -137,6 +141,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   loadData(): void {
     this.http.get<any>(`${API_URL}/seasons/public/dashboard-data`).subscribe({
       next: (data) => {
+        this.seasonYear = data.season?.year?.toString() || '';
         this.allTeams = data.teams;
         this.allGames = data.games;
         this.tournament = data.tournament;
@@ -148,7 +153,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
             team2Score:
               m.results.find((r: any) => r.teamId === m.team2Id)?.score ?? null,
             saved: true,
-          })
+          }),
         );
         this.tournamentSystem = data.tournament?.system || 'round_robin';
 
@@ -166,7 +171,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   buildUpcoming(): void {
     this.upcomingGames = this.allMatches.filter(
-      (r) => r.team1Score == null && r.team2Score == null
+      (r) => r.team1Score == null && r.team2Score == null,
     );
     this.applyFilters();
   }
@@ -187,7 +192,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     if (this.onlyMine && this.team) {
       games = games.filter(
-        (g) => g.team1Id === this.team.id || g.team2Id === this.team.id
+        (g) => g.team1Id === this.team.id || g.team2Id === this.team.id,
       );
     }
 
@@ -246,11 +251,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   groupStandings(
-    gameId: string
+    gameId: string,
   ): Record<string, { teamId: string; points: number }[]> {
     const groups: Record<string, { teamId: string; points: number }[]> = {};
     const matches = this.allMatches.filter(
-      (m) => m.gameId === gameId && m.stage === 'group'
+      (m) => m.gameId === gameId && m.stage === 'group',
     );
     for (const m of matches) {
       const g = m.groupName || 'A';
@@ -275,13 +280,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   koMatchesFor(gameId: string): any[] {
     return this.allMatches.filter(
-      (m) => m.gameId === gameId && m.stage !== 'group'
+      (m) => m.gameId === gameId && m.stage !== 'group',
     );
   }
 
   groupPhaseComplete(gameId: string): boolean {
     const matches = this.allMatches.filter(
-      (m) => m.gameId === gameId && m.stage === 'group'
+      (m) => m.gameId === gameId && m.stage === 'group',
     );
     return matches.length > 0 && matches.every((m) => m.winnerId);
   }
@@ -301,9 +306,46 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
   }
 
-  overallStandings(
-    gameId: string
-  ): { teamId: string; wins: number; losses: number; ratio: number; points: number; rank: number }[] {
+  gameSummary(gameId: string): any {
+    const standings = this.overallStandings(gameId).map((row) => ({
+      ...row,
+      teamName: this.getTeamName(row.teamId),
+      games: row.wins + row.losses,
+    }));
+    const groups = this.groupStandings(gameId);
+
+    return {
+      gameId,
+      gameName: this.getGameName(gameId),
+      system: this.tournamentSystem,
+      isComplete: standings.length > 0 && this.allMatches
+        .filter((match) => match.gameId === gameId)
+        .every((match) => !!match.winnerId),
+      standings,
+      groupStandings: Object.entries(groups).map(([groupName, rows]) => ({
+        groupName,
+        standings: rows.map((row, index) => ({
+          ...row,
+          rank: index + 1,
+          teamName: this.getTeamName(row.teamId),
+        })),
+      })),
+      knockoutMatches: this.koMatchesFor(gameId).map((match) => ({
+        ...match,
+        team1Name: this.getTeamName(match.team1Id),
+        team2Name: this.getTeamName(match.team2Id),
+      })),
+    };
+  }
+
+  overallStandings(gameId: string): {
+    teamId: string;
+    wins: number;
+    losses: number;
+    ratio: number;
+    points: number;
+    rank: number;
+  }[] {
     const stats: Record<string, { wins: number; losses: number }> = {};
     const matches = this.allMatches.filter((m) => m.gameId === gameId);
 
@@ -332,10 +374,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }));
 
     const final = this.allMatches.find(
-      (m) => m.gameId === gameId && m.stage === 'final' && m.winnerId
+      (m) => m.gameId === gameId && m.stage === 'final' && m.winnerId,
     );
     const third = this.allMatches.find(
-      (m) => m.gameId === gameId && m.stage === 'third_place' && m.winnerId
+      (m) => m.gameId === gameId && m.stage === 'third_place' && m.winnerId,
     );
 
     let ordered: typeof table = [];
@@ -354,7 +396,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
             .sort((a, b) => {
               if (b.ratio !== a.ratio) return b.ratio - a.ratio;
               return Math.random() - 0.5;
-            })
+            }),
         );
     } else {
       ordered = table.sort((a, b) => b.ratio - a.ratio);
@@ -369,22 +411,58 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   createMatch(): void {
+    this.newMatchError = '';
+    this.newMatchSuccess = '';
     if (
       !this.newMatch.team1Id ||
       !this.newMatch.team2Id ||
-      !this.newMatch.gameId
-    )
+      !this.newMatch.gameId ||
+      !this.newMatch.password
+    ) {
+      this.newMatchError = 'Bitte Spielart, beide Teams und Passwort angeben.';
       return;
+    }
+    if (this.newMatch.team1Id === this.newMatch.team2Id) {
+      this.newMatchError = 'Ein Team kann nicht gegen sich selbst spielen.';
+      return;
+    }
+    if (!this.tournament?.id) {
+      this.newMatchError = 'Kein aktives Turnier gefunden.';
+      return;
+    }
+    this.isCreatingMatch = true;
     const payload = {
       tournamentId: this.tournament?.id,
       gameId: this.newMatch.gameId,
       team1Id: this.newMatch.team1Id,
       team2Id: this.newMatch.team2Id,
       stage: 'extra',
+      password: this.newMatch.password,
     };
-    this.http.post(`${API_URL}/matches`, payload).subscribe(() => {
-      this.newMatch = { team1Id: '', team2Id: '', gameId: '' };
-      this.loadData();
+    this.http.post<any>(`${API_URL}/matches`, payload).subscribe({
+      next: (createdMatch) => {
+        this.isCreatingMatch = false;
+        this.allMatches = [
+          {
+            ...createdMatch,
+            team1Score: null,
+            team2Score: null,
+            saved: true,
+          },
+          ...this.allMatches.filter((match) => match.id !== createdMatch.id),
+        ];
+        this.applyFilters();
+        this.newMatchSuccess = `${this.getGameName(createdMatch.gameId)}: ${this.getTeamName(createdMatch.team1Id)} gegen ${this.getTeamName(createdMatch.team2Id)} wurde hinzugefügt.`;
+        this.newMatch = { team1Id: '', team2Id: '', gameId: '', password: '' };
+        this.loadTable();
+        this.loadRecommendations();
+      },
+      error: (err) => {
+        this.isCreatingMatch = false;
+        this.newMatchSuccess = '';
+        this.newMatchError =
+          err.error?.error || 'Das Spiel konnte nicht angelegt werden.';
+      },
     });
   }
 
@@ -411,13 +489,20 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   finishSeason(): void {
     if (!this.team?.seasonId) return;
-    const password = prompt('Bitte Passwort zum Speichern eingeben:');
+    const password = prompt(
+      'Bitte Admin-Passwort zum Speichern der Saison eingeben:',
+    );
     if (!password) return;
     this.http
       .post(`${API_URL}/seasons/${this.team.seasonId}/finish`, { password })
-      .subscribe(() => {
-        this.seasonActive = false;
-        this.loadData();
+      .subscribe({
+        next: () => {
+          this.seasonActive = false;
+          this.loadData();
+        },
+        error: () => {
+          alert('Passwort falsch oder Fehler beim Speichern der Saison.');
+        },
       });
   }
 }

@@ -2,7 +2,7 @@
   <div class="info" *ngIf="!seasonActive">
     <p>
       Die Spielolympiade beginnt bald! Die nächste Spielolympiade ist dieses
-      Jahr 2025.
+      Jahr 2026.
       <a routerLink="/history">Werfe doch ein Blick in die Historie!</a>
     </p>
     <button
@@ -100,75 +100,10 @@
       </mat-card>
     </section>
 
-    <section *ngIf="tournamentSystem === 'group_ko' && viewMode !== 'overall'">
-      <mat-card class="group-card">
-        <mat-card-title>{{ getGameName(viewMode) }} - Gruppen</mat-card-title>
-        <mat-card-content>
-          <div class="groups" *ngFor="let group of ['A', 'B']">
-            <h4>Gruppe {{ group }}</h4>
-            <table
-              mat-table
-              [dataSource]="groupStandings(viewMode)[group]"
-              class="result-table"
-            >
-              <ng-container matColumnDef="team">
-                <th mat-header-cell *matHeaderCellDef>Team</th>
-                <td mat-cell *matCellDef="let row">
-                  {{ getTeamName(row.teamId) }}
-                </td>
-              </ng-container>
-              <ng-container matColumnDef="points">
-                <th mat-header-cell *matHeaderCellDef>Punkte</th>
-                <td mat-cell *matCellDef="let row">{{ row.points }}</td>
-              </ng-container>
-              <tr mat-header-row *matHeaderRowDef="['team', 'points']"></tr>
-              <tr mat-row *matRowDef="let row; columns: ['team', 'points']"></tr>
-            </table>
-          </div>
-          <div *ngIf="overallStandings(viewMode).length" class="overall-table">
-            <h4>Gesamtwertung</h4>
-            <table mat-table [dataSource]="overallStandings(viewMode)" class="result-table">
-              <ng-container matColumnDef="rank">
-                <th mat-header-cell *matHeaderCellDef>Platz</th>
-                <td mat-cell *matCellDef="let row">{{ row.rank }}</td>
-              </ng-container>
-              <ng-container matColumnDef="team">
-                <th mat-header-cell *matHeaderCellDef>Team</th>
-                <td mat-cell *matCellDef="let row">{{ getTeamName(row.teamId) }}</td>
-              </ng-container>
-              <ng-container matColumnDef="ratio">
-                <th mat-header-cell *matHeaderCellDef>Quote</th>
-                <td mat-cell *matCellDef="let row">{{ row.ratio | number:'1.2-2' }}</td>
-              </ng-container>
-              <ng-container matColumnDef="points">
-                <th mat-header-cell *matHeaderCellDef>Punkte</th>
-                <td mat-cell *matCellDef="let row">{{ row.points }}</td>
-              </ng-container>
-              <tr
-                mat-header-row
-                *matHeaderRowDef="['rank', 'team', 'ratio', 'points']"
-              ></tr>
-              <tr
-                mat-row
-                *matRowDef="let row; columns: ['rank', 'team', 'ratio', 'points']"
-              ></tr>
-            </table>
-          </div>
-          <h4>K.O.-Phase</h4>
-          <mat-list>
-            <mat-list-item *ngFor="let m of koMatchesFor(viewMode)">
-              <strong>{{ stageLabel(m.stage) }}:</strong>
-              {{ getTeamName(m.team1Id) }} vs {{ getTeamName(m.team2Id) }} -
-              <ng-container
-                *ngIf="m.team1Score != null && m.team2Score != null; else open"
-              >
-                {{ m.team1Score }} : {{ m.team2Score }}
-              </ng-container>
-              <ng-template #open>noch offen</ng-template>
-            </mat-list-item>
-          </mat-list>
-        </mat-card-content>
-      </mat-card>
+    <section *ngIf="viewMode !== 'overall'" class="game-view">
+      <app-tournament-game-card
+        [game]="gameSummary(viewMode)"
+      ></app-tournament-game-card>
     </section>
 
     <section *ngIf="team">
@@ -185,7 +120,7 @@
       <div *ngIf="recommendations.length" class="recommendations">
         <h3>Empfohlene nächste Spiele</h3>
         <ul>
-          <li *ngFor="let g of recommendations | slice : 0 : 5">
+          <li *ngFor="let g of recommendations | slice: 0 : 5">
             {{ getGameName(g.gameId) }}: {{ getTeamName(g.team1Id) }} vs
             {{ getTeamName(g.team2Id) }}
           </li>
@@ -193,6 +128,12 @@
       </div>
       <div class="new-match" *ngIf="auth.getUser()?.role === 'admin'">
         <h3>Spiel hinzufügen</h3>
+        <p *ngIf="newMatchError" class="form-error" role="alert">
+          {{ newMatchError }}
+        </p>
+        <p *ngIf="newMatchSuccess" class="form-success" role="status">
+          <mat-icon>check_circle</mat-icon>{{ newMatchSuccess }}
+        </p>
         <mat-form-field appearance="fill">
           <mat-select [(ngModel)]="newMatch.gameId" placeholder="Spiel">
             <mat-option *ngFor="let g of allGames" [value]="g.id">
@@ -214,8 +155,17 @@
             </mat-option>
           </mat-select>
         </mat-form-field>
-        <button mat-raised-button color="primary" (click)="createMatch()">
-          Anlegen
+        <mat-form-field appearance="fill">
+          <mat-label>Admin-Passwort</mat-label>
+          <input
+            matInput
+            type="password"
+            autocomplete="current-password"
+            [(ngModel)]="newMatch.password"
+          />
+        </mat-form-field>
+        <button mat-raised-button color="primary" [disabled]="isCreatingMatch" (click)="createMatch()">
+          {{ isCreatingMatch ? 'Wird angelegt …' : 'Anlegen' }}
         </button>
       </div>
       <div class="filters">
@@ -248,35 +198,29 @@
             <td>
               <ng-container
                 *ngIf="auth.getUser()?.role === 'admin'; else t1score"
-              >
-                <mat-form-field appearance="fill" class="score-select">
-                  <mat-select
+                ><mat-form-field appearance="fill" class="score-select"
+                  ><mat-select
                     [ngModel]="r.team1Score"
                     (ngModelChange)="updateResult(r, 'team1', $event)"
-                  >
-                    <mat-option [value]="1">gewonnen</mat-option>
-                    <mat-option [value]="0">verloren</mat-option>
-                  </mat-select>
-                </mat-form-field>
-              </ng-container>
-              <ng-template #t1score>{{ r.team1Score ?? "-" }}</ng-template>
+                    ><mat-option [value]="1">gewonnen</mat-option
+                    ><mat-option [value]="0">verloren</mat-option></mat-select
+                  ></mat-form-field
+                ></ng-container
+              ><ng-template #t1score>{{ r.team1Score ?? "-" }}</ng-template>
             </td>
             <td>{{ getTeamName(r.team2Id) }}</td>
             <td>
               <ng-container
                 *ngIf="auth.getUser()?.role === 'admin'; else t2score"
-              >
-                <mat-form-field appearance="fill" class="score-select">
-                  <mat-select
+                ><mat-form-field appearance="fill" class="score-select"
+                  ><mat-select
                     [ngModel]="r.team2Score"
                     (ngModelChange)="updateResult(r, 'team2', $event)"
-                  >
-                    <mat-option [value]="1">gewonnen</mat-option>
-                    <mat-option [value]="0">verloren</mat-option>
-                  </mat-select>
-                </mat-form-field>
-              </ng-container>
-              <ng-template #t2score>{{ r.team2Score ?? "-" }}</ng-template>
+                    ><mat-option [value]="1">gewonnen</mat-option
+                    ><mat-option [value]="0">verloren</mat-option></mat-select
+                  ></mat-form-field
+                ></ng-container
+              ><ng-template #t2score>{{ r.team2Score ?? "-" }}</ng-template>
             </td>
             <td class="action-cell" *ngIf="auth.getUser()?.role === 'admin'">
               <button mat-icon-button color="accent" (click)="toggleSave(r)">

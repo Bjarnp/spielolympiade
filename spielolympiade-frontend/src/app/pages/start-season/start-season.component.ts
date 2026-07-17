@@ -4,7 +4,10 @@ import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
-import { MatCheckboxModule, MatCheckboxChange } from '@angular/material/checkbox';
+import {
+  MatCheckboxModule,
+  MatCheckboxChange,
+} from '@angular/material/checkbox';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
@@ -31,7 +34,7 @@ const API_URL = environment.apiUrl;
     MatDialogModule,
   ],
   templateUrl: './start-season.component.html',
-  styleUrls: ['./start-season.component.scss']
+  styleUrls: ['./start-season.component.scss'],
 })
 export class StartSeasonComponent {
   http = inject(HttpClient);
@@ -55,23 +58,25 @@ export class StartSeasonComponent {
 
   games: any[] = [];
   selectedGameIds: string[] = [];
+  newGameName = '';
+  newGameRules = '';
+  gameCreationError = '';
+  startError = '';
+  isStarting = false;
 
   system = 'round_robin';
 
   ngOnInit(): void {
-    this.http.get<any[]>(`${API_URL}/users`).subscribe((u) => (this.players = u));
+    this.http
+      .get<any[]>(`${API_URL}/users`)
+      .subscribe((u) => (this.players = u));
     this.http.get<any[]>(`${API_URL}/games`).subscribe((g) => (this.games = g));
     this.http.get<any[]>(`${API_URL}/seasons`).subscribe((s) => {
       this.seasons = s;
-      const maxYear = this.seasons.reduce(
-        (max, cur) => (cur.year > max ? cur.year : max),
-        new Date().getFullYear()
-      );
-      this.year = maxYear + 1;
+      this.year = new Date().getFullYear();
       this.name = 'Spielolympiade ' + this.year;
     });
   }
-
 
   getPlayerName = (id: string): string => {
     return this.players.find((p) => p.id === id)?.name ?? id;
@@ -91,9 +96,33 @@ export class StartSeasonComponent {
     else this.selectedGameIds = this.selectedGameIds.filter((g) => g !== id);
   }
 
+  createGame(): void {
+    const name = this.newGameName.trim();
+    if (!name) return;
+    this.gameCreationError = '';
+    this.http
+      .post<any>(`${API_URL}/games`, { name, rules: this.newGameRules })
+      .subscribe({
+        next: (game) => {
+          this.games = [...this.games, game].sort((a, b) =>
+            a.name.localeCompare(b.name),
+          );
+          this.selectedGameIds = [...this.selectedGameIds, game.id];
+          this.newGameName = '';
+          this.newGameRules = '';
+        },
+        error: (err) =>
+          (this.gameCreationError =
+            err.error?.error || 'Spielart konnte nicht angelegt werden.'),
+      });
+  }
+
   addTeam(): void {
     if (!this.newTeamName || this.newTeamPlayers.length === 0) return;
-    this.teams.push({ name: this.newTeamName, playerIds: [...this.newTeamPlayers] });
+    this.teams.push({
+      name: this.newTeamName,
+      playerIds: [...this.newTeamPlayers],
+    });
     this.newTeamName = '';
     this.newTeamPlayers = [];
   }
@@ -127,6 +156,7 @@ export class StartSeasonComponent {
   }
 
   next(): void {
+    if (this.step === 3 && this.selectedGameIds.length === 0) return;
     if (this.step < 4) this.step++;
   }
 
@@ -135,7 +165,23 @@ export class StartSeasonComponent {
   }
 
   openInfo(): void {
-    this.dialog.open(this.systemInfo);
+    this.dialog.open(this.systemInfo, {
+      panelClass: 'tournament-info-dialog',
+      backdropClass: 'modern-dialog-backdrop',
+      width: 'min(92vw, 560px)',
+      maxWidth: '92vw',
+      autoFocus: false,
+      restoreFocus: true,
+    });
+  }
+
+  getSystemTitle(): string {
+    return ({
+      round_robin: 'Jeder gegen jeden',
+      single_elim: 'K.-o.-System',
+      double_elim: 'Double K.-o.',
+      group_ko: 'Gruppen & K.-o.',
+    } as Record<string, string>)[this.system] || 'Turnierform';
   }
 
   getBeerInfo(): string {
@@ -177,6 +223,9 @@ export class StartSeasonComponent {
   }
 
   start(): void {
+    if (this.isStarting) return;
+    this.startError = '';
+    this.isStarting = true;
     const payload = {
       year: this.year,
       name: this.name,
@@ -184,8 +233,14 @@ export class StartSeasonComponent {
       gameIds: this.selectedGameIds,
       system: this.system,
     };
-    this.http.post(`${API_URL}/seasons/setup`, payload).subscribe(() => {
-      this.router.navigate(['/dashboard']);
+    this.http.post(`${API_URL}/seasons/setup`, payload).subscribe({
+      next: () => this.router.navigate(['/dashboard']),
+      error: (err) => {
+        this.isStarting = false;
+        this.startError =
+          err.error?.error ||
+          'Die Spielolympiade konnte nicht gestartet werden. Bitte versuche es erneut.';
+      },
     });
   }
 }

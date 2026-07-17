@@ -42,8 +42,18 @@
 
   <div *ngIf="step === 3">
     <h3>3. Spiele auswählen</h3>
-    <div *ngFor="let g of games">
-      <mat-checkbox (change)="toggleGame(g.id, $event)">{{ g.name }}</mat-checkbox>
+    <p>Wähle alle Spielarten aus, die in dieser Saison gespielt werden.</p>
+    <div class="game-selection">
+      <mat-checkbox *ngFor="let g of games" [checked]="selectedGameIds.includes(g.id)" (change)="toggleGame(g.id, $event)">
+        <strong>{{ g.name }}</strong><small *ngIf="g.rules">{{ g.rules }}</small>
+      </mat-checkbox>
+    </div>
+    <div class="new-game-form">
+      <h4>Neue Spielart anlegen</h4>
+      <mat-form-field><input matInput [(ngModel)]="newGameName" placeholder="Name, z. B. Rage Cage" /></mat-form-field>
+      <mat-form-field><input matInput [(ngModel)]="newGameRules" placeholder="Optionale Regeln" /></mat-form-field>
+      <button mat-stroked-button color="primary" (click)="createGame()"><mat-icon>add</mat-icon> Spielart hinzufügen</button>
+      <p *ngIf="gameCreationError" class="game-error">{{ gameCreationError }}</p>
     </div>
     <h3>Turnierform
       <button mat-icon-button (click)="openInfo()" aria-label="Info">
@@ -61,7 +71,7 @@
     <p class="beer-info">Bierinfo: {{ getBeerInfo() }}</p>
     <br />
     <button mat-raised-button (click)="prev()">Zurück</button>
-    <button mat-raised-button color="primary" (click)="next()">Weiter</button>
+    <button mat-raised-button color="primary" [disabled]="selectedGameIds.length === 0" (click)="next()">Weiter</button>
   </div>
 
   <div *ngIf="step === 4">
@@ -75,28 +85,51 @@
     <p>Spiele: {{ selectedGameIds.map(getGameName).join(', ') }}</p>
     <p>System: {{ system }}</p>
     <button mat-raised-button (click)="prev()">Zurück</button>
-    <button mat-raised-button color="accent" (click)="start()">Spielolympiade starten</button>
+    <p *ngIf="startError" class="start-error" role="alert">
+      <mat-icon>error_outline</mat-icon>{{ startError }}
+    </p>
+    <button mat-raised-button color="accent" [disabled]="isStarting" (click)="start()">
+      <mat-icon>{{ isStarting ? 'hourglass_top' : 'rocket_launch' }}</mat-icon>
+      {{ isStarting ? 'Wird gestartet …' : 'Spielolympiade starten' }}
+    </button>
   </div>
 </div>
 
 <ng-template #systemInfo>
-  <h2 mat-dialog-title>Information zur Turnierform</h2>
-  <mat-dialog-content>
-    <p *ngIf="system === 'round_robin'">
-      Beim Jeder-gegen-Jeden spielt jedes Team gegen alle anderen Teams.
-    </p>
-    <p *ngIf="system === 'single_elim'">
-      Beim K.O.-System scheidet ein Team nach einer Niederlage aus.
-    </p>
-    <p *ngIf="system === 'double_elim'">
-      Beim Double K.O. scheidet ein Team erst nach zwei Niederlagen aus.
-    </p>
-    <p *ngIf="system === 'group_ko'">
-      Teams spielen zunächst in Gruppen und die Besten treten im K.O.-System an.
-    </p>
-    <p>{{ getBeerInfo() }}</p>
+  <div class="dialog-hero">
+    <div class="dialog-icon"><mat-icon>emoji_events</mat-icon></div>
+    <div>
+      <span class="dialog-eyebrow">Turniermodus</span>
+      <h2 mat-dialog-title>{{ getSystemTitle() }}</h2>
+    </div>
+    <button mat-icon-button mat-dialog-close aria-label="Dialog schließen">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+  <mat-dialog-content class="dialog-content">
+    <div class="dialog-description">
+      <mat-icon>info</mat-icon>
+      <p *ngIf="system === 'round_robin'">
+        Jedes Team tritt einmal gegen alle anderen Teams an. So entsteht eine besonders aussagekräftige Gesamttabelle.
+      </p>
+      <p *ngIf="system === 'single_elim'">
+        Eine Niederlage bedeutet das Aus. Gewinner ziehen direkt in die nächste Runde ein, bis das Finale entschieden ist.
+      </p>
+      <p *ngIf="system === 'double_elim'">
+        Erst nach zwei Niederlagen scheidet ein Team aus. Eine zweite Turnierhälfte gibt Verlierern eine weitere Chance.
+      </p>
+      <p *ngIf="system === 'group_ko'">
+        Zunächst spielen die Teams in Gruppen. Die bestplatzierten Teams qualifizieren sich anschließend für die K.-o.-Phase.
+      </p>
+    </div>
+    <div class="dialog-stat">
+      <div class="stat-icon"><mat-icon>sports_bar</mat-icon></div>
+      <div><span>Geschätzter Bedarf</span><strong>{{ getBeerInfo() }}</strong></div>
+    </div>
   </mat-dialog-content>
-  <mat-dialog-actions>
-    <button mat-button mat-dialog-close>OK</button>
+  <mat-dialog-actions align="end" class="dialog-actions">
+    <button mat-flat-button color="primary" mat-dialog-close>
+      Verstanden <mat-icon>arrow_forward</mat-icon>
+    </button>
   </mat-dialog-actions>
 </ng-template>

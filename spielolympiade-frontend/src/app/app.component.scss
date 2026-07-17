@@ -1,5 +1,13 @@
 mat-toolbar.main-nav {
-  margin-bottom: 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  min-height: 68px;
+  margin-bottom: 0;
+  padding: 0 max(1rem, calc((100vw - 1180px) / 2));
+  color: #fff;
+  background: linear-gradient(110deg, #312e81, #6d5dfc);
+  box-shadow: 0 8px 26px #312e8140;
   display: flex;
   align-items: center;
 
@@ -9,9 +17,16 @@ mat-toolbar.main-nav {
   }
 
   .title {
-    font-size: 1.25rem;
-    font-weight: 500;
+    display: flex;
+    gap: .5rem;
+    align-items: center;
+    font-size: 1.2rem;
+    font-weight: 750;
   }
+
+  nav { display: flex; gap: .25rem; margin-left: 2rem; }
+  nav a { padding: .45rem .65rem; border-radius: 8px; color: #eeebff; font-size: .9rem; }
+  nav a:hover { background: #ffffff1f; color: #fff; }
 
   mat-slide-toggle {
     margin-right: 0.5rem;

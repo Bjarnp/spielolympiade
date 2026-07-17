@@ -1,6 +1,6 @@
 import express, { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
-import { calculateGroupKoStandings } from "../utils/tournament";
+import { buildSeasonDetail } from "../utils/history-core";
 import { createHash } from "crypto";
 import { authorizeRole } from "../middleware/auth";
 
@@ -28,7 +28,7 @@ router.get(
       });
 
       if (!season) {
-        res.json({ teams: [], games: [], tournament: null });
+        res.json({ season: null, teams: [], games: [], tournament: null });
         return;
       }
 
@@ -41,12 +41,12 @@ router.get(
         include: { matches: { include: { results: true } } },
       });
 
-      res.json({ teams, games, tournament });
+      res.json({ season, teams, games, tournament });
     } catch (err) {
       console.error("Fehler beim Laden der Dashboard-Daten:", err);
       res.status(500).json({ error: "Interner Serverfehler" });
     }
-  }
+  },
 );
 
 // ✅ GET /seasons/:id – einzelne Saison inkl. Teams & Turniere
@@ -107,7 +107,7 @@ router.get(
     }
 
     res.json(season);
-  }
+  },
 );
 
 // 🏆 GET /seasons/:id/table – Saison-Tabelle berechnen
@@ -116,7 +116,24 @@ router.get("/:id/table", async (req: Request, res: Response): Promise<void> => {
 
   const season = await prisma.season.findUnique({
     where: { id },
-    include: { teams: true, tournaments: { include: { matches: true } } },
+    include: {
+      teams: {
+        include: { members: { include: { user: true } } },
+      },
+      tournaments: {
+        include: {
+          matches: {
+            include: {
+              game: true,
+              results: true,
+              winner: true,
+              team1: true,
+              team2: true,
+            },
+          },
+        },
+      },
+    },
   });
 
   if (!season) {
@@ -124,65 +141,16 @@ router.get("/:id/table", async (req: Request, res: Response): Promise<void> => {
     return;
   }
 
-  const stats = season.teams.map((t: any) => ({
-    id: t.id,
-    name: t.name,
-    spiele: 0,
-    siege: 0,
-    niederlagen: 0,
-    points: 0,
+  const seasonDetail = buildSeasonDetail(season as any);
+  const table = seasonDetail.overallStandings.map((standing) => ({
+    teamId: standing.teamId,
+    name: standing.teamName,
+    spiele: standing.games,
+    siege: standing.wins,
+    niederlagen: standing.losses,
+    points: standing.points,
+    rank: standing.rank,
   }));
-  const map: Record<string, any> = {};
-  const headToHead: Record<string, Record<string, number>> = {};
-  for (const s of stats) {
-    map[s.id] = s;
-    headToHead[s.id] = {};
-  }
-
-  for (const t of season.tournaments) {
-    for (const m of t.matches) {
-      if (!m.team1Id || !m.team2Id) continue;
-      if (m.winnerId) {
-        map[m.team1Id].spiele += 1;
-        map[m.team2Id].spiele += 1;
-        const loser = m.winnerId === m.team1Id ? m.team2Id : m.team1Id;
-        if (m.winnerId === m.team1Id) {
-          map[m.team1Id].siege += 1;
-          map[m.team2Id].niederlagen += 1;
-        } else {
-          map[m.team2Id].siege += 1;
-          map[m.team1Id].niederlagen += 1;
-        }
-        headToHead[m.winnerId][loser] =
-          (headToHead[m.winnerId][loser] || 0) + 1;
-        headToHead[loser][m.winnerId] = headToHead[loser][m.winnerId] || 0;
-      }
-    }
-
-    if (t.system === "round_robin") {
-      for (const m of t.matches) {
-        if (m.winnerId) map[m.winnerId].points += 1;
-      }
-    } else if (t.system === "group_ko") {
-      const gameIds = Array.from(new Set(t.matches.map((m) => m.gameId))) as string[];
-      for (const gameId of gameIds) {
-        const standings = calculateGroupKoStandings(
-          t.matches.filter((m) => m.gameId === gameId)
-        );
-        for (const s of standings) {
-          map[s.teamId].points += s.points;
-        }
-      }
-    }
-  }
-
-  const table = Object.values(map).sort((a: any, b: any) => {
-    if (b.points !== a.points) return b.points - a.points;
-    const diff =
-      (headToHead[b.id]?.[a.id] || 0) - (headToHead[a.id]?.[b.id] || 0);
-    if (diff !== 0) return diff;
-    return 0;
-  });
 
   res.json(table);
 });
@@ -212,7 +180,7 @@ router.post(
     });
 
     res.status(201).json(season);
-  }
+  },
 );
 
 // 🌟 POST /seasons/start – vereinfachter Start einer Saison
@@ -241,7 +209,7 @@ router.post(
     });
 
     res.status(201).json(season);
-  }
+  },
 );
 
 // 🏁 POST /seasons/setup – Saison inkl. Teams & Matches anlegen
@@ -332,11 +300,16 @@ router.post(
       }
     }
 
+    await prisma.season.updateMany({
+      where: { id: { not: season.id }, isActive: true },
+      data: { isActive: false },
+    });
+
     res.status(201).json(season);
-  }
+  },
 );
 
-// ✅ Saison beenden (Passwortabfrage rudimentär)
+// ✅ Saison beenden (Admin-Passwort prüfen)
 router.post(
   "/:id/finish",
   authorizeRole("admin"),
@@ -344,7 +317,22 @@ router.post(
     const { id } = req.params;
     const { password } = req.body;
 
-    if (password !== "admin") {
+    const userInfo = getUser(req);
+    if (!userInfo) {
+      res.sendStatus(403);
+      return;
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: userInfo.id } });
+    if (!user) {
+      res.sendStatus(403);
+      return;
+    }
+
+    const hash = createHash("sha256")
+      .update(password || "")
+      .digest("hex");
+    if (hash !== user.passwordHash) {
       res.status(401).json({ error: "Passwort falsch" });
       return;
     }
@@ -355,7 +343,7 @@ router.post(
     });
 
     res.json(season);
-  }
+  },
 );
 
 // ❌ Saison löschen
@@ -376,27 +364,31 @@ router.delete(
       res.sendStatus(403);
       return;
     }
-    const hash = createHash("sha256").update(password || "").digest("hex");
+    const hash = createHash("sha256")
+      .update(password || "")
+      .digest("hex");
     if (hash !== user.passwordHash) {
       res.status(401).json({ error: "Passwort falsch" });
       return;
     }
 
-    await prisma.matchResult.deleteMany({
-      where: { match: { tournament: { seasonId: id } } },
+    await prisma.$transaction(async (tx) => {
+      await tx.matchResult.deleteMany({
+        where: { match: { tournament: { seasonId: id } } },
+      });
+      await tx.match.deleteMany({
+        where: { tournament: { seasonId: id } },
+      });
+      await tx.teamMember.deleteMany({
+        where: { team: { seasonId: id } },
+      });
+      await tx.team.deleteMany({ where: { seasonId: id } });
+      await tx.tournament.deleteMany({ where: { seasonId: id } });
+      await tx.season.delete({ where: { id } });
     });
-    await prisma.match.deleteMany({
-      where: { tournament: { seasonId: id } },
-    });
-    await prisma.teamMember.deleteMany({
-      where: { team: { seasonId: id } },
-    });
-    await prisma.team.deleteMany({ where: { seasonId: id } });
-    await prisma.tournament.deleteMany({ where: { seasonId: id } });
-    await prisma.season.delete({ where: { id } });
 
     res.json({ success: true });
-  }
+  },
 );
 
 export default router;

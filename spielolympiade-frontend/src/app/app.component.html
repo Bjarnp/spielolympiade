@@ -1,5 +1,6 @@
 <mat-toolbar color="primary" *ngIf="auth.isLoggedIn()" class="main-nav">
-  <a routerLink="/dashboard" class="title">Willkommen zur Spielolympiade</a>
+  <a routerLink="/dashboard" class="title"><mat-icon>emoji_events</mat-icon><span>Spielolympiade</span></a>
+  <nav><a routerLink="/dashboard">Dashboard</a><a routerLink="/history">Historie</a></nav>
   <span class="spacer"></span>
   <mat-slide-toggle (change)="toggleDarkMode($event.checked)" [checked]="darkMode">
     Dark Mode
