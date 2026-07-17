@@ -6,3 +6,6 @@
 .match-game-group h3 span { color:#778197; font-size:.78rem; font-weight:500; }
 .form-error { flex:1 0 100%; margin:0; padding:.65rem .8rem; border-radius:10px; color:#b42318; background:#fef3f2; }
 .form-success { display:flex; align-items:center; gap:.4rem; flex:1 0 100%; margin:0; padding:.65rem .8rem; border-radius:10px; color:#08734b; background:#ecfdf3; }
+.filters button { border:1px solid transparent; color:#596174; transition:background .18s ease,color .18s ease,box-shadow .18s ease; }
+.filters button.active { color:#fff; background:linear-gradient(135deg,#5f52d9,#7b5be0); box-shadow:0 7px 18px rgba(95,82,217,.25); }
+.recommendations li { margin:.55rem 0; }.recommendations li small { display:block; margin-top:.12rem; color:#746b92; }

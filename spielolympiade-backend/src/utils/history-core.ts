@@ -139,7 +139,10 @@ export type TeamPlayerMapping = Record<string, string[]>;
 export type TeamNameMapping = Record<string, string>;
 export type TeamMemberIdsMapping = Record<string, string[]>;
 
-export function calculatePlacementPoints(place: number, totalTeams: number): number {
+export function calculatePlacementPoints(
+  place: number,
+  totalTeams: number,
+): number {
   return Math.max(totalTeams - place, 0);
 }
 
@@ -160,8 +163,12 @@ export function normalizeMatch(match: {
   team2: { id: string; name: string };
   winner: { id: string; name: string } | null;
 }): HistoryMatch {
-  const team1Score = match.results.find((result) => result.teamId === match.team1Id)?.score ?? null;
-  const team2Score = match.results.find((result) => result.teamId === match.team2Id)?.score ?? null;
+  const team1Score =
+    match.results.find((result) => result.teamId === match.team1Id)?.score ??
+    null;
+  const team2Score =
+    match.results.find((result) => result.teamId === match.team2Id)?.score ??
+    null;
   const comment =
     match.results.find((result) => result.teamId === match.team1Id)?.comment ??
     match.results.find((result) => result.teamId === match.team2Id)?.comment ??
@@ -180,7 +187,9 @@ export function normalizeMatch(match: {
     team2Name: match.team2.name,
     winnerId: match.winnerId,
     winnerName: match.winner?.name ?? null,
-    scheduledAt: match.scheduledAt ? new Date(match.scheduledAt).toISOString() : null,
+    scheduledAt: match.scheduledAt
+      ? new Date(match.scheduledAt).toISOString()
+      : null,
     playedAt: match.playedAt ? new Date(match.playedAt).toISOString() : null,
     team1Score,
     team2Score,
@@ -189,27 +198,40 @@ export function normalizeMatch(match: {
   };
 }
 
-export function buildTeamPlayers(teams: { id: string; members: { user: { id: string; name: string } }[] }[]): TeamPlayerMapping {
+export function buildTeamPlayers(
+  teams: { id: string; members: { user: { id: string; name: string } }[] }[],
+): TeamPlayerMapping {
   const mapping: TeamPlayerMapping = {};
   for (const team of teams) {
-    mapping[team.id] = team.members.map((member) => member.user.name).filter((name) => !!name);
+    mapping[team.id] = team.members
+      .map((member) => member.user.name)
+      .filter((name) => !!name);
   }
   return mapping;
 }
 
-export function buildTeamMemberIds(teams: { id: string; members: { user: { id: string; name: string } }[] }[]): TeamMemberIdsMapping {
+export function buildTeamMemberIds(
+  teams: { id: string; members: { user: { id: string; name: string } }[] }[],
+): TeamMemberIdsMapping {
   const mapping: TeamMemberIdsMapping = {};
   for (const team of teams) {
-    mapping[team.id] = team.members.map((member) => member.user.id).filter((id) => !!id);
+    mapping[team.id] = team.members
+      .map((member) => member.user.id)
+      .filter((id) => !!id);
   }
   return mapping;
 }
 
-export function buildTeamNames(teams: { id: string; name: string }[]): TeamNameMapping {
+export function buildTeamNames(
+  teams: { id: string; name: string }[],
+): TeamNameMapping {
   return Object.fromEntries(teams.map((team) => [team.id, team.name]));
 }
 
-export function createBaseTeamStats(teamPlayers: TeamPlayerMapping, teamNames: TeamNameMapping): Record<string, TeamStats> {
+export function createBaseTeamStats(
+  teamPlayers: TeamPlayerMapping,
+  teamNames: TeamNameMapping,
+): Record<string, TeamStats> {
   const stats: Record<string, TeamStats> = {};
   for (const [teamId, players] of Object.entries(teamPlayers)) {
     stats[teamId] = {
@@ -235,7 +257,8 @@ export function createBaseTeamStats(teamPlayers: TeamPlayerMapping, teamNames: T
 export function deterministicSortTeamStats(stats: TeamStats[]): TeamStats[] {
   return [...stats].sort((a, b) => {
     if (b.wins !== a.wins) return b.wins - a.wins;
-    const headToHead = (b.headToHead[a.teamId] || 0) - (a.headToHead[b.teamId] || 0);
+    const headToHead =
+      (b.headToHead[a.teamId] || 0) - (a.headToHead[b.teamId] || 0);
     if (headToHead !== 0) return headToHead;
     if (b.scoreDiff !== a.scoreDiff) return b.scoreDiff - a.scoreDiff;
     const nameCompare = a.teamName.localeCompare(b.teamName);
@@ -244,7 +267,11 @@ export function deterministicSortTeamStats(stats: TeamStats[]): TeamStats[] {
   });
 }
 
-export function computeTeamStats(matches: HistoryMatch[], teamPlayers: TeamPlayerMapping, teamNames: TeamNameMapping): { stats: TeamStats[]; isComplete: boolean } {
+export function computeTeamStats(
+  matches: HistoryMatch[],
+  teamPlayers: TeamPlayerMapping,
+  teamNames: TeamNameMapping,
+): { stats: TeamStats[]; isComplete: boolean } {
   const statsMap = createBaseTeamStats(teamPlayers, teamNames);
   let isComplete = true;
 
@@ -265,7 +292,8 @@ export function computeTeamStats(matches: HistoryMatch[], teamPlayers: TeamPlaye
     winner.wins += 1;
     loser.losses += 1;
 
-    winner.headToHead[loser.teamId] = (winner.headToHead[loser.teamId] || 0) + 1;
+    winner.headToHead[loser.teamId] =
+      (winner.headToHead[loser.teamId] || 0) + 1;
     loser.headToHead[winner.teamId] = loser.headToHead[winner.teamId] || 0;
 
     const score1 = match.team1Score ?? 0;
@@ -286,8 +314,16 @@ export function computeTeamStats(matches: HistoryMatch[], teamPlayers: TeamPlaye
   return { stats, isComplete };
 }
 
-export function buildRoundRobinStandings(matches: HistoryMatch[], teamPlayers: TeamPlayerMapping, teamNames: TeamNameMapping): { standings: TeamStats[]; isComplete: boolean } {
-  const { stats, isComplete } = computeTeamStats(matches, teamPlayers, teamNames);
+export function buildRoundRobinStandings(
+  matches: HistoryMatch[],
+  teamPlayers: TeamPlayerMapping,
+  teamNames: TeamNameMapping,
+): { standings: TeamStats[]; isComplete: boolean } {
+  const { stats, isComplete } = computeTeamStats(
+    matches,
+    teamPlayers,
+    teamNames,
+  );
   const sorted = deterministicSortTeamStats(stats);
   const totalTeams = sorted.length;
   return {
@@ -301,7 +337,11 @@ export function buildRoundRobinStandings(matches: HistoryMatch[], teamPlayers: T
   };
 }
 
-export function buildGroupStandings(matches: HistoryMatch[], teamPlayers: TeamPlayerMapping, teamNames: TeamNameMapping): { groupName: string; standings: TeamStats[] }[] {
+export function buildGroupStandings(
+  matches: HistoryMatch[],
+  teamPlayers: TeamPlayerMapping,
+  teamNames: TeamNameMapping,
+): { groupName: string; standings: TeamStats[] }[] {
   const groups: Record<string, HistoryMatch[]> = {};
   for (const match of matches) {
     const groupName = match.groupName || "A";
@@ -312,7 +352,11 @@ export function buildGroupStandings(matches: HistoryMatch[], teamPlayers: TeamPl
   return Object.keys(groups)
     .sort()
     .map((groupName) => {
-      const { stats } = computeTeamStats(groups[groupName], teamPlayers, teamNames);
+      const { stats } = computeTeamStats(
+        groups[groupName],
+        teamPlayers,
+        teamNames,
+      );
       const sorted = deterministicSortTeamStats(stats).map((entry, index) => ({
         ...entry,
         rank: index + 1,
@@ -322,14 +366,31 @@ export function buildGroupStandings(matches: HistoryMatch[], teamPlayers: TeamPl
     });
 }
 
-export function buildGroupKoStandings(matches: HistoryMatch[], teamPlayers: TeamPlayerMapping, teamNames: TeamNameMapping): { standings: TeamStats[]; groupStandings: { groupName: string; standings: TeamStats[] }[]; knockoutMatches: HistoryMatch[]; isComplete: boolean } {
+export function buildGroupKoStandings(
+  matches: HistoryMatch[],
+  teamPlayers: TeamPlayerMapping,
+  teamNames: TeamNameMapping,
+): {
+  standings: TeamStats[];
+  groupStandings: { groupName: string; standings: TeamStats[] }[];
+  knockoutMatches: HistoryMatch[];
+  isComplete: boolean;
+} {
   const groupMatches = matches.filter((match) => match.stage === "group");
   const knockoutMatches = matches.filter((match) => match.stage !== "group");
-  const groupStandings = buildGroupStandings(groupMatches, teamPlayers, teamNames);
-  const allTeamIds = Array.from(new Set(matches.flatMap((match) => [match.team1Id, match.team2Id])));
+  const groupStandings = buildGroupStandings(
+    groupMatches,
+    teamPlayers,
+    teamNames,
+  );
+  const allTeamIds = Array.from(
+    new Set(matches.flatMap((match) => [match.team1Id, match.team2Id])),
+  );
 
   const finalMatch = knockoutMatches.find((match) => match.stage === "final");
-  const thirdMatch = knockoutMatches.find((match) => match.stage === "third_place");
+  const thirdMatch = knockoutMatches.find(
+    (match) => match.stage === "third_place",
+  );
   const allMatchesComplete = matches.every((match) => match.winnerId);
   const isComplete = allMatchesComplete && !!finalMatch && !!thirdMatch;
 
@@ -342,21 +403,33 @@ export function buildGroupKoStandings(matches: HistoryMatch[], teamPlayers: Team
   };
 
   if (finalMatch && finalMatch.winnerId) {
-    const finalLoser = finalMatch.team1Id === finalMatch.winnerId ? finalMatch.team2Id : finalMatch.team1Id;
+    const finalLoser =
+      finalMatch.team1Id === finalMatch.winnerId
+        ? finalMatch.team2Id
+        : finalMatch.team1Id;
     pushRank(finalMatch.winnerId, 1, true);
     pushRank(finalLoser, 2, true);
   }
   if (thirdMatch && thirdMatch.winnerId) {
-    const thirdLoser = thirdMatch.team1Id === thirdMatch.winnerId ? thirdMatch.team2Id : thirdMatch.team1Id;
+    const thirdLoser =
+      thirdMatch.team1Id === thirdMatch.winnerId
+        ? thirdMatch.team2Id
+        : thirdMatch.team1Id;
     pushRank(thirdMatch.winnerId, 3, true);
     pushRank(thirdLoser, 4, true);
   }
 
   const overallRankings = Array.from(rankByTeam.entries())
-    .map(([teamId, info]) => ({ teamId, rank: info.rank, isCertain: info.isCertain }))
+    .map(([teamId, info]) => ({
+      teamId,
+      rank: info.rank,
+      isCertain: info.isCertain,
+    }))
     .sort((a, b) => a.rank - b.rank);
   const rankedIds = new Set(overallRankings.map((entry) => entry.teamId));
-  const remainingTeamIds = allTeamIds.filter((teamId) => !rankedIds.has(teamId));
+  const remainingTeamIds = allTeamIds.filter(
+    (teamId) => !rankedIds.has(teamId),
+  );
 
   const groupRankMap = new Map<string, number>();
   const groupKeyMap = new Map<string, string>();
@@ -376,7 +449,8 @@ export function buildGroupKoStandings(matches: HistoryMatch[], teamPlayers: Team
     }))
     .sort((a, b) => {
       if (a.groupRank !== b.groupRank) return a.groupRank - b.groupRank;
-      if (a.groupName !== b.groupName) return a.groupName.localeCompare(b.groupName);
+      if (a.groupName !== b.groupName)
+        return a.groupName.localeCompare(b.groupName);
       const nameCompare = a.teamName.localeCompare(b.teamName);
       if (nameCompare !== 0) return nameCompare;
       return a.teamId.localeCompare(b.teamId);
@@ -405,7 +479,8 @@ export function buildGroupKoStandings(matches: HistoryMatch[], teamPlayers: Team
     const loser = winner === team1 ? team2 : team1;
     winner.wins += 1;
     loser.losses += 1;
-    winner.headToHead[loser.teamId] = (winner.headToHead[loser.teamId] || 0) + 1;
+    winner.headToHead[loser.teamId] =
+      (winner.headToHead[loser.teamId] || 0) + 1;
     loser.headToHead[winner.teamId] = loser.headToHead[winner.teamId] || 0;
     const score1 = match.team1Score ?? 0;
     const score2 = match.team2Score ?? 0;
@@ -428,7 +503,11 @@ export function buildGroupKoStandings(matches: HistoryMatch[], teamPlayers: Team
         ...stat,
         rank: rankInfo.rank,
         points: calculatePlacementPoints(rankInfo.rank, allTeamIds.length),
-        isCertain: rankInfo.isCertain && groupMatchesComplete && (!finalMatch || !!finalMatch.winnerId) && (!thirdMatch || !!thirdMatch.winnerId),
+        isCertain:
+          rankInfo.isCertain &&
+          groupMatchesComplete &&
+          (!finalMatch || !!finalMatch.winnerId) &&
+          (!thirdMatch || !!thirdMatch.winnerId),
       };
     })
     .filter((entry): entry is TeamStats => Boolean(entry));
@@ -447,10 +526,15 @@ export function buildSeasonGameSummary(
   location: string | null,
   matches: HistoryMatch[],
   teamPlayers: TeamPlayerMapping,
-  teamNames: TeamNameMapping
+  teamNames: TeamNameMapping,
 ): SeasonGameSummary {
   const matchCount = matches.length;
-  let summary: { standings: TeamStats[]; isComplete: boolean; groupStandings?: { groupName: string; standings: TeamStats[] }[]; knockoutMatches?: HistoryMatch[] };
+  let summary: {
+    standings: TeamStats[];
+    isComplete: boolean;
+    groupStandings?: { groupName: string; standings: TeamStats[] }[];
+    knockoutMatches?: HistoryMatch[];
+  };
   if (system === "group_ko") {
     const groupSummary = buildGroupKoStandings(matches, teamPlayers, teamNames);
     summary = {
@@ -489,16 +573,24 @@ export function buildOverallStandings(
   matches: HistoryMatch[],
   teamPlayers: TeamPlayerMapping,
   teamNames: TeamNameMapping,
-  gameSummaries?: SeasonGameSummary[]
+  gameSummaries?: SeasonGameSummary[],
 ): TeamStats[] {
-  const { stats, isComplete } = computeTeamStats(matches, teamPlayers, teamNames);
+  const { stats, isComplete } = computeTeamStats(
+    matches,
+    teamPlayers,
+    teamNames,
+  );
   const pointsByTeam: Record<string, number> = {};
-  const overallIsCertain = isComplete && (!gameSummaries || gameSummaries.every((game) => game.isComplete));
+  const overallIsCertain =
+    isComplete &&
+    (!gameSummaries || gameSummaries.every((game) => game.isComplete));
 
   if (gameSummaries) {
     for (const game of gameSummaries) {
       for (const standing of game.standings) {
-        pointsByTeam[standing.teamId] = (pointsByTeam[standing.teamId] || 0) + standing.points;
+        pointsByTeam[standing.teamId] =
+          (pointsByTeam[standing.teamId] || 0) +
+          (game.isComplete ? standing.points : standing.wins);
       }
     }
   } else {
@@ -508,16 +600,23 @@ export function buildOverallStandings(
       rank: index + 1,
     }));
     for (const entry of ranked) {
-      pointsByTeam[entry.teamId] = calculatePlacementPoints(entry.rank, totalTeams);
+      pointsByTeam[entry.teamId] = calculatePlacementPoints(
+        entry.rank,
+        totalTeams,
+      );
     }
   }
 
   const placementTotals: Record<string, number> = {};
   const placementCounts: Record<string, number> = {};
-  for (const game of gameSummaries || []) {
+  for (const game of (gameSummaries || []).filter(
+    (summary) => summary.isComplete,
+  )) {
     for (const standing of game.standings) {
-      placementTotals[standing.teamId] = (placementTotals[standing.teamId] || 0) + standing.rank;
-      placementCounts[standing.teamId] = (placementCounts[standing.teamId] || 0) + 1;
+      placementTotals[standing.teamId] =
+        (placementTotals[standing.teamId] || 0) + standing.rank;
+      placementCounts[standing.teamId] =
+        (placementCounts[standing.teamId] || 0) + 1;
     }
   }
 
@@ -532,8 +631,10 @@ export function buildOverallStandings(
     const bAveragePlacement = placementCounts[b.teamId]
       ? placementTotals[b.teamId] / placementCounts[b.teamId]
       : Number.MAX_SAFE_INTEGER;
-    if (aAveragePlacement !== bAveragePlacement) return aAveragePlacement - bAveragePlacement;
-    const headToHead = (b.headToHead[a.teamId] || 0) - (a.headToHead[b.teamId] || 0);
+    if (aAveragePlacement !== bAveragePlacement)
+      return aAveragePlacement - bAveragePlacement;
+    const headToHead =
+      (b.headToHead[a.teamId] || 0) - (a.headToHead[b.teamId] || 0);
     if (headToHead !== 0) return headToHead;
     const nameCompare = a.teamName.localeCompare(b.teamName);
     if (nameCompare !== 0) return nameCompare;
@@ -549,79 +650,128 @@ export function buildOverallStandings(
 }
 
 function buildSeasonGameSummaries(
-  tournaments: { id: string; system: string; location: string | null; matches: any[] }[],
+  tournaments: {
+    id: string;
+    system: string;
+    location: string | null;
+    matches: any[];
+  }[],
   teamPlayers: TeamPlayerMapping,
-  teamNames: TeamNameMapping
+  teamNames: TeamNameMapping,
 ): SeasonGameSummary[] {
   return tournaments.flatMap((tournament) => {
     const matchesByGame = new Map<string, HistoryMatch[]>();
-    for (const match of tournament.matches.map((match) => normalizeMatch(match))) {
+    for (const match of tournament.matches.map((match) =>
+      normalizeMatch(match),
+    )) {
       const gameMatches = matchesByGame.get(match.gameId) || [];
       gameMatches.push(match);
       matchesByGame.set(match.gameId, gameMatches);
     }
 
     return Array.from(matchesByGame.values()).map((matches) =>
-      buildSeasonGameSummary(tournament.id, tournament.system, tournament.location, matches, teamPlayers, teamNames)
+      buildSeasonGameSummary(
+        tournament.id,
+        tournament.system,
+        tournament.location,
+        matches,
+        teamPlayers,
+        teamNames,
+      ),
     );
   });
 }
 
-export function buildSeasonOverallDebug(overallStandings: TeamStats[], games: SeasonGameSummary[]): SeasonOverallDebug[] {
+export function buildSeasonOverallDebug(
+  overallStandings: TeamStats[],
+  games: SeasonGameSummary[],
+): SeasonOverallDebug[] {
   return overallStandings.map((standing) => ({
     team: standing.teamName,
     games: games
       .map((game) => {
-        const gameStanding = game.standings.find((entry) => entry.teamId === standing.teamId);
+        const gameStanding = game.standings.find(
+          (entry) => entry.teamId === standing.teamId,
+        );
         return gameStanding
-          ? { game: game.gameName, placement: gameStanding.rank, awardedPoints: gameStanding.points }
+          ? {
+              game: game.gameName,
+              placement: gameStanding.rank,
+              awardedPoints: gameStanding.points,
+            }
           : null;
       })
-      .filter((game): game is { game: string; placement: number; awardedPoints: number } => game !== null),
+      .filter(
+        (
+          game,
+        ): game is { game: string; placement: number; awardedPoints: number } =>
+          game !== null,
+      ),
     totalPoints: standing.points,
   }));
 }
 
-export function buildSeasonSummary(
-  season: {
+export function buildSeasonSummary(season: {
+  id: string;
+  year: number;
+  name: string;
+  finishedAt: string | Date;
+  teams: {
     id: string;
-    year: number;
     name: string;
-    finishedAt: string | Date;
-    teams: { id: string; name: string; members: { user: { id: string; name: string } }[] }[];
-    tournaments: {
-      id: string;
-      system: string;
-      location: string | null;
-      matches: any[];
-    }[];
-  }
-): SeasonSummary {
+    members: { user: { id: string; name: string } }[];
+  }[];
+  tournaments: {
+    id: string;
+    system: string;
+    location: string | null;
+    matches: any[];
+  }[];
+}): SeasonSummary {
   const teamPlayers = buildTeamPlayers(season.teams);
   const teamNames = buildTeamNames(season.teams);
-  const normalizedMatches = season.tournaments.flatMap((tournament) => tournament.matches.map((match) => normalizeMatch(match)));
-  const gameSummaries = buildSeasonGameSummaries(season.tournaments, teamPlayers, teamNames)
-    .filter((summary) => summary.matchCount > 0);
+  const normalizedMatches = season.tournaments.flatMap((tournament) =>
+    tournament.matches.map((match) => normalizeMatch(match)),
+  );
+  const gameSummaries = buildSeasonGameSummaries(
+    season.tournaments,
+    teamPlayers,
+    teamNames,
+  ).filter((summary) => summary.matchCount > 0);
 
   const overallStandings = buildOverallStandings(
     normalizedMatches,
     teamPlayers,
     teamNames,
-    gameSummaries
+    gameSummaries,
   );
-  const champion = overallStandings[0]?.rank === 1 && overallStandings[0]?.isCertain
-    ? { teamId: overallStandings[0].teamId, teamName: overallStandings[0].teamName, players: overallStandings[0].players }
-    : null;
+  const champion =
+    overallStandings[0]?.rank === 1 && overallStandings[0]?.isCertain
+      ? {
+          teamId: overallStandings[0].teamId,
+          teamName: overallStandings[0].teamName,
+          players: overallStandings[0].players,
+        }
+      : null;
 
   return {
     id: season.id,
     year: season.year,
     name: season.name,
     finishedAt: new Date(season.finishedAt).toISOString(),
-    tournamentSystems: Array.from(new Set(season.tournaments.map((t) => t.system))),
-    location: Array.from(new Set(season.tournaments.map((t) => t.location).filter(Boolean))).join(", ") || null,
+    tournamentSystems: Array.from(
+      new Set(season.tournaments.map((t) => t.system)),
+    ),
+    location:
+      Array.from(
+        new Set(season.tournaments.map((t) => t.location).filter(Boolean)),
+      ).join(", ") || null,
     teamCount: season.teams.length,
-    playerCount: new Set(season.teams.flatMap((team) => team.members.map((member) => member.user.id))).size,
+    playerCount: new Set(
+      season.teams.flatMap((team) =>
+        team.members.map((member) => member.user.id),
+      ),
+    ).size,
     gameCount: new Set(normalizedMatches.map((match) => match.gameId)).size,
     matchCount: normalizedMatches.length,
     champion,
@@ -629,46 +779,67 @@ export function buildSeasonSummary(
   };
 }
 
-export function buildSeasonDetail(
-  season: {
+export function buildSeasonDetail(season: {
+  id: string;
+  year: number;
+  name: string;
+  finishedAt: string | Date;
+  teams: {
     id: string;
-    year: number;
     name: string;
-    finishedAt: string | Date;
-    teams: { id: string; name: string; members: { user: { id: string; name: string } }[] }[];
-    tournaments: {
-      id: string;
-      system: string;
-      location: string | null;
-      matches: any[];
-    }[];
-  }
-): SeasonDetail {
+    members: { user: { id: string; name: string } }[];
+  }[];
+  tournaments: {
+    id: string;
+    system: string;
+    location: string | null;
+    matches: any[];
+  }[];
+}): SeasonDetail {
   const teamPlayers = buildTeamPlayers(season.teams);
   const teamNames = buildTeamNames(season.teams);
-  const normalizedMatches = season.tournaments.flatMap((tournament) => tournament.matches.map((match) => normalizeMatch(match)));
-  const games = buildSeasonGameSummaries(season.tournaments, teamPlayers, teamNames)
-    .filter((summary) => summary.matchCount > 0);
+  const normalizedMatches = season.tournaments.flatMap((tournament) =>
+    tournament.matches.map((match) => normalizeMatch(match)),
+  );
+  const games = buildSeasonGameSummaries(
+    season.tournaments,
+    teamPlayers,
+    teamNames,
+  ).filter((summary) => summary.matchCount > 0);
 
   const overallStandings = buildOverallStandings(
     normalizedMatches,
     teamPlayers,
     teamNames,
-    games
+    games,
   );
-  const champion = overallStandings[0]?.rank === 1 && overallStandings[0]?.isCertain
-    ? { teamId: overallStandings[0].teamId, teamName: overallStandings[0].teamName, players: overallStandings[0].players }
-    : null;
+  const champion =
+    overallStandings[0]?.rank === 1 && overallStandings[0]?.isCertain
+      ? {
+          teamId: overallStandings[0].teamId,
+          teamName: overallStandings[0].teamName,
+          players: overallStandings[0].players,
+        }
+      : null;
 
   return {
     id: season.id,
     year: season.year,
     name: season.name,
     finishedAt: new Date(season.finishedAt).toISOString(),
-    tournamentSystems: Array.from(new Set(season.tournaments.map((t) => t.system))),
-    location: Array.from(new Set(season.tournaments.map((t) => t.location).filter(Boolean))).join(", ") || null,
+    tournamentSystems: Array.from(
+      new Set(season.tournaments.map((t) => t.system)),
+    ),
+    location:
+      Array.from(
+        new Set(season.tournaments.map((t) => t.location).filter(Boolean)),
+      ).join(", ") || null,
     teamCount: season.teams.length,
-    playerCount: new Set(season.teams.flatMap((team) => team.members.map((member) => member.user.id))).size,
+    playerCount: new Set(
+      season.teams.flatMap((team) =>
+        team.members.map((member) => member.user.id),
+      ),
+    ).size,
     gameCount: new Set(normalizedMatches.map((match) => match.gameId)).size,
     matchCount: normalizedMatches.length,
     champion,
@@ -686,29 +857,44 @@ export function buildPlayerStatsSummaries(
     detail: SeasonDetail;
     teamMembers: TeamMemberIdsMapping;
   }>,
-  gameId?: string
+  gameId?: string,
 ): PlayerStatsSummary[] {
-  const playerMap: Record<string, PlayerStatsSummary & { placements: number[]; gamePlacements: number[]; teamNamesSet: Set<string>; }> = {};
+  const playerMap: Record<
+    string,
+    PlayerStatsSummary & {
+      placements: number[];
+      gamePlacements: number[];
+      teamNamesSet: Set<string>;
+    }
+  > = {};
 
   for (const seasonRecord of seasons) {
     const { summary, detail, teamMembers } = seasonRecord;
     const teamIds = Object.keys(teamMembers);
     const teamIdToPlayers = teamMembers;
-    const matchedGames = gameId ? detail.games.filter((game) => game.gameId === gameId) : detail.games;
-    const matchFilter = (match: HistoryMatch) => !gameId || match.gameId === gameId;
+    const matchedGames = gameId
+      ? detail.games.filter((game) => game.gameId === gameId)
+      : detail.games;
+    const matchFilter = (match: HistoryMatch) =>
+      !gameId || match.gameId === gameId;
 
     const teamGamePlacements: Record<string, number[]> = {};
     for (const game of matchedGames) {
       for (const teamStanding of game.standings) {
-        teamGamePlacements[teamStanding.teamId] = teamGamePlacements[teamStanding.teamId] || [];
+        teamGamePlacements[teamStanding.teamId] =
+          teamGamePlacements[teamStanding.teamId] || [];
         teamGamePlacements[teamStanding.teamId].push(teamStanding.rank);
       }
     }
 
     for (const teamId of teamIds) {
       const playerIds = teamMembers[teamId];
-      const teamStanding = detail.overallStandings.find((standing) => standing.teamId === teamId);
-      const teamName = detail.overallStandings.find((standing) => standing.teamId === teamId)?.teamName ?? "";
+      const teamStanding = detail.overallStandings.find(
+        (standing) => standing.teamId === teamId,
+      );
+      const teamName =
+        detail.overallStandings.find((standing) => standing.teamId === teamId)
+          ?.teamName ?? "";
       const seasonPlacement = teamStanding ? teamStanding.rank : 0;
       const seasonPoints = teamStanding ? teamStanding.points : 0;
       const isChampion = teamStanding?.rank === 1 && detail.isComplete;
@@ -738,18 +924,29 @@ export function buildPlayerStatsSummaries(
 
         existing.seasons += 1;
         if (isChampion) existing.wonSeasons += 1;
-        if (seasonPlacement > 0 && seasonPlacement <= 3 && detail.isComplete) existing.podiums += 1;
+        if (seasonPlacement > 0 && seasonPlacement <= 3 && detail.isComplete)
+          existing.podiums += 1;
         if (seasonPlacement > 0) {
           existing.placements.push(seasonPlacement);
-          existing.bestPlacement = Math.min(existing.bestPlacement, seasonPlacement);
-          existing.worstPlacement = Math.max(existing.worstPlacement, seasonPlacement);
+          existing.bestPlacement = Math.min(
+            existing.bestPlacement,
+            seasonPlacement,
+          );
+          existing.worstPlacement = Math.max(
+            existing.worstPlacement,
+            seasonPlacement,
+          );
         }
         existing.totalPlacementPoints += seasonPoints;
         existing.teamNamesSet.add(teamName);
         const gamePlacements = teamGamePlacements[teamId] ?? [];
         existing.gamePlacements.push(...gamePlacements);
 
-        const matchesForTeam = detail.matches.filter((match) => matchFilter(match) && (match.team1Id === teamId || match.team2Id === teamId));
+        const matchesForTeam = detail.matches.filter(
+          (match) =>
+            matchFilter(match) &&
+            (match.team1Id === teamId || match.team2Id === teamId),
+        );
         for (const match of matchesForTeam) {
           if (!match.winnerId) continue;
           existing.matchCount += 1;
@@ -774,16 +971,27 @@ export function buildPlayerStatsSummaries(
       seasons,
       wonSeasons: entry.wonSeasons,
       podiums: entry.podiums,
-      averagePlacement: seasons > 0 ? placements.reduce((sum, value) => sum + value, 0) / seasons : 0,
-      bestPlacement: entry.bestPlacement === Number.MAX_SAFE_INTEGER ? 0 : entry.bestPlacement,
+      averagePlacement:
+        seasons > 0
+          ? placements.reduce((sum, value) => sum + value, 0) / seasons
+          : 0,
+      bestPlacement:
+        entry.bestPlacement === Number.MAX_SAFE_INTEGER
+          ? 0
+          : entry.bestPlacement,
       worstPlacement: entry.worstPlacement,
-      averageGamePlacement: gamePlacements.length > 0 ? gamePlacements.reduce((sum, value) => sum + value, 0) / gamePlacements.length : 0,
+      averageGamePlacement:
+        gamePlacements.length > 0
+          ? gamePlacements.reduce((sum, value) => sum + value, 0) /
+            gamePlacements.length
+          : 0,
       matchCount: totalMatches,
       wins: entry.wins,
       losses: entry.losses,
       winRate: winLossTotal > 0 ? entry.wins / winLossTotal : 0,
       totalPlacementPoints: entry.totalPlacementPoints,
-      averagePlacementPoints: seasons > 0 ? entry.totalPlacementPoints / seasons : 0,
+      averagePlacementPoints:
+        seasons > 0 ? entry.totalPlacementPoints / seasons : 0,
       teamNames: Array.from(entry.teamNamesSet).sort(),
     };
   });
@@ -797,18 +1005,24 @@ export function buildPlayerStatsDetail(
     teamMembers: TeamMemberIdsMapping;
     teamNames: TeamNameMapping;
   }>,
-  gameId?: string
+  gameId?: string,
 ): PlayerStatsDetail | null {
   let stats: PlayerStatsDetail | null = null;
 
   for (const { summary, detail, teamMembers, teamNames } of seasons) {
-    const playerTeamEntries = Object.entries(teamMembers).filter(([_, players]) => players.includes(playerId));
+    const playerTeamEntries = Object.entries(teamMembers).filter(
+      ([_, players]) => players.includes(playerId),
+    );
     if (playerTeamEntries.length === 0) continue;
 
     const teamId = playerTeamEntries[0][0];
-    const teammates = playerTeamEntries[0][1].filter((id) => id !== playerId).map((id) => id);
+    const teammates = playerTeamEntries[0][1]
+      .filter((id) => id !== playerId)
+      .map((id) => id);
     const teamName = teamNames[teamId] ?? "";
-    const seasonStanding = detail.overallStandings.find((standing) => standing.teamId === teamId);
+    const seasonStanding = detail.overallStandings.find(
+      (standing) => standing.teamId === teamId,
+    );
     const placement = seasonStanding?.rank ?? 0;
     const points = seasonStanding?.points ?? 0;
     const isChampion = placement === 1 && detail.isComplete;
@@ -818,9 +1032,15 @@ export function buildPlayerStatsDetail(
       .filter((game) => game.standings.some((entry) => entry.teamId === teamId))
       .map((game) => {
         const entry = game.standings.find((row) => row.teamId === teamId)!;
-        const gameMatches = game.matches.filter((match) => match.team1Id === teamId || match.team2Id === teamId);
-        const wins = gameMatches.filter((match) => match.winnerId === teamId).length;
-        const losses = gameMatches.filter((match) => match.winnerId && match.winnerId !== teamId).length;
+        const gameMatches = game.matches.filter(
+          (match) => match.team1Id === teamId || match.team2Id === teamId,
+        );
+        const wins = gameMatches.filter(
+          (match) => match.winnerId === teamId,
+        ).length;
+        const losses = gameMatches.filter(
+          (match) => match.winnerId && match.winnerId !== teamId,
+        ).length;
         return {
           gameId: game.gameId,
           gameName: game.gameName,
@@ -833,16 +1053,22 @@ export function buildPlayerStatsDetail(
       });
 
     const relevantMatches = detail.matches.filter(
-      (match) => (!gameId || match.gameId === gameId) && (match.team1Id === teamId || match.team2Id === teamId)
+      (match) =>
+        (!gameId || match.gameId === gameId) &&
+        (match.team1Id === teamId || match.team2Id === teamId),
     );
 
     const matchCount = relevantMatches.filter((m) => m.winnerId).length;
     const wins = relevantMatches.filter((m) => m.winnerId === teamId).length;
-    const losses = relevantMatches.filter((m) => m.winnerId && m.winnerId !== teamId).length;
+    const losses = relevantMatches.filter(
+      (m) => m.winnerId && m.winnerId !== teamId,
+    ).length;
     const winRate = matchCount > 0 ? wins / matchCount : 0;
     const placementPoints = points;
 
-    const playerName = teamMembers[teamId].includes(playerId) ? playerId : playerId;
+    const playerName = teamMembers[teamId].includes(playerId)
+      ? playerId
+      : playerId;
 
     if (!stats) {
       stats = {
@@ -869,14 +1095,20 @@ export function buildPlayerStatsDetail(
 
     stats.seasons += 1;
     if (isChampion) stats.wonSeasons += 1;
-    if (placement > 0 && placement <= 3 && detail.isComplete) stats.podiums += 1;
-    stats.bestPlacement = Math.min(stats.bestPlacement, placement || Number.MAX_SAFE_INTEGER);
+    if (placement > 0 && placement <= 3 && detail.isComplete)
+      stats.podiums += 1;
+    stats.bestPlacement = Math.min(
+      stats.bestPlacement,
+      placement || Number.MAX_SAFE_INTEGER,
+    );
     stats.worstPlacement = Math.max(stats.worstPlacement, placement);
     stats.totalPlacementPoints += placementPoints;
     stats.matchCount += matchCount;
     stats.wins += wins;
     stats.losses += losses;
-    stats.teamNames = Array.from(new Set([...stats.teamNames, teamName])).sort();
+    stats.teamNames = Array.from(
+      new Set([...stats.teamNames, teamName]),
+    ).sort();
     stats.seasonsDetail.push({
       seasonId: summary.id,
       seasonName: summary.name,
@@ -890,8 +1122,10 @@ export function buildPlayerStatsDetail(
     });
 
     for (const match of relevantMatches) {
-      const opponentId = match.team1Id === teamId ? match.team2Id : match.team1Id;
-      const opponentName = match.team1Id === teamId ? match.team2Name : match.team1Name;
+      const opponentId =
+        match.team1Id === teamId ? match.team2Id : match.team1Id;
+      const opponentName =
+        match.team1Id === teamId ? match.team2Name : match.team1Name;
       stats.matches.push({
         id: match.id,
         seasonId: summary.id,
@@ -902,7 +1136,11 @@ export function buildPlayerStatsDetail(
         groupName: match.groupName,
         teamName,
         opponentName,
-        result: match.winnerId ? (match.winnerId === teamId ? "Sieg" : "Niederlage") : "offen",
+        result: match.winnerId
+          ? match.winnerId === teamId
+            ? "Sieg"
+            : "Niederlage"
+          : "offen",
         winnerId: match.winnerId,
         playedAt: match.playedAt,
         scheduledAt: match.scheduledAt,
@@ -913,11 +1151,23 @@ export function buildPlayerStatsDetail(
 
   if (!stats) return null;
   const seasonCount = stats.seasons;
-  const totalGamePlacements = stats.seasonsDetail.flatMap((s) => s.games.map((g) => g.placement));
-  stats.averagePlacement = seasonCount > 0 ? stats.seasonsDetail.reduce((sum, s) => sum + s.placement, 0) / seasonCount : 0;
-  stats.averageGamePlacement = totalGamePlacements.length > 0 ? totalGamePlacements.reduce((sum, n) => sum + n, 0) / totalGamePlacements.length : 0;
+  const totalGamePlacements = stats.seasonsDetail.flatMap((s) =>
+    s.games.map((g) => g.placement),
+  );
+  stats.averagePlacement =
+    seasonCount > 0
+      ? stats.seasonsDetail.reduce((sum, s) => sum + s.placement, 0) /
+        seasonCount
+      : 0;
+  stats.averageGamePlacement =
+    totalGamePlacements.length > 0
+      ? totalGamePlacements.reduce((sum, n) => sum + n, 0) /
+        totalGamePlacements.length
+      : 0;
   stats.winRate = stats.matchCount > 0 ? stats.wins / stats.matchCount : 0;
-  stats.bestPlacement = stats.bestPlacement === Number.MAX_SAFE_INTEGER ? 0 : stats.bestPlacement;
-  stats.averagePlacementPoints = seasonCount > 0 ? stats.totalPlacementPoints / seasonCount : 0;
+  stats.bestPlacement =
+    stats.bestPlacement === Number.MAX_SAFE_INTEGER ? 0 : stats.bestPlacement;
+  stats.averagePlacementPoints =
+    seasonCount > 0 ? stats.totalPlacementPoints / seasonCount : 0;
   return stats;
 }

@@ -121,8 +121,8 @@
         <h3>Empfohlene nächste Spiele</h3>
         <ul>
           <li *ngFor="let g of recommendations | slice: 0 : 5">
-            {{ getGameName(g.gameId) }}: {{ getTeamName(g.team1Id) }} vs
-            {{ getTeamName(g.team2Id) }}
+            <strong>{{ getGameName(g.gameId) }}</strong>: {{ getTeamName(g.team1Id) }} vs
+            {{ getTeamName(g.team2Id) }} <small>{{ g.reason }}</small>
           </li>
         </ul>
       </div>
@@ -169,16 +169,13 @@
         </button>
       </div>
       <div class="filters">
-        <button mat-raised-button (click)="setFilter('all')">
+        <button mat-raised-button [class.active]="filterMode === 'all'" [attr.aria-pressed]="filterMode === 'all'" (click)="setFilter('all')">
           Alle Begegnungen
         </button>
-        <button mat-raised-button (click)="setFilter('open')">Offen</button>
-        <button mat-raised-button (click)="setFilter('played')">
+        <button mat-raised-button [class.active]="filterMode === 'open'" [attr.aria-pressed]="filterMode === 'open'" (click)="setFilter('open')">Offen</button>
+        <button mat-raised-button [class.active]="filterMode === 'played'" [attr.aria-pressed]="filterMode === 'played'" (click)="setFilter('played')">
           Gespielt
         </button>
-        <mat-checkbox [(ngModel)]="onlyMine" (change)="applyFilters()"
-          >Nur meine Spiele</mat-checkbox
-        >
       </div>
       <table class="result-table">
         <thead>

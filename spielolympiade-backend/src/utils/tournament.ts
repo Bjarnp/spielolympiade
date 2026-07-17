@@ -201,7 +201,10 @@ export type PlayerStatsDetail = PlayerStatsSummary & {
 
 const prisma = new PrismaClient();
 
-export function calculatePlacementPoints(place: number, totalTeams: number): number {
+export function calculatePlacementPoints(
+  place: number,
+  totalTeams: number,
+): number {
   return Math.max(totalTeams - place, 0);
 }
 
@@ -211,11 +214,14 @@ function dateToISOString(value: Date | string | null): string | null {
 }
 
 function normalizeMatch(match: InputMatch): HistoryMatch {
-  const team1Score = match.results.find((r) => r.teamId === match.team1Id)?.score ?? null;
-  const team2Score = match.results.find((r) => r.teamId === match.team2Id)?.score ?? null;
-  const comment = match.results.find((r) => r.teamId === match.team1Id)?.comment
-    ?? match.results.find((r) => r.teamId === match.team2Id)?.comment
-    ?? null;
+  const team1Score =
+    match.results.find((r) => r.teamId === match.team1Id)?.score ?? null;
+  const team2Score =
+    match.results.find((r) => r.teamId === match.team2Id)?.score ?? null;
+  const comment =
+    match.results.find((r) => r.teamId === match.team1Id)?.comment ??
+    match.results.find((r) => r.teamId === match.team2Id)?.comment ??
+    null;
 
   return {
     id: match.id,
@@ -249,7 +255,10 @@ function buildTeamPlayers(teams: TeamWithMembers[]): Record<string, string[]> {
   return map;
 }
 
-function createBaseTeamStats(teamPlayers: Record<string, string[]>, teamNames: Record<string, string>): Record<string, TeamStats> {
+function createBaseTeamStats(
+  teamPlayers: Record<string, string[]>,
+  teamNames: Record<string, string>,
+): Record<string, TeamStats> {
   const stats: Record<string, TeamStats> = {};
   for (const [teamId, players] of Object.entries(teamPlayers)) {
     stats[teamId] = {
@@ -275,7 +284,8 @@ function createBaseTeamStats(teamPlayers: Record<string, string[]>, teamNames: R
 function sortTeamStats(stats: TeamStats[]): TeamStats[] {
   return [...stats].sort((a, b) => {
     if (b.wins !== a.wins) return b.wins - a.wins;
-    const headToHead = (b.headToHead[a.teamId] || 0) - (a.headToHead[b.teamId] || 0);
+    const headToHead =
+      (b.headToHead[a.teamId] || 0) - (a.headToHead[b.teamId] || 0);
     if (headToHead !== 0) return headToHead;
     if (b.scoreDiff !== a.scoreDiff) return b.scoreDiff - a.scoreDiff;
     const nameCompare = a.teamName.localeCompare(b.teamName);
@@ -284,7 +294,11 @@ function sortTeamStats(stats: TeamStats[]): TeamStats[] {
   });
 }
 
-function computeTeamStats(matches: HistoryMatch[], teamPlayers: Record<string, string[]>, teamNames: Record<string, string>): { stats: TeamStats[]; isComplete: boolean } {
+function computeTeamStats(
+  matches: HistoryMatch[],
+  teamPlayers: Record<string, string[]>,
+  teamNames: Record<string, string>,
+): { stats: TeamStats[]; isComplete: boolean } {
   const statsMap = createBaseTeamStats(teamPlayers, teamNames);
   let isComplete = true;
 
@@ -303,7 +317,8 @@ function computeTeamStats(matches: HistoryMatch[], teamPlayers: Record<string, s
     const loser = winner === team1 ? team2 : team1;
     winner.wins += 1;
     loser.losses += 1;
-    winner.headToHead[loser.teamId] = (winner.headToHead[loser.teamId] || 0) + 1;
+    winner.headToHead[loser.teamId] =
+      (winner.headToHead[loser.teamId] || 0) + 1;
     loser.headToHead[winner.teamId] = loser.headToHead[winner.teamId] || 0;
 
     const score1 = match.team1Score ?? 0;
@@ -324,8 +339,21 @@ function computeTeamStats(matches: HistoryMatch[], teamPlayers: Record<string, s
   return { stats: totals, isComplete };
 }
 
-function buildRoundRobinStandings(matches: HistoryMatch[], teamPlayers: Record<string, string[]>, teamNames: Record<string, string>): { standings: TeamStats[]; isComplete: boolean; groupStandings?: { groupName: string; standings: TeamStats[] }[]; knockoutMatches?: HistoryMatch[] } {
-  const { stats, isComplete } = computeTeamStats(matches, teamPlayers, teamNames);
+function buildRoundRobinStandings(
+  matches: HistoryMatch[],
+  teamPlayers: Record<string, string[]>,
+  teamNames: Record<string, string>,
+): {
+  standings: TeamStats[];
+  isComplete: boolean;
+  groupStandings?: { groupName: string; standings: TeamStats[] }[];
+  knockoutMatches?: HistoryMatch[];
+} {
+  const { stats, isComplete } = computeTeamStats(
+    matches,
+    teamPlayers,
+    teamNames,
+  );
   const sorted = sortTeamStats(stats);
   const totalTeams = sorted.length;
   return {
@@ -341,7 +369,11 @@ function buildRoundRobinStandings(matches: HistoryMatch[], teamPlayers: Record<s
   };
 }
 
-function buildGroupStandings(matches: HistoryMatch[], teamPlayers: Record<string, string[]>, teamNames: Record<string, string>): { groupName: string; standings: TeamStats[] }[] {
+function buildGroupStandings(
+  matches: HistoryMatch[],
+  teamPlayers: Record<string, string[]>,
+  teamNames: Record<string, string>,
+): { groupName: string; standings: TeamStats[] }[] {
   const grouped: Record<string, HistoryMatch[]> = {};
   for (const match of matches) {
     const group = match.groupName || "A";
@@ -352,7 +384,11 @@ function buildGroupStandings(matches: HistoryMatch[], teamPlayers: Record<string
   return Object.keys(grouped)
     .sort()
     .map((groupName) => {
-      const { stats } = computeTeamStats(grouped[groupName], teamPlayers, teamNames);
+      const { stats } = computeTeamStats(
+        grouped[groupName],
+        teamPlayers,
+        teamNames,
+      );
       const sorted = sortTeamStats(stats).map((entry, index) => ({
         ...entry,
         rank: index + 1,
@@ -362,11 +398,26 @@ function buildGroupStandings(matches: HistoryMatch[], teamPlayers: Record<string
     });
 }
 
-function buildGroupKoStandings(matches: HistoryMatch[], teamPlayers: Record<string, string[]>, teamNames: Record<string, string>): { standings: TeamStats[]; groupStandings: { groupName: string; standings: TeamStats[] }[]; knockoutMatches: HistoryMatch[]; isComplete: boolean } {
+function buildGroupKoStandings(
+  matches: HistoryMatch[],
+  teamPlayers: Record<string, string[]>,
+  teamNames: Record<string, string>,
+): {
+  standings: TeamStats[];
+  groupStandings: { groupName: string; standings: TeamStats[] }[];
+  knockoutMatches: HistoryMatch[];
+  isComplete: boolean;
+} {
   const groupMatches = matches.filter((match) => match.stage === "group");
   const nonGroupMatches = matches.filter((match) => match.stage !== "group");
-  const groupStandings = buildGroupStandings(groupMatches, teamPlayers, teamNames);
-  const allTeamIds = Array.from(new Set(matches.flatMap((match) => [match.team1Id, match.team2Id])));
+  const groupStandings = buildGroupStandings(
+    groupMatches,
+    teamPlayers,
+    teamNames,
+  );
+  const allTeamIds = Array.from(
+    new Set(matches.flatMap((match) => [match.team1Id, match.team2Id])),
+  );
   const teamNamesMap = teamNames;
 
   const finalMatch = matches.find((match) => match.stage === "final");
@@ -390,23 +441,41 @@ function buildGroupKoStandings(matches: HistoryMatch[], teamPlayers: Record<stri
   };
 
   if (finalMatch && finalMatch.winnerId) {
-    const finalLoser = finalMatch.team1Id === finalMatch.winnerId ? finalMatch.team2Id : finalMatch.team1Id;
+    const finalLoser =
+      finalMatch.team1Id === finalMatch.winnerId
+        ? finalMatch.team2Id
+        : finalMatch.team1Id;
     pushRank(finalMatch.winnerId, 1, true);
     pushRank(finalLoser, 2, true);
   }
   if (thirdMatch && thirdMatch.winnerId) {
-    const thirdLoser = thirdMatch.team1Id === thirdMatch.winnerId ? thirdMatch.team2Id : thirdMatch.team1Id;
+    const thirdLoser =
+      thirdMatch.team1Id === thirdMatch.winnerId
+        ? thirdMatch.team2Id
+        : thirdMatch.team1Id;
     pushRank(thirdMatch.winnerId, 3, true);
     pushRank(thirdLoser, 4, true);
   }
 
   const overallRanks = Array.from(rankByTeam.entries())
-    .map(([teamId, info]) => ({ teamId, rank: info.rank, isCertain: info.isCertain }))
+    .map(([teamId, info]) => ({
+      teamId,
+      rank: info.rank,
+      isCertain: info.isCertain,
+    }))
     .sort((a, b) => a.rank - b.rank);
   const rankedTeamIds = new Set(overallRanks.map((item) => item.teamId));
   const remainingTeamIds = allTeamIds.filter((id) => !rankedTeamIds.has(id));
-  const remainingMatches = matches.filter((match) => remainingTeamIds.includes(match.team1Id) && remainingTeamIds.includes(match.team2Id));
-  const { stats: remainingStats } = computeTeamStats(remainingMatches, teamPlayers, teamNamesMap);
+  const remainingMatches = matches.filter(
+    (match) =>
+      remainingTeamIds.includes(match.team1Id) &&
+      remainingTeamIds.includes(match.team2Id),
+  );
+  const { stats: remainingStats } = computeTeamStats(
+    remainingMatches,
+    teamPlayers,
+    teamNamesMap,
+  );
   const sortedRemaining = sortTeamStats(remainingStats).sort((a, b) => {
     const rankA = groupRank.get(a.teamId) ?? Number.MAX_SAFE_INTEGER;
     const rankB = groupRank.get(b.teamId) ?? Number.MAX_SAFE_INTEGER;
@@ -416,7 +485,11 @@ function buildGroupKoStandings(matches: HistoryMatch[], teamPlayers: Record<stri
 
   let nextRank = overallRanks.length + 1;
   for (const entry of sortedRemaining) {
-    overallRanks.push({ teamId: entry.teamId, rank: nextRank++, isCertain: groupMatches.every((m) => m.winnerId) });
+    overallRanks.push({
+      teamId: entry.teamId,
+      rank: nextRank++,
+      isCertain: groupMatches.every((m) => m.winnerId),
+    });
   }
 
   const teamStats = createBaseTeamStats(teamPlayers, teamNamesMap);
@@ -431,7 +504,8 @@ function buildGroupKoStandings(matches: HistoryMatch[], teamPlayers: Record<stri
     const loser = winner === team1 ? team2 : team1;
     winner.wins += 1;
     loser.losses += 1;
-    winner.headToHead[loser.teamId] = (winner.headToHead[loser.teamId] || 0) + 1;
+    winner.headToHead[loser.teamId] =
+      (winner.headToHead[loser.teamId] || 0) + 1;
     loser.headToHead[winner.teamId] = loser.headToHead[winner.teamId] || 0;
     const score1 = match.team1Score ?? 0;
     const score2 = match.team2Score ?? 0;
@@ -454,7 +528,11 @@ function buildGroupKoStandings(matches: HistoryMatch[], teamPlayers: Record<stri
         ...stat,
         rank: rankInfo.rank,
         points: calculatePlacementPoints(rankInfo.rank, allTeamIds.length),
-        isCertain: rankInfo.isCertain && groupMatches.every((m) => m.winnerId) && (!finalMatch || !!finalMatch.winnerId) && (!thirdMatch || !!thirdMatch.winnerId),
+        isCertain:
+          rankInfo.isCertain &&
+          groupMatches.every((m) => m.winnerId) &&
+          (!finalMatch || !!finalMatch.winnerId) &&
+          (!thirdMatch || !!thirdMatch.winnerId),
       };
     })
     .filter((stat): stat is TeamStats => Boolean(stat));
@@ -467,20 +545,42 @@ function buildGroupKoStandings(matches: HistoryMatch[], teamPlayers: Record<stri
   };
 }
 
-export function calculateGroupKoStandings(matches: GroupKoMatchInput[]): { teamId: string; teamName: string; rank: number; points: number; isCertain: boolean }[] {
-  const normalizedMatches = matches.map((match) => normalizeMatch({
-    ...match,
-    game: match.game ?? { id: match.gameId, name: match.gameId },
-    results: match.results ?? [],
-    team1: match.team1 ?? { id: match.team1Id, name: match.team1Id },
-    team2: match.team2 ?? { id: match.team2Id, name: match.team2Id },
-    winner: match.winner ?? null,
-  }));
+export function calculateGroupKoStandings(
+  matches: GroupKoMatchInput[],
+): {
+  teamId: string;
+  teamName: string;
+  rank: number;
+  points: number;
+  isCertain: boolean;
+}[] {
+  const normalizedMatches = matches.map((match) =>
+    normalizeMatch({
+      ...match,
+      game: match.game ?? { id: match.gameId, name: match.gameId },
+      results: match.results ?? [],
+      team1: match.team1 ?? { id: match.team1Id, name: match.team1Id },
+      team2: match.team2 ?? { id: match.team2Id, name: match.team2Id },
+      winner: match.winner ?? null,
+    }),
+  );
 
-  const teamIds = Array.from(new Set(normalizedMatches.flatMap((match) => [match.team1Id, match.team2Id])));
-  const teamNames = Object.fromEntries(teamIds.map((teamId) => [teamId, teamId]));
-  const teamPlayers = Object.fromEntries(teamIds.map((teamId) => [teamId, [] as string[]]));
-  const standings = buildGroupKoStandings(normalizedMatches, teamPlayers, teamNames).standings;
+  const teamIds = Array.from(
+    new Set(
+      normalizedMatches.flatMap((match) => [match.team1Id, match.team2Id]),
+    ),
+  );
+  const teamNames = Object.fromEntries(
+    teamIds.map((teamId) => [teamId, teamId]),
+  );
+  const teamPlayers = Object.fromEntries(
+    teamIds.map((teamId) => [teamId, [] as string[]]),
+  );
+  const standings = buildGroupKoStandings(
+    normalizedMatches,
+    teamPlayers,
+    teamNames,
+  ).standings;
   return standings.map((standing) => ({
     teamId: standing.teamId,
     teamName: standing.teamName,
@@ -498,31 +598,51 @@ export function buildSeasonSummary(season: {
   teams: TeamWithMembers[];
   tournaments: TournamentWithMatches[];
 }): SeasonSummary {
-  const allMatches = season.tournaments.flatMap((tournament) => tournament.matches.map(normalizeMatch));
+  const allMatches = season.tournaments.flatMap((tournament) =>
+    tournament.matches.map(normalizeMatch),
+  );
   const allTeamPlayers = buildTeamPlayers(season.teams);
-  const teamNames: Record<string, string> = Object.fromEntries(season.teams.map((team) => [team.id, team.name]));
-  const gameSummaries = buildSeasonGames(season.tournaments, allTeamPlayers, teamNames);
+  const teamNames: Record<string, string> = Object.fromEntries(
+    season.teams.map((team) => [team.id, team.name]),
+  );
+  const gameSummaries = buildSeasonGames(
+    season.tournaments,
+    allTeamPlayers,
+    teamNames,
+  );
   const overallStandings = buildOverallStandings(
     allMatches,
     allTeamPlayers,
     teamNames,
-    gameSummaries
+    gameSummaries,
   );
-  const champion = overallStandings[0]?.rank === 1 && overallStandings[0]?.isCertain ? {
-    teamId: overallStandings[0].teamId,
-    teamName: overallStandings[0].teamName,
-    players: overallStandings[0].players,
-  } : null;
+  const champion =
+    overallStandings[0]?.rank === 1 && overallStandings[0]?.isCertain
+      ? {
+          teamId: overallStandings[0].teamId,
+          teamName: overallStandings[0].teamName,
+          players: overallStandings[0].players,
+        }
+      : null;
 
   return {
     id: season.id,
     year: season.year,
     name: season.name,
     finishedAt: new Date(season.finishedAt as string | Date).toISOString(),
-    tournamentSystems: Array.from(new Set(season.tournaments.map((t) => t.system))),
-    location: Array.from(new Set(season.tournaments.map((t) => t.location).filter(Boolean))).join(', ') || null,
+    tournamentSystems: Array.from(
+      new Set(season.tournaments.map((t) => t.system)),
+    ),
+    location:
+      Array.from(
+        new Set(season.tournaments.map((t) => t.location).filter(Boolean)),
+      ).join(", ") || null,
     teamCount: season.teams.length,
-    playerCount: new Set(season.teams.flatMap((team) => team.members.map((member) => member.user.id))).size,
+    playerCount: new Set(
+      season.teams.flatMap((team) =>
+        team.members.map((member) => member.user.id),
+      ),
+    ).size,
     gameCount: new Set(allMatches.map((match) => match.gameId)).size,
     matchCount: allMatches.length,
     champion,
@@ -530,8 +650,15 @@ export function buildSeasonSummary(season: {
   };
 }
 
-function buildSeasonGames(tournaments: TournamentWithMatches[], teamPlayers: Record<string, string[]>, teamNames: Record<string, string>): SeasonGameSummary[] {
-  const gameBuckets: Record<string, { tournament: TournamentWithMatches; matches: HistoryMatch[] }> = {};
+function buildSeasonGames(
+  tournaments: TournamentWithMatches[],
+  teamPlayers: Record<string, string[]>,
+  teamNames: Record<string, string>,
+): SeasonGameSummary[] {
+  const gameBuckets: Record<
+    string,
+    { tournament: TournamentWithMatches; matches: HistoryMatch[] }
+  > = {};
   for (const tournament of tournaments) {
     for (const match of tournament.matches) {
       const key = `${tournament.id}_${match.gameId}`;
@@ -569,16 +696,23 @@ function buildOverallStandings(
   matches: HistoryMatch[],
   teamPlayers: Record<string, string[]>,
   teamNames: Record<string, string>,
-  gameSummaries?: SeasonGameSummary[]
+  gameSummaries?: SeasonGameSummary[],
 ): TeamStats[] {
-  const { stats, isComplete } = computeTeamStats(matches, teamPlayers, teamNames);
+  const { stats, isComplete } = computeTeamStats(
+    matches,
+    teamPlayers,
+    teamNames,
+  );
   const pointsByTeam: Record<string, number> = {};
-  const overallIsCertain = isComplete && (!gameSummaries || gameSummaries.every((game) => game.isComplete));
+  const overallIsCertain =
+    isComplete &&
+    (!gameSummaries || gameSummaries.every((game) => game.isComplete));
 
   if (gameSummaries) {
     for (const game of gameSummaries) {
       for (const standing of game.standings) {
-        pointsByTeam[standing.teamId] = (pointsByTeam[standing.teamId] || 0) + standing.points;
+        pointsByTeam[standing.teamId] =
+          (pointsByTeam[standing.teamId] || 0) + standing.points;
       }
     }
   } else {
@@ -588,7 +722,10 @@ function buildOverallStandings(
       rank: index + 1,
     }));
     for (const entry of ranked) {
-      pointsByTeam[entry.teamId] = calculatePlacementPoints(entry.rank, totalTeams);
+      pointsByTeam[entry.teamId] = calculatePlacementPoints(
+        entry.rank,
+        totalTeams,
+      );
     }
   }
 
@@ -597,7 +734,8 @@ function buildOverallStandings(
     const bPoints = pointsByTeam[b.teamId] || 0;
     if (bPoints !== aPoints) return bPoints - aPoints;
     if (b.wins !== a.wins) return b.wins - a.wins;
-    const headToHead = (b.headToHead[a.teamId] || 0) - (a.headToHead[b.teamId] || 0);
+    const headToHead =
+      (b.headToHead[a.teamId] || 0) - (a.headToHead[b.teamId] || 0);
     if (headToHead !== 0) return headToHead;
     if (b.scoreDiff !== a.scoreDiff) return b.scoreDiff - a.scoreDiff;
     const nameCompare = a.teamName.localeCompare(b.teamName);
@@ -621,32 +759,48 @@ export function buildSeasonDetail(season: {
   teams: TeamWithMembers[];
   tournaments: TournamentWithMatches[];
 }): SeasonDetail {
-  const allMatches = season.tournaments.flatMap((tournament) => tournament.matches.map(normalizeMatch));
+  const allMatches = season.tournaments.flatMap((tournament) =>
+    tournament.matches.map(normalizeMatch),
+  );
   const teamPlayers = buildTeamPlayers(season.teams);
-  const teamNames: Record<string, string> = Object.fromEntries(season.teams.map((team) => [team.id, team.name]));
+  const teamNames: Record<string, string> = Object.fromEntries(
+    season.teams.map((team) => [team.id, team.name]),
+  );
   const games = buildSeasonGames(season.tournaments, teamPlayers, teamNames);
   const overallStandings = buildOverallStandings(
     allMatches,
     teamPlayers,
     teamNames,
-    games
+    games,
   );
   const isComplete = games.every((game) => game.isComplete);
-  const champion = overallStandings[0]?.rank === 1 && overallStandings[0]?.isCertain ? {
-    teamId: overallStandings[0].teamId,
-    teamName: overallStandings[0].teamName,
-    players: overallStandings[0].players,
-  } : null;
+  const champion =
+    overallStandings[0]?.rank === 1 && overallStandings[0]?.isCertain
+      ? {
+          teamId: overallStandings[0].teamId,
+          teamName: overallStandings[0].teamName,
+          players: overallStandings[0].players,
+        }
+      : null;
 
   return {
     id: season.id,
     year: season.year,
     name: season.name,
     finishedAt: new Date(season.finishedAt as string | Date).toISOString(),
-    tournamentSystems: Array.from(new Set(season.tournaments.map((t) => t.system))),
-    location: Array.from(new Set(season.tournaments.map((t) => t.location).filter(Boolean))).join(', ') || null,
+    tournamentSystems: Array.from(
+      new Set(season.tournaments.map((t) => t.system)),
+    ),
+    location:
+      Array.from(
+        new Set(season.tournaments.map((t) => t.location).filter(Boolean)),
+      ).join(", ") || null,
     teamCount: season.teams.length,
-    playerCount: new Set(season.teams.flatMap((team) => team.members.map((member) => member.user.id))).size,
+    playerCount: new Set(
+      season.teams.flatMap((team) =>
+        team.members.map((member) => member.user.id),
+      ),
+    ).size,
     gameCount: new Set(allMatches.map((match) => match.gameId)).size,
     matchCount: allMatches.length,
     champion,
@@ -657,11 +811,24 @@ export function buildSeasonDetail(season: {
   };
 }
 
-export function buildPlayerStatistics(seasons: SeasonDetail[]): PlayerStatsSummary[] {
-  const playerMap: Record<string, PlayerStatsSummary & { placements: number[]; gamePlacements: number[]; teamNamesSet: Set<string>; }> = {};
+export function buildPlayerStatistics(
+  seasons: SeasonDetail[],
+): PlayerStatsSummary[] {
+  const playerMap: Record<
+    string,
+    PlayerStatsSummary & {
+      placements: number[];
+      gamePlacements: number[];
+      teamNamesSet: Set<string>;
+    }
+  > = {};
 
   for (const season of seasons) {
-    const teamById = Object.fromEntries(season.games.flatMap((game) => game.standings.map((standing) => [standing.teamId, standing])));
+    const teamById = Object.fromEntries(
+      season.games.flatMap((game) =>
+        game.standings.map((standing) => [standing.teamId, standing]),
+      ),
+    );
     const teamPlayers = new Map<string, string[]>();
     for (const game of season.games) {
       for (const standing of game.standings) {
@@ -677,9 +844,16 @@ export function buildPlayerStatistics(seasons: SeasonDetail[]): PlayerStatsSumma
       }
     }
 
-    const teamDetail = Object.fromEntries(season.overallStandings.map((standing) => [standing.teamId, standing]));
+    const teamDetail = Object.fromEntries(
+      season.overallStandings.map((standing) => [standing.teamId, standing]),
+    );
     const membershipMap: Record<string, string[]> = {};
-    for (const team of season.games.flatMap((game) => game.standings).map((standing) => ({ teamId: standing.teamId, players: standing.players }))) {
+    for (const team of season.games
+      .flatMap((game) => game.standings)
+      .map((standing) => ({
+        teamId: standing.teamId,
+        players: standing.players,
+      }))) {
       membershipMap[team.teamId] = team.players;
     }
 
@@ -714,11 +888,16 @@ export function buildPlayerStatistics(seasons: SeasonDetail[]): PlayerStatsSumma
         if (standing.rank <= 3 && season.isComplete) summary.podiums += 1;
         summary.placements.push(standing.rank);
         summary.bestPlacement = Math.min(summary.bestPlacement, standing.rank);
-        summary.worstPlacement = Math.max(summary.worstPlacement, standing.rank);
+        summary.worstPlacement = Math.max(
+          summary.worstPlacement,
+          standing.rank,
+        );
         summary.totalPlacementPoints += standing.points;
         summary.teamNamesSet.add(standing.teamName);
         for (const game of season.games) {
-          const gameStanding = game.standings.find((entry) => entry.teamId === teamId);
+          const gameStanding = game.standings.find(
+            (entry) => entry.teamId === teamId,
+          );
           if (gameStanding) {
             summary.gamePlacements.push(gameStanding.rank);
           }
@@ -729,8 +908,16 @@ export function buildPlayerStatistics(seasons: SeasonDetail[]): PlayerStatsSumma
 
   return Object.values(playerMap).map((summary) => {
     const seasonsCount = summary.seasons;
-    const averagePlacement = seasonsCount > 0 ? summary.placements.reduce((sum, value) => sum + value, 0) / seasonsCount : 0;
-    const averageGamePlacement = summary.gamePlacements.length > 0 ? summary.gamePlacements.reduce((sum, value) => sum + value, 0) / summary.gamePlacements.length : 0;
+    const averagePlacement =
+      seasonsCount > 0
+        ? summary.placements.reduce((sum, value) => sum + value, 0) /
+          seasonsCount
+        : 0;
+    const averageGamePlacement =
+      summary.gamePlacements.length > 0
+        ? summary.gamePlacements.reduce((sum, value) => sum + value, 0) /
+          summary.gamePlacements.length
+        : 0;
     return {
       playerId: summary.playerId,
       playerName: summary.playerName,
@@ -738,7 +925,10 @@ export function buildPlayerStatistics(seasons: SeasonDetail[]): PlayerStatsSumma
       wonSeasons: summary.wonSeasons,
       podiums: summary.podiums,
       averagePlacement,
-      bestPlacement: summary.bestPlacement === Number.MAX_SAFE_INTEGER ? 0 : summary.bestPlacement,
+      bestPlacement:
+        summary.bestPlacement === Number.MAX_SAFE_INTEGER
+          ? 0
+          : summary.bestPlacement,
       worstPlacement: summary.worstPlacement,
       averageGamePlacement,
       matchCount: summary.matchCount,
@@ -746,7 +936,8 @@ export function buildPlayerStatistics(seasons: SeasonDetail[]): PlayerStatsSumma
       losses: summary.losses,
       winRate: 0,
       totalPlacementPoints: summary.totalPlacementPoints,
-      averagePlacementPoints: seasonsCount > 0 ? summary.totalPlacementPoints / seasonsCount : 0,
+      averagePlacementPoints:
+        seasonsCount > 0 ? summary.totalPlacementPoints / seasonsCount : 0,
       teamNames: Array.from(summary.teamNamesSet).sort(),
     };
   });
@@ -760,20 +951,17 @@ export async function progressTournament(tournamentId: string): Promise<void> {
   if (!tournament || tournament.system !== "group_ko") return;
 
   const games = Array.from(
-    new Set(tournament.matches.map((m) => m.gameId))
+    new Set(tournament.matches.map((m) => m.gameId)),
   ) as string[];
 
   for (const gameId of games) {
     const byStage = (stage: string) =>
       tournament.matches.filter(
-        (m) => m.gameId === gameId && m.stage === stage
+        (m) => m.gameId === gameId && m.stage === stage,
       );
 
     const groupMatches = byStage("group");
-    if (
-      groupMatches.length > 0 &&
-      groupMatches.every((m) => m.winnerId)
-    ) {
+    if (groupMatches.length > 0 && groupMatches.every((m) => m.winnerId)) {
       const semiExists = byStage("semi_final").length > 0;
       if (!semiExists) {
         const groups: Record<string, string[]> = {};
@@ -785,7 +973,8 @@ export async function progressTournament(tournamentId: string): Promise<void> {
           if (!groups[m.groupName].includes(m.team2Id))
             groups[m.groupName].push(m.team2Id);
         }
-        const standings: Record<string, { teamId: string; points: number }[]> = {};
+        const standings: Record<string, { teamId: string; points: number }[]> =
+          {};
         for (const m of groupMatches) {
           const g = m.groupName as string;
           standings[g] =
@@ -844,4 +1033,3 @@ export async function progressTournament(tournamentId: string): Promise<void> {
     }
   }
 }
-

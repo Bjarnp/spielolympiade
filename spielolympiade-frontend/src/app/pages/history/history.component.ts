@@ -7,6 +7,8 @@ import { AuthService } from '../../core/auth.service';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { TournamentGameCardComponent } from '../../shared/tournament-game-card/tournament-game-card.component';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { PasswordDialogComponent } from '../../shared/password-dialog/password-dialog.component';
 
 const API_URL = environment.apiUrl;
 
@@ -19,6 +21,8 @@ const API_URL = environment.apiUrl;
     MatIconModule,
     MatButtonModule,
     TournamentGameCardComponent,
+    MatDialogModule,
+    PasswordDialogComponent,
   ],
   templateUrl: './history.component.html',
   styleUrls: ['./history.component.scss'],
@@ -26,6 +30,7 @@ const API_URL = environment.apiUrl;
 export class HistoryComponent {
   http = inject(HttpClient);
   auth = inject(AuthService);
+  dialog = inject(MatDialog);
 
   seasons: any[] = [];
   selected: any = null;
@@ -286,13 +291,20 @@ export class HistoryComponent {
   }
 
   deleteSeason(id: string): void {
-    const password = prompt('Bitte Passwort zum Löschen eingeben:');
-    if (!password) return;
-    this.http
-      .request('delete', `${API_URL}/seasons/${id}`, { body: { password } })
-      .subscribe(() => {
-        this.selected = null;
-        this.loadSeasons();
+    this.dialog.open(PasswordDialogComponent, {
+      data: { title: 'Saison aus Historie löschen', confirmLabel: 'Endgültig löschen' },
+      panelClass: 'secure-password-dialog',
+      backdropClass: 'modern-dialog-backdrop',
+      width: 'min(92vw, 480px)',
+      maxWidth: '92vw',
+    }).afterClosed().subscribe((password) => {
+      if (!password) return;
+      this.http
+        .request('delete', `${API_URL}/seasons/${id}`, { body: { password } })
+        .subscribe(() => {
+          this.selected = null;
+          this.loadSeasons();
+        });
       });
   }
 }

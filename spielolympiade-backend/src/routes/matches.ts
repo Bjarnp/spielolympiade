@@ -43,10 +43,17 @@ router.get(
 
     const lastPlayed: Record<string, Date> = {};
     const inProgress: Record<string, number> = {};
+    const playedByTeam: Record<string, number> = {};
+    const playedByGame: Record<string, number> = {};
 
     for (const m of all) {
       if (m.scheduledAt && !m.playedAt) {
         inProgress[m.gameId] = (inProgress[m.gameId] || 0) + 1;
+      }
+      if (m.playedAt || m.winnerId) {
+        playedByTeam[m.team1Id] = (playedByTeam[m.team1Id] || 0) + 1;
+        playedByTeam[m.team2Id] = (playedByTeam[m.team2Id] || 0) + 1;
+        playedByGame[m.gameId] = (playedByGame[m.gameId] || 0) + 1;
       }
       const ref = m.playedAt ?? m.scheduledAt;
       if (ref) {
@@ -59,26 +66,46 @@ router.get(
 
     const open = all.filter((m) => !m.scheduledAt && !m.playedAt);
 
-    const ranked = open
-      .map((m) => {
-        const last1 = lastPlayed[m.team1Id] ?? new Date(0);
-        const last2 = lastPlayed[m.team2Id] ?? new Date(0);
-        const score = Math.max(last1.getTime(), last2.getTime());
-        return { m, score };
-      })
-      .sort((a, b) => {
-        const gameDiff =
-          (inProgress[a.m.gameId] || 0) - (inProgress[b.m.gameId] || 0);
-        if (gameDiff !== 0) return gameDiff;
-        return a.score - b.score;
-      })
-      .map((r) => r.m);
+    const remaining = [...open];
+    const selected: typeof open = [];
+    const alreadySuggested = new Set<string>();
 
-    const simplified = ranked.map((m) => ({
+    while (remaining.length && selected.length < 5) {
+      remaining.sort((a, b) => {
+        const aConflict = Number(alreadySuggested.has(a.team1Id)) + Number(alreadySuggested.has(a.team2Id));
+        const bConflict = Number(alreadySuggested.has(b.team1Id)) + Number(alreadySuggested.has(b.team2Id));
+        if (aConflict !== bConflict) return aConflict - bConflict;
+
+        const aLoad = Math.max(playedByTeam[a.team1Id] || 0, playedByTeam[a.team2Id] || 0);
+        const bLoad = Math.max(playedByTeam[b.team1Id] || 0, playedByTeam[b.team2Id] || 0);
+        if (aLoad !== bLoad) return aLoad - bLoad;
+
+        const gameDiff =
+          (playedByGame[a.gameId] || 0) + (inProgress[a.gameId] || 0) -
+          (playedByGame[b.gameId] || 0) - (inProgress[b.gameId] || 0);
+        if (gameDiff !== 0) return gameDiff;
+
+        const aRest = Math.max(lastPlayed[a.team1Id]?.getTime() || 0, lastPlayed[a.team2Id]?.getTime() || 0);
+        const bRest = Math.max(lastPlayed[b.team1Id]?.getTime() || 0, lastPlayed[b.team2Id]?.getTime() || 0);
+        if (aRest !== bRest) return aRest - bRest;
+        return a.id.localeCompare(b.id);
+      });
+
+      const next = remaining.shift()!;
+      selected.push(next);
+      alreadySuggested.add(next.team1Id);
+      alreadySuggested.add(next.team2Id);
+    }
+
+    const simplified = selected.map((m) => ({
       id: m.id,
       gameId: m.gameId,
       team1Id: m.team1Id,
       team2Id: m.team2Id,
+      reason:
+        !lastPlayed[m.team1Id] && !lastPlayed[m.team2Id]
+          ? "Beide Teams sind noch nicht angetreten"
+          : "Faire Rotation nach Spielen und Pausen",
     }));
 
     res.json(simplified);

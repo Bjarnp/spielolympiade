@@ -7,7 +7,6 @@ import { MatSortModule, MatSort } from '@angular/material/sort';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatCardModule } from '@angular/material/card';
-import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatSelectModule } from '@angular/material/select';
 import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
@@ -17,6 +16,8 @@ import { AuthService } from '../../core/auth.service';
 import { environment } from '../../../environments/environment';
 import { FormsModule } from '@angular/forms';
 import { TournamentGameCardComponent } from '../../shared/tournament-game-card/tournament-game-card.component';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { PasswordDialogComponent } from '../../shared/password-dialog/password-dialog.component';
 
 const API_URL = environment.apiUrl;
 
@@ -32,13 +33,14 @@ const API_URL = environment.apiUrl;
     MatFormFieldModule,
     MatInputModule,
     MatCardModule,
-    MatCheckboxModule,
     MatSelectModule,
     MatListModule,
     MatDividerModule,
     MatIconModule,
     FormsModule,
     TournamentGameCardComponent,
+    MatDialogModule,
+    PasswordDialogComponent,
   ],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss'],
@@ -46,6 +48,7 @@ const API_URL = environment.apiUrl;
 export class DashboardComponent implements OnInit, OnDestroy {
   auth = inject(AuthService);
   http = inject(HttpClient);
+  dialog = inject(MatDialog);
   team: any;
   allTeams: any[] = [];
   allGames: any[] = [];
@@ -78,7 +81,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   // Filter
   filterMode: 'all' | 'open' | 'played' = 'open';
-  onlyMine = false;
   filteredGames: any[] = [];
   recommendations: any[] = [];
 
@@ -190,12 +192,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
       games = games.filter((g) => g.team1Score != null && g.team2Score != null);
     }
 
-    if (this.onlyMine && this.team) {
-      games = games.filter(
-        (g) => g.team1Id === this.team.id || g.team2Id === this.team.id,
-      );
-    }
-
     this.filteredGames = games;
   }
 
@@ -234,20 +230,27 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   toggleSave(m: any): void {
     if (m.saved) {
-      const password = prompt('Passwort zum Bearbeiten eingeben:');
-      if (!password) return;
-      const username = this.auth.getUser()?.username;
-      this.http
-        .post(`${API_URL}/auth/login`, { username, password })
-        .subscribe({
-          next: () => {
-            m.saved = false;
-          },
-          error: () => alert('Passwort falsch'),
+      this.openPasswordDialog('Spieleintrag bearbeiten').subscribe((password) => {
+        if (!password) return;
+        const username = this.auth.getUser()?.username;
+        this.http.post(`${API_URL}/auth/login`, { username, password }).subscribe({
+          next: () => (m.saved = false),
+          error: () => (this.newMatchError = 'Passwort falsch.'),
         });
+      });
     } else {
       this.saveResultFor(m);
     }
+  }
+
+  private openPasswordDialog(title: string, confirmLabel = 'Bestätigen') {
+    return this.dialog.open(PasswordDialogComponent, {
+      data: { title, confirmLabel },
+      panelClass: 'secure-password-dialog',
+      backdropClass: 'modern-dialog-backdrop',
+      width: 'min(92vw, 480px)',
+      maxWidth: '92vw',
+    }).afterClosed();
   }
 
   groupStandings(
@@ -475,34 +478,32 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   deleteSeason(): void {
     if (!this.team?.seasonId) return;
-    const password = prompt('Bitte Passwort zum Löschen eingeben:');
-    if (!password) return;
-    this.http
-      .request('delete', `${API_URL}/seasons/${this.team.seasonId}`, {
-        body: { password },
-      })
-      .subscribe(() => {
-        this.seasonActive = false;
-        this.loadData();
+    this.openPasswordDialog('Saison löschen', 'Endgültig löschen').subscribe((password) => {
+      if (!password) return;
+      this.http
+        .request('delete', `${API_URL}/seasons/${this.team.seasonId}`, {
+          body: { password },
+        })
+        .subscribe(() => {
+          this.seasonActive = false;
+          this.loadData();
+        });
       });
   }
 
   finishSeason(): void {
     if (!this.team?.seasonId) return;
-    const password = prompt(
-      'Bitte Admin-Passwort zum Speichern der Saison eingeben:',
-    );
-    if (!password) return;
-    this.http
-      .post(`${API_URL}/seasons/${this.team.seasonId}/finish`, { password })
-      .subscribe({
-        next: () => {
-          this.seasonActive = false;
-          this.loadData();
-        },
-        error: () => {
-          alert('Passwort falsch oder Fehler beim Speichern der Saison.');
-        },
+    this.openPasswordDialog('Saison abschließen', 'Saison speichern').subscribe((password) => {
+      if (!password) return;
+      this.http
+        .post(`${API_URL}/seasons/${this.team.seasonId}/finish`, { password })
+        .subscribe({
+          next: () => {
+            this.seasonActive = false;
+            this.loadData();
+          },
+          error: () => (this.newMatchError = 'Passwort falsch oder Saison konnte nicht gespeichert werden.'),
+        });
       });
   }
 }
